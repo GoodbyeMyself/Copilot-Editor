@@ -40,7 +40,7 @@ export const layout = ({
     };
 }) => {
     return {
-        logo: 'https://img.alicdn.com/tfs/TB1YHEpwUT1gK0jSZFhXXaAtVXa-28-27.svg',
+        logo: 'https://raw.githubusercontent.com/GoodbyeMyself/SQL-Copilot/1533641e93f0cfd02c2d3e4ff4e0757d1cb65aae/src/assets/images/logo.svg',
         menu: {
             locale: false,
         },

@@ -23,7 +23,7 @@ const Settings: ProLayoutProps & {
      * @author: M.yunlong
      * @date: 2024-03-19 14:51:43
      */
-    logo: 'https://img.alicdn.com/tfs/TB1YHEpwUT1gK0jSZFhXXaAtVXa-28-27.svg',
+    logo: 'https://raw.githubusercontent.com/GoodbyeMyself/SQL-Copilot/1533641e93f0cfd02c2d3e4ff4e0757d1cb65aae/src/assets/images/logo.svg',
     token: {
         // 参见ts声明，demo 见文档，通过token 修改样式
         //https://procomponents.ant.design/components/layout#%E9%80%9A%E8%BF%87-token-%E4%BF%AE%E6%94%B9%E6%A0%B7%E5%BC%8F
