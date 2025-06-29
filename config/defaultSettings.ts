@@ -18,8 +18,6 @@ const Settings: ProLayoutProps & {
     colorWeak: false,
     title: 'SQL Copilot',
     pwa: true,
-    // 默认收起侧边栏
-    collapsed: true,
     /**
      * @description: logo 可以访问本地文件, 也可以访问网络地址
      * @author: M.yunlong
@@ -32,6 +30,10 @@ const Settings: ProLayoutProps & {
     },
     // 关闭 prolayout 根据菜单和路径 自动匹配浏览器标题
     pageTitleRender: false,
+    // 默认收起侧边栏
+    defaultCollapsed: true,
+    // 默认的菜单的收起和展开，会受到 breakpoint 的影响，breakpoint=false 生效 
+    breakpoint: false,
 };
 
 export default Settings;
