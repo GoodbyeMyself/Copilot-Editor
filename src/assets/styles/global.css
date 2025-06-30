@@ -5,4 +5,8 @@
 */
 .ant-pro-layout .ant-pro-layout-content {
     padding: 0;
-} 
+}
+
+.home-container {
+    height: calc(100vh - 80px);
+}

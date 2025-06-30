@@ -1,32 +1,33 @@
-import { defineConfig } from '@umijs/max';
+import { defineConfig } from "@umijs/max";
 
 export default defineConfig({
-    antd: {},
-    access: {},
-    model: {},
-    initialState: {},
-    request: {},
-    layout: {
-        title: 'SQL Copilot',
+  antd: {},
+  access: {},
+  model: {},
+  initialState: {},
+  request: {},
+  layout: {
+    title: "SQL Copilot",
+  },
+  routes: [
+    {
+      path: "/",
+      redirect: "/home",
     },
-    routes: [
-        {
-            path: '/',
-            redirect: '/home'
-        },
-        {
-            name: '首页',
-            path: '/home',
-            icon: 'Dashboard',
-            component: './Home'
-        },
-        {
-            name: '权限演示',
-            path: '/access',
-            icon: 'Calendar',
-            component: './Access'
-        }
-    ],
-    npmClient: 'yarn',
-});
+    {
+      name: "首页",
+      path: "/home",
+      icon: "Dashboard",
+      component: "./Home",
+    },
+    {
+      name: "权限演示",
+      path: "/access",
+      icon: "Calendar",
+      component: "./Access",
+    },
+  ],
 
+  npmClient: "yarn",
+  tailwindcss: {},
+});
