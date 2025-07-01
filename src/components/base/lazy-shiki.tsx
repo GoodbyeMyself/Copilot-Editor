@@ -1,8 +1,9 @@
-import { Await } from "@remix-run/react";
 import DOMPurify from "dompurify";
-import { Suspense } from "react";
-import { useTheme } from "remix-themes";
+
+import { Suspense, useState, useEffect } from "react";
+
 import { type CodeToHastOptionsCommon, type HighlighterCore } from "shiki/core";
+
 import { getHighlighter } from "@/components/base/code-highlighter";
 
 let shiki: HighlighterCore | undefined;
@@ -30,9 +31,61 @@ const createHighlighter = async (
     }
 };
 
+function HighlightContent(
+    props: CreateHighlighterProps & { isDark: boolean },
+): JSX.Element {
+    const [html, setHtml] = useState<string>("");
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+
+    useEffect(() => {
+        let isCancelled = false;
+        
+        const loadHighlighter = async () => {
+            setIsLoading(true);
+            try {
+                const result = await createHighlighter(props);
+                if (!isCancelled) {
+                    setHtml(result);
+                }
+            } catch (error) {
+                console.error("Failed to create highlighter: ", error);
+                if (!isCancelled) {
+                    setHtml("");
+                }
+            } finally {
+                if (!isCancelled) {
+                    setIsLoading(false);
+                }
+            }
+        };
+
+        loadHighlighter();
+
+        return () => {
+            isCancelled = true;
+        };
+    }, [props.text, props.lang, props.isDark]);
+
+    if (isLoading) {
+        return (
+            <div className="overflow-x-auto font-mono text-sm p-4">
+                <div className="animate-pulse">加载中...</div>
+            </div>
+        );
+    }
+
+    return (
+        <div
+            // wrapping is applied in global styles (otherwise it doesn't work)
+            className="overflow-x-auto font-mono text-sm"
+            dangerouslySetInnerHTML={{ __html: html }}
+        />
+    );
+}
+
 export default function Highlighter(props: CreateHighlighterProps) {
-    const [theme] = useTheme();
-    const isDark = theme === "dark";
+    // 主题 默认浅色
+    const isDark = false;
 
     return (
         <Suspense>
@@ -40,26 +93,6 @@ export default function Highlighter(props: CreateHighlighterProps) {
                 {...props}
                 isDark={isDark}
             />
-        </Suspense>
-    );
-}
-
-function HighlightContent(
-    props: CreateHighlighterProps & { isDark: boolean },
-): JSX.Element {
-    const html = createHighlighter(props);
-
-    return (
-        <Suspense>
-            <Await resolve={html}>
-                {(p) => (
-                    <div
-                        // wrapping is applied in global styles (otherwise it doesn't work)
-                        className="overflow-x-auto font-mono text-sm"
-                        dangerouslySetInnerHTML={{ __html: p }}
-                    />
-                )}
-            </Await>
         </Suspense>
     );
 }

@@ -19,7 +19,6 @@ import { registerEditorActions } from "../editor/utils/actions";
 
 import "monaco-editor/esm/vs/basic-languages/sql/sql.contribution";
 
-import { useTheme } from "remix-themes";
 import { useDB } from "@/context/db/useDB";
 import { useQuery } from "@/context/query/useQuery";
 
@@ -53,11 +52,10 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
 
     const { db } = useDB();
 
-    const [theme] = useTheme();
-
     const language = props.language ?? "sql";
 
-    const isDark = theme === "dark";
+    // 主题 默认浅色
+    const isDark = false;
 
     useEffect(() => {
         return () => {

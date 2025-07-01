@@ -53,26 +53,6 @@ export default function Playground() {
                     "bg-gray-100 transition-colors duration-200 ease-in-out dark:bg-gray-800",
             )}
         >
-            <div className="flex h-full w-14 flex-col border-r bg-background">
-                <Button
-                    variant="ghost"
-                    className="h-9 rounded-none border-b"
-                    onClick={() => {
-                        if (sidepanelRef.current?.isCollapsed()) {
-                            sidepanelRef.current?.expand();
-                            sidepanelRef.current?.resize(20);
-                        } else {
-                            sidepanelRef.current?.collapse();
-                        }
-                    }}
-                >
-                    {explorerIsOpen ? (
-                        <FolderOpen size={16} />
-                    ) : (
-                        <FolderClosed size={16} />
-                    )}
-                </Button>
-            </div>
             <PanelGroup
                 className="h-[calc(100vh-64px)] rounded-none"
                 direction="horizontal"

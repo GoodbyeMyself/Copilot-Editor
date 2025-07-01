@@ -8,5 +8,30 @@
 }
 
 .home-container {
-    height: calc(100vh - 80px);
+    height: calc(100vh - 58px);
+    background-color: #fff;
+}
+
+*, ::before, ::after {
+    border-color: #e5e7eb;
+}
+
+.bg-border {
+    background-color: #e5e7eb;
+}
+
+.bg-muted {
+    background-color: #f4f4f5;
+}
+
+.bg-popover {
+    background-color: #fff;
+}
+
+.text-muted-foreground {
+    color: #71717a;
+}
+
+body {
+    margin: 0;
 }

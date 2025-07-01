@@ -6,8 +6,6 @@ import { AlertOctagon, ChevronDown } from "lucide-react";
 
 import { useState } from "react";
 
-import { useTheme } from "remix-themes";
-
 import { useQuery } from "@/context/query/useQuery";
 
 import { cn } from "@/lib/utils";
@@ -29,9 +27,11 @@ const prettify = (str: string) => {
 
 export default function ErrorNotification(props: { error: string }) {
     const [isOpen, setIsOpen] = useState(false);
+
     const { meta } = useQuery();
-    const [theme] = useTheme();
-    const isDark = theme === "dark";
+
+    // 主题 默认浅色
+    const isDark = false;
 
     const error = prettify(props.error);
 

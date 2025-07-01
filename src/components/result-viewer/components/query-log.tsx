@@ -13,7 +13,7 @@ export default function QueryLog() {
     }, [logs]);
 
     return (
-        <div className="scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 h-full w-full overflow-auto rounded-lg border border-gray-200 bg-gray-50/50 px-4 pb-8 pt-4 dark:border-gray-700 dark:bg-gray-800/50">
+        <div className="scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 h-full w-full overflow-auto rounded-lg border border-gray-200 bg-gray-50/50 px-4 pb-8 pt-4">
             <div
                 ref={logRef}
                 className="flex min-h-[200px] flex-col space-y-2 font-mono text-sm"
@@ -21,7 +21,7 @@ export default function QueryLog() {
                 {logs?.length === 0 && (
                     <div className="flex flex-1 items-center justify-center">
                         <div className="size-full space-y-3 text-center">
-                            <div className="text-gray-300 dark:text-gray-600">
+                            <div className="text-gray-300">
                                 <svg
                                     className="mx-auto h-12 w-12"
                                     fill="none"
@@ -37,7 +37,7 @@ export default function QueryLog() {
                                     />
                                 </svg>
                             </div>
-                            <p className="text-sm font-medium text-gray-400 dark:text-gray-500">
+                            <p className="text-sm font-medium text-gray-400">
                                 暂无查询日志
                             </p>
                         </div>

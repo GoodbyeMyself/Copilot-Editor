@@ -41,7 +41,7 @@ export default function CopyToClipboard(props: OnCopyToClipboardProps) {
       type="button"
       onClick={onCopy}
       className={cn(
-        "group flex h-auto w-8 cursor-pointer flex-col items-center justify-center rounded-md border border-neutral-200/60 bg-background px-3 pb-1.5 pt-2 text-[0.65rem] font-medium uppercase text-neutral-500 shadow-sm hover:text-neutral-600 focus:outline-none dark:bg-[#121212] dark:hover:text-neutral-400",
+        "group flex h-auto w-8 cursor-pointer flex-col items-center justify-center rounded-md border border-neutral-200/60 bg-background px-4 pb-1.5 pt-2 text-[0.65rem] font-medium uppercase text-neutral-500 shadow-sm hover:text-neutral-600 focus:outline-none dark:hover:text-neutral-400",
         props.className,
       )}
       aria-label="Copy to clipboard"
