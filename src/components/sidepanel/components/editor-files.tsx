@@ -182,7 +182,7 @@ function CodeEditorItem(editor: CodeEditor) {
     return (
         <>
             <ContextMenu key={editor.path}>
-                <ContextMenuTrigger className="w-full data-[state=open]:bg-gray-100 data-[state=open]:dark:bg-gray-900">
+                <ContextMenuTrigger className="w-full data-[state=open]:bg-gray-100">
                     <Button
                         className={cn(
                             "flex h-6 w-full items-center justify-between gap-2 overflow-hidden p-2",

@@ -28,9 +28,9 @@ export default function OpenFileTabs() {
                             <button
                                 type="button"
                                 className={cn(
-                                    "flex h-full cursor-pointer flex-row flex-nowrap items-center gap-1 rounded-none border-x border-t border-t-transparent bg-[#ececec] pl-2 text-[#3d3d3d] first:border-l-0 hover:bg-[#d9d9d9] dark:bg-background dark:text-foreground dark:hover:bg-[#1f1f1f]",
+                                    "flex h-full cursor-pointer flex-row flex-nowrap items-center gap-1 rounded-none border-x border-t border-t-transparent bg-[#ececec] pl-2 text-[#3d3d3d] first:border-l-0 hover:bg-[#d9d9d9]",
                                     isCurrent &&
-                                        "border-t-0 bg-white text-[#3d3d3d] hover:bg-background dark:border-t dark:border-t-blue-600 dark:bg-[#1e1e1e] dark:text-secondary-foreground dark:hover:bg-[#1e1e1e] ",
+                                        "border-t-0 bg-white text-[#3d3d3d] hover:bg-background dark:border-t dark:border-t-blue-600 dark:text-secondary-foreground",
                                 )}
                                 data-current={isCurrent || undefined}
                                 key={editor.path}

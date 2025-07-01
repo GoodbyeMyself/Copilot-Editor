@@ -1,19 +1,110 @@
-import { releaseProxy, wrap, type Remote } from "comlink";
-import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
+import { useCallback, useEffect, useMemo, useReducer } from "react";
 import { toast } from "sonner";
 import { SessionContext } from "./context";
+import { newfileContents } from "./data/newfile-content";
 import type {
     Action,
     SaveEditorProps,
     SessionMethods,
     SessionState,
 } from "./types";
-import type { SessionWorker } from "./worker";
 
 // Split up the context files to appease react-refresh.
 
 type SessionProviderProps = {
     children: React.ReactNode;
+};
+
+// localStorage utilities
+const LocalStorageManager = {
+    getItem: (key: string) => {
+        try {
+            const item = localStorage.getItem(key);
+            return item ? JSON.parse(item) : null;
+        } catch (e) {
+            console.error('Error reading from localStorage:', e);
+            return null;
+        }
+    },
+    
+    setItem: (key: string, value: any) => {
+        try {
+            localStorage.setItem(key, JSON.stringify(value));
+            return true;
+        } catch (e) {
+            console.error('Error writing to localStorage:', e);
+            return false;
+        }
+    },
+    
+    removeItem: (key: string) => {
+        try {
+            localStorage.removeItem(key);
+            return true;
+        } catch (e) {
+            console.error('Error removing from localStorage:', e);
+            return false;
+        }
+    },
+    
+    // 获取所有会话相关的keys
+    getSessionKeys: (sessionId: string) => {
+        const keys = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith(`session_${sessionId}_`)) {
+                keys.push(key);
+            }
+        }
+        return keys;
+    },
+    
+    // 从localStorage恢复编辑器数据
+    restoreEditors: (sessionId: string) => {
+        const editorKeys = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith(`session_${sessionId}_editor_`)) {
+                editorKeys.push(key);
+            }
+        }
+        
+        const editors = [];
+        for (const key of editorKeys) {
+            const data = LocalStorageManager.getItem(key);
+            if (data && data.content && data.metadata) {
+                editors.push({
+                    path: data.metadata.path,
+                    handle: null,
+                    kind: "CODE" as const,
+                    mimeType: "text/sql" as const,
+                    ext: "sql" as const,
+                    content: data.content,
+                    isFocused: false,
+                    isOpen: false,
+                    isDirty: false,
+                    isSaved: true,
+                    isNew: false,
+                });
+            }
+        }
+        
+        return editors;
+    },
+    
+    // 清除会话数据
+    clearSession: (sessionId: string) => {
+        const keys = LocalStorageManager.getSessionKeys(sessionId);
+        keys.forEach(key => LocalStorageManager.removeItem(key));
+    }
+};
+
+const initialFileState: SessionState = {
+    status: "initializing_worker",
+    sessionId: "DataWorksCopilot",
+    directoryHandle: null,
+    editors: [],
+    sources: [],
 };
 
 function reducer(state: SessionState, action: Action): SessionState {
@@ -126,7 +217,7 @@ function reducer(state: SessionState, action: Action): SessionState {
         case "OPEN_EDITOR": {
             const { path } = action.payload;
             const index = state.editors.findIndex(
-                (editor) => editor.handle.name === path,
+                (editor) => editor.handle?.name === path || editor.path === path,
             );
             // not found
             if (index === -1) return { ...state };
@@ -166,7 +257,7 @@ function reducer(state: SessionState, action: Action): SessionState {
                         isDirty: false,
                         isSaved: true,
                         isNew: false, // if it was new, it's not new anymore (so we don't delete it when we close it).
-                        handle,
+                        handle: handle || editor.handle, // 保持原有handle或使用新的handle
                     },
                     ...state.editors.slice(index + 1),
                 ],
@@ -235,14 +326,6 @@ function reducer(state: SessionState, action: Action): SessionState {
     }
 }
 
-const initialFileState: SessionState = {
-    status: "initializing_worker",
-    sessionId: "DataWorksCopilot",
-    directoryHandle: null,
-    editors: [],
-    sources: [],
-};
-
 /**
  * Allows the user to switch between different sessions.
  *
@@ -250,138 +333,10 @@ const initialFileState: SessionState = {
  */
 function SessionProvider({ children }: SessionProviderProps) {
     const [session, dispatch] = useReducer(reducer, initialFileState);
-    const workerRef = useRef<Worker | null>(null);
-    const proxyRef = useRef<Remote<SessionWorker> | null>(null);
 
-    // initialize the worker
+    // 初始化会话数据
     useEffect(() => {
-        const handleMessage = (e: MessageEvent) => {
-            const { type, payload } = e.data;
-            switch (type) {
-                // ----- session worker messages ------- //
-                case "INITIALIZE_SESSION_START": {
-                    dispatch({
-                        type: "SET_STATUS",
-                        payload: {
-                            status: "loading_session",
-                        },
-                    });
-                    break;
-                }
-                case "INITIALIZE_SESSION_COMPLETE": {
-                    const { sessionId, directoryHandle, sources, editors } =
-                        payload;
-
-                    dispatch({
-                        type: "OPEN_SESSION",
-                        payload: {
-                            sessionId,
-                            directoryHandle,
-                            sources,
-                            editors,
-                        },
-                    });
-                    break;
-                }
-
-                case "INITIALIZE_SESSION_ERROR": {
-                    dispatch({
-                        type: "SET_STATUS",
-                        payload: {
-                            status: "error",
-                        },
-                    });
-
-                    toast.error("Error initializing session", {
-                        description: payload.error,
-                    });
-                    break;
-                }
-
-                // ------- editor views ------- //
-
-                case "ADD_EDITOR": {
-                    dispatch({
-                        type: "ADD_EDITOR",
-                        payload,
-                    });
-                    break;
-                }
-
-                case "DELETE_EDITOR": {
-                    dispatch({
-                        type: "DELETE_EDITOR",
-                        payload,
-                    });
-                    break;
-                }
-
-                case "UPDATE_EDITOR": {
-                    dispatch({
-                        type: "UPDATE_EDITOR",
-                        payload,
-                    });
-                    break;
-                }
-
-                case "CLOSE_EDITOR": {
-                    dispatch({
-                        type: "CLOSE_EDITOR",
-                        payload,
-                    });
-                    break;
-                }
-
-                case "OPEN_EDITOR": {
-                    dispatch({
-                        type: "OPEN_EDITOR",
-                        payload,
-                    });
-                    break;
-                }
-
-                // ------- data sources ------- //
-
-                case "ADD_SOURCES": {
-                    dispatch({
-                        type: "ADD_SOURCES",
-                        payload,
-                    });
-                    break;
-                }
-                case "REMOVE_SOURCE": {
-                    dispatch({
-                        type: "REMOVE_SOURCE",
-                        payload,
-                    });
-                    break;
-                }
-
-                default:
-                    break;
-            }
-        };
-        const controller = new AbortController();
-        const signal = controller.signal;
-
-        const initWorker = async (sessionId: string) => {
-            dispatch({
-                type: "SET_STATUS",
-                payload: {
-                    status: "initializing_worker",
-                },
-            });
-
-            const worker = new Worker(new URL("./worker", import.meta.url), {
-                name: "sessionWorker",
-                type: "module",
-            });
-
-            workerRef.current = worker;
-
-            const proxy = wrap<SessionWorker>(worker);
-            proxyRef.current = proxy;
-
+        const initSession = async (sessionId: string) => {
             dispatch({
                 type: "SET_STATUS",
                 payload: {
@@ -389,36 +344,34 @@ function SessionProvider({ children }: SessionProviderProps) {
                 },
             });
 
-            if (signal.aborted) return;
-
-            const sessionFiles = await proxy.onInitialize(sessionId);
-
-            if (!sessionFiles) return;
-
-            dispatch({
-                type: "OPEN_SESSION",
-                payload: {
-                    sessionId: initialFileState.sessionId,
-                    directoryHandle: sessionFiles.directoryHandle,
-                    sources: sessionFiles.sources,
-                    editors: sessionFiles.editors,
-                },
-            });
+            try {
+                const editors = LocalStorageManager.restoreEditors(sessionId);
+                
+                dispatch({
+                    type: "OPEN_SESSION",
+                    payload: {
+                        sessionId,
+                        directoryHandle: null,
+                        sources: [],
+                        editors,
+                    },
+                });
+            } catch (e) {
+                console.error("Error restoring from localStorage:", e);
+                dispatch({
+                    type: "SET_STATUS",
+                    payload: {
+                        status: "error",
+                    },
+                });
+                
+                toast.error("会话初始化错误", {
+                    description: e instanceof Error ? e.message : "未知错误",
+                });
+            }
         };
 
-        signal.addEventListener("abort", () => {
-            workerRef.current?.removeEventListener("message", handleMessage);
-            proxyRef.current?.[releaseProxy]();
-            proxyRef.current = null;
-            workerRef.current?.terminate();
-            workerRef.current = null;
-        });
-
-        initWorker("DataWorksCopilot");
-
-        return () => {
-            controller.abort();
-        };
+        initSession("DataWorksCopilot");
     }, []);
 
     /**
@@ -433,140 +386,103 @@ function SessionProvider({ children }: SessionProviderProps) {
     /**
      * Add data sources to the session.
      *
-     * Can be file, file handle, filesystementry, or urk.
-     *
+     * 注意：localStorage模式下暂不支持数据源管理
      */
     const onAddDataSources: SessionMethods["onAddDataSources"] = useCallback(
         async (entries) => {
-            if (!proxyRef.current) {
-                console.warn("No proxyRef.current");
-                return;
-            }
-
-            if (entries.length === 0) {
-                toast.error("No data sources selected", {});
-                return;
-            }
-
-            try {
-                const sources = await proxyRef.current.onAddDataSource({
-                    entries,
-                    sessionId: session.sessionId,
-                });
-
-                dispatch({
-                    type: "ADD_SOURCES",
-                    payload: sources,
-                });
-
-                return sources;
-            } catch (e) {
-                console.error("Failed to add source: ", e);
-                toast.error("Failed to add source", {
-                    description: e instanceof Error ? e.message : undefined,
-                });
-                return [];
-            }
+            console.log("数据源管理暂不支持:", entries);
+            toast.error("数据源管理暂不支持", {
+                description: "当前使用localStorage模式，暂不支持数据源管理功能",
+            });
+            return [];
         },
-        [session.sessionId],
+        [],
     );
 
     const onDeleteDataSource: SessionMethods["onDeleteDataSource"] =
         useCallback(
             async (path) => {
-                if (!proxyRef.current) return;
-
-                try {
-                    const result = await proxyRef.current.onDeleteDataSource({
-                        sessionId: session.sessionId,
-                        path,
-                    });
-
-                    if (result.error) throw result.error;
-
-                    dispatch({
-                        type: "REMOVE_SOURCE",
-                        payload: {
-                            path,
-                        },
-                    });
-                } catch (e) {
-                    console.error("Failed to delete source: ", e);
-                    toast.error("Failed to delete source", {
-                        description: e instanceof Error ? e.message : undefined,
-                    });
-                    return;
-                }
+                console.log("删除数据源暂不支持:", path);
+                toast.error("数据源管理暂不支持", {
+                    description: "当前使用localStorage模式，暂不支持数据源管理功能",
+                });
             },
-            [session.sessionId],
+            [],
         );
 
     const onAddEditor = useCallback(async () => {
-        if (!proxyRef.current) return;
         if (!session.sessionId) return;
 
         try {
-            const newEditor = await proxyRef.current.onAddEditor(
-                session.sessionId,
-            );
-
-            if (!newEditor) throw new Error("Failed to add editor");
-
-            let content = "";
-
-            if (newEditor.handle) {
-                try {
-                    const file = await newEditor.handle.getFile();
-                    content = await file.text();
-                } catch (e) {
-                    console.error("Failed to read file: ", e);
+            // 生成唯一的文件名
+            const generateUniqueFilename = (editors: typeof session.editors) => {
+                let counter = 1;
+                let newPath = `query-${counter}.sql`;
+                
+                // 检查是否已存在相同名称的文件
+                const existingPaths = new Set(editors.map(editor => editor.path));
+                while (existingPaths.has(newPath)) {
+                    counter++;
+                    newPath = `query-${counter}.sql`;
                 }
-            }
+                
+                return newPath;
+            };
+            
+            const newPath = generateUniqueFilename(session.editors);
+            
+            const editorData = {
+                path: newPath,
+                handle: null,
+                kind: "CODE" as const,
+                mimeType: "text/sql" as const,
+                ext: "sql" as const,
+                content: newfileContents,
+                isFocused: false,
+                isOpen: true,
+                isDirty: false,
+                isSaved: false,
+                isNew: true,
+            };
+
+            // 保存到localStorage
+            const storageKey = `session_${session.sessionId}_editor_${newPath}`;
+            LocalStorageManager.setItem(storageKey, {
+                content: editorData.content,
+                metadata: {
+                    path: newPath,
+                    created: Date.now(),
+                    modified: Date.now(),
+                }
+            });
 
             dispatch({
                 type: "ADD_EDITOR",
-                payload: {
-                    ...newEditor,
-                    content,
-                    isFocused: false,
-                    isOpen: true,
-                    isDirty: false, // if it's new, it's not dirty. If we close it without saving, we should delete it.
-                    isSaved: false,
-                    isNew: true,
-                },
+                payload: editorData,
             });
 
             dispatch({
                 type: "FOCUS_EDITOR",
                 payload: {
-                    path: newEditor.path,
+                    path: newPath,
                 },
             });
         } catch (e) {
             console.error("Failed to add editor: ", e);
-            toast.error("Failed to add editor", {
+            toast.error("添加编辑器失败", {
                 description: e instanceof Error ? e.message : undefined,
             });
-            return;
         }
-    }, [session.sessionId]);
+    }, [session.sessionId, session.editors]);
 
     /**
      * Permanently delete the editor from the session.
-     *
-     * #TODO: maybe archive the editor instead of deleting it.
      */
     const onDeleteEditor = useCallback(
         async (path: string) => {
-            if (!proxyRef.current) return;
-
             try {
-                const result = await proxyRef.current.onDeleteEditor({
-                    sessionId: session.sessionId,
-                    path,
-                });
-
-                if (result.error) throw new Error(result.error);
+                const storageKey = `session_${session.sessionId}_editor_${path}`;
+                LocalStorageManager.removeItem(storageKey);
 
                 dispatch({
                     type: "DELETE_EDITOR",
@@ -576,45 +492,45 @@ function SessionProvider({ children }: SessionProviderProps) {
                 });
             } catch (e) {
                 console.error("Failed to delete editor: ", e);
-                toast.error("Failed to delete editor", {
+                toast.error("删除编辑器失败", {
                     description: e instanceof Error ? e.message : undefined,
                 });
-                return;
             }
         },
         [session.sessionId],
     );
 
     /**
-     * Permanently delete the editor from the session.
-     *
-     * #TODO: maybe archive the editor instead of deleting it.
+     * Save the editor content to localStorage.
      */
     const onSaveEditor = useCallback(
         async (props: Pick<SaveEditorProps, "content" | "path">) => {
-            if (!proxyRef.current) return;
-
             try {
-                const result = await proxyRef.current.onSaveEditor({
-                    ...props,
-                    sessionId: session.sessionId,
+                const storageKey = `session_${session.sessionId}_editor_${props.path}`;
+                const success = LocalStorageManager.setItem(storageKey, {
+                    content: props.content,
+                    metadata: {
+                        path: props.path,
+                        created: Date.now(),
+                        modified: Date.now(),
+                    }
                 });
 
-                if (result.error) throw result.error;
-
-                if (!result.handle) throw new Error("Failed to save editor");
+                if (!success) {
+                    throw new Error("localStorage存储失败");
+                }
 
                 dispatch({
                     type: "SAVE_EDITOR",
                     payload: {
-                        path: result.path,
-                        content: result.content,
-                        handle: result.handle,
+                        path: props.path,
+                        content: props.content,
+                        handle: null,
                     },
                 });
             } catch (e) {
                 console.error("Failed to save editor: ", e);
-                toast.error("Failed to save editor", {
+                toast.error("保存编辑器失败", {
                     description: e instanceof Error ? e.message : undefined,
                 });
             }
@@ -623,14 +539,10 @@ function SessionProvider({ children }: SessionProviderProps) {
     );
 
     /**
-     * When we close the editor, we need to save the content to the handle.
-     *
-     * If the handle is new and not dirty, we need to delete the handle.
+     * Close the editor, delete if it's new and not dirty.
      */
     const onCloseEditor = useCallback(
         async (path: string) => {
-            if (!proxyRef.current) return;
-
             // find editor
             const editor = session.editors.find(
                 (editor) => editor.path === path,
@@ -639,17 +551,12 @@ function SessionProvider({ children }: SessionProviderProps) {
             if (!editor) return;
 
             // if it's new and not dirty, we should delete it when we close it.
-            // Otherwise, we end up with a bunch of empty / boiletplate files.
             const shouldDelete = editor.isNew && !editor.isDirty;
 
             if (shouldDelete) {
                 try {
-                    const result = await proxyRef.current.onDeleteEditor({
-                        path,
-                        sessionId: session.sessionId,
-                    });
-
-                    if (result.error) throw result.error;
+                    const storageKey = `session_${session.sessionId}_editor_${path}`;
+                    LocalStorageManager.removeItem(storageKey);
 
                     dispatch({
                         type: "DELETE_EDITOR",
@@ -660,8 +567,8 @@ function SessionProvider({ children }: SessionProviderProps) {
 
                     return;
                 } catch (e) {
-                    console.error("Failed to save editor: ", e);
-                    toast.error("Failed to save editor", {
+                    console.error("Failed to delete editor: ", e);
+                    toast.error("关闭编辑器失败", {
                         description: e instanceof Error ? e.message : undefined,
                     });
                     return;
@@ -684,7 +591,6 @@ function SessionProvider({ children }: SessionProviderProps) {
             if (openEditors.length > 0) {
                 const lastOpenEditor = openEditors[openEditors.length - 1];
                 if (lastOpenEditor) {
-                    // 添加额外的类型检查
                     dispatch({
                         type: "FOCUS_EDITOR",
                         payload: {
@@ -698,71 +604,57 @@ function SessionProvider({ children }: SessionProviderProps) {
     );
 
     /**
-     * Reset the session by deleting all files and query results and reloading the window.
+     * Reset the session by clearing localStorage and reloading.
      */
+    const onBurstCache: SessionMethods["onBurstCache"] = useCallback(async () => {
+        try {
+            LocalStorageManager.clearSession(session.sessionId);
+            
+            dispatch({
+                type: "RESET_SESSION",
+            });
 
-    const onBurstCache: SessionMethods["onBurstCache"] =
-        useCallback(async () => {
-            if (!proxyRef.current) return;
+            window.location.reload();
+        } catch (e) {
+            console.error("Failed to clear session: ", e);
+            toast.error("清理会话失败", {
+                description: e instanceof Error ? e.message : undefined,
+            });
+        }
+    }, [session.sessionId]);
 
-            const { sessionId } = session;
-
-            try {
-                const result = await proxyRef.current.onBurstCache({
-                    sessionId,
-                });
-
-                if (result.error) throw result.error;
-
-                dispatch({
-                    type: "RESET_SESSION",
-                });
-
-                window.location.reload();
-            } catch (e) {
-                console.error("Failed to clear session: ", e);
-                toast.error("Failed to clear the session", {
-                    description: e instanceof Error ? e.message : undefined,
-                });
-                return;
-            }
-        }, [session]);
-
-    // rename the editor
-
+    /**
+     * Rename editor - update localStorage key.
+     */
     const onRenameEditor: SessionMethods["onRenameEditor"] = useCallback(
         async (path, newPath) => {
-            if (!proxyRef.current) return;
-
-            const { sessionId } = session;
-
             try {
-                const result = await proxyRef.current.onRenameEditor({
-                    sessionId,
-                    path,
-                    newPath,
-                });
-
-                if (result.error) throw result.error;
-                if (!result.handle) throw new Error("Failed to rename editor");
+                const oldKey = `session_${session.sessionId}_editor_${path}`;
+                const newKey = `session_${session.sessionId}_editor_${newPath}`;
+                
+                const data = LocalStorageManager.getItem(oldKey);
+                if (data) {
+                    data.metadata.path = newPath;
+                    LocalStorageManager.setItem(newKey, data);
+                    LocalStorageManager.removeItem(oldKey);
+                }
 
                 dispatch({
                     type: "RENAME_EDITOR",
                     payload: {
                         path,
                         newPath,
-                        handle: result.handle,
+                        handle: null,
                     },
                 });
             } catch (e) {
                 console.error("Failed to rename editor: ", e);
-                toast.error("Failed to rename the editor", {
+                toast.error("重命名编辑器失败", {
                     description: e instanceof Error ? e.message : undefined,
                 });
-                return;
             }
         },
-        [session],
+        [session.sessionId],
     );
 
     const value = useMemo(

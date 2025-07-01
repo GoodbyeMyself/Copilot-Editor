@@ -10,7 +10,7 @@ export type CodeEditor = CodeSource & {
   isFocused: boolean;
   isSaved: boolean;
   isDirty: boolean;
-  handle: FileSystemFileHandle;
+  handle: FileSystemFileHandle | null;
   content: string;
   // when adding a new file, we should delete it if it's not saved
   isNew: boolean;
@@ -102,7 +102,7 @@ type SaveEditor = {
   payload: {
     path: string;
     content: string;
-    handle: FileSystemFileHandle;
+    handle: FileSystemFileHandle | null;
   };
 };
 
@@ -157,7 +157,7 @@ type RefreshEditor = {
   type: "REFRESH_EDITOR";
   payload: {
     path: string;
-    handle: FileSystemFileHandle;
+    handle: FileSystemFileHandle | null;
   };
 };
 
@@ -170,7 +170,7 @@ type RENAME_EDITOR = {
   payload: {
     path: string;
     newPath: string;
-    handle: FileSystemFileHandle;
+    handle: FileSystemFileHandle | null;
   };
 };
 

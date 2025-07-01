@@ -28,6 +28,6 @@ export type CodeSource = {
   kind: "CODE";
   mimeType: CodeMimeType;
   ext: CodeFileExt;
-  handle: FileSystemFileHandle;
+  handle: FileSystemFileHandle | null;
   path: string;
 };
