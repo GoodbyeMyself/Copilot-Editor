@@ -32,10 +32,53 @@
     background-color: hsl(240 4.8% 95.9%);
 }
 
+.bg-background {
+    background-color: hsl(0 0% 100%);
+}
+
 .text-muted-foreground {
     color: #71717a;
 }
 
 body {
     margin: 0;
+}
+
+/* 全局滚动条样式 - 只在悬停时显示 */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+/* 悬停时显示滚动条 */
+*:hover::-webkit-scrollbar-track {
+    background: #f8f9fa;
+}
+
+*:hover::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border: 1px solid #f8f9fa;
+}
+
+*:hover::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
+
+*:hover::-webkit-scrollbar-corner {
+    background: #f8f9fa;
 }

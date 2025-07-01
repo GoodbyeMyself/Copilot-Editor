@@ -13,7 +13,7 @@ export default function QueryLog() {
     }, [logs]);
 
     return (
-        <div className="scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 h-full w-full overflow-auto rounded-lg border border-gray-200 bg-gray-50/50 px-4 pb-8 pt-4">
+        <div className="scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-gray-50 h-full w-full overflow-auto rounded-lg border border-gray-200 bg-gray-50/50 px-4 pb-8 pt-4">
             <div
                 ref={logRef}
                 className="flex min-h-[200px] flex-col space-y-2 font-mono text-sm"
