@@ -241,7 +241,7 @@ function CodeEditorItem(editor: CodeEditor) {
                     <Dropdown
                         menu={{ items: menuItems }}
                         trigger={['click']}
-                        placement="bottomRight"
+                        placement="bottomLeft"
                     >
                         <Button
                             type="text"
@@ -296,13 +296,13 @@ export default function EditorSources() {
 
     return (
         <div className="flex w-full flex-col">
-            <div className="sticky top-0 z-10 flex w-full items-center justify-between bg-background" style={{ paddingTop: '8px', paddingBottom: '8px' }}>
+            <div className="sticky top-0 z-10 flex w-full items-center justify-between bg-background">
                 <div className="flex grow items-center">
                     <div
                         className="flex w-full items-center justify-start gap-1 rounded-none"
-                        style={{ height: 'auto', padding: '6px 12px' }}
+                        style={{ height: 'auto' }}
                     >
-                        <span className="text-sm font-semibold">工作空间</span>
+                        <span className="text-sm font-semibold px-4 py-3">工作空间</span>
                     </div>
                 </div>
                 <div className="flex items-center gap-1 px-2">
@@ -315,7 +315,7 @@ export default function EditorSources() {
                     marginTop: '4px',
                     paddingLeft: '16px', 
                     paddingRight: '16px',
-                    paddingTop: '8px',
+                    paddingTop: '0px',
                     paddingBottom: '8px'
                 }}
             >
