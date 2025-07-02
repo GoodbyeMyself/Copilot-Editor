@@ -39,8 +39,8 @@ export default function ErrorNotification(props: { error: string }) {
         <Alert
             variant={isDark ? "default" : "destructive"}
             className={cn(
-                "group flex flex-col gap-3 hover:shadow hover:dark:border-card-foreground/30",
-                "space-y-1 font-mono transition-transform dark:bg-accent dark:text-accent-foreground",
+                "group flex flex-col gap-3 hover:shadow",
+                "space-y-1 font-mono transition-transform",
             )}
         >
             <ScrollArea className="flex h-full max-h-72 flex-col gap-4 overflow-y-auto">

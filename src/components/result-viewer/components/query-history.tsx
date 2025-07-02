@@ -117,7 +117,7 @@ export default function QueryHistory() {
             )}
             <div className="flex-1 overflow-hidden">
                 <motion.div
-                    className="flex h-full w-full flex-col gap-1 divide-y divide-white/5 overflow-y-auto px-4 py-1 pr-2 transition-all dark:divide-white/5"
+                    className="flex h-full w-full flex-col gap-1 divide-y divide-white/5 overflow-y-auto px-4 py-1 pr-2 transition-all"
                     role="list"
                 >
                     {runs.map((run) => {
@@ -176,8 +176,8 @@ function RunHoverCard(props: QueryMeta) {
                 layout
                 key={hash}
                 className={cn(
-                    "relative mb-2 flex cursor-pointer items-center space-x-4 rounded-md bg-gray-100 px-2 py-4 transition-colors dark:bg-gray-800",
-                    error && "bg-yellow-200 dark:bg-yellow-700",
+                    "relative mb-2 flex cursor-pointer items-center space-x-4 rounded-md bg-gray-100 px-2 py-4 transition-colors",
+                    error && "bg-yellow-200",
                 )}
                 onClick={() => setIsDialogOpen(true)}
             >
@@ -192,7 +192,7 @@ function RunHoverCard(props: QueryMeta) {
                         >
                             <div className="size-2 rounded-full bg-current" />
                         </div>
-                        <h2 className="min-w-0 text-sm font-semibold leading-6 dark:text-white">
+                        <h2 className="min-w-0 text-sm font-semibold leading-6">
                             <span className="truncate">
                                 {error ? "Error" : "Success"}
                             </span>
@@ -213,13 +213,13 @@ function RunHoverCard(props: QueryMeta) {
                     </div>
                     {error && (
                         <div className="mt-3 flex items-center gap-x-2.5 text-xs leading-5 text-gray-400">
-                            <span className="line-clamp-3 truncate text-wrap break-words text-left font-mono text-xs text-gray-700 dark:text-gray-100">
+                            <span className="line-clamp-3 truncate text-wrap break-words text-left font-mono text-xs text-gray-700">
                                 {error}
                             </span>
                         </div>
                     )}
                     <div className="mt-3 flex items-center gap-x-2.5 text-xs leading-5 text-gray-400">
-                        <span className="line-clamp-3 truncate text-wrap break-words text-left font-mono text-xs text-gray-700 dark:text-gray-100">
+                        <span className="line-clamp-3 truncate text-wrap break-words text-left font-mono text-xs text-gray-700">
                             {sql}
                         </span>
                         {isCopied && (

@@ -46,9 +46,9 @@ export default function QueryLog() {
                 {logs?.map((log: string, index: number) => (
                     <div
                         key={index}
-                        className="rounded border border-gray-100 bg-white p-2 shadow-sm transition-colors duration-150 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700/50"
+                        className="rounded border border-gray-100 bg-white p-2 shadow-sm transition-colors duration-150 hover:bg-gray-50"
                     >
-                        <span className="text-gray-600 dark:text-gray-300">
+                        <span className="text-gray-600">
                             {log}
                         </span>
                     </div>

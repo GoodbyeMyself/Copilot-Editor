@@ -17,7 +17,7 @@ export default function OpenFileTabs() {
     };
 
     return (
-        <div className="flex max-h-9 min-h-9 flex-row justify-between overflow-hidden overflow-x-auto bg-[#f3f3f3] dark:bg-background">
+        <div className="flex max-h-9 min-h-9 flex-row justify-between overflow-hidden overflow-x-auto bg-[#f3f3f3]">
             <div className="flex size-full items-center">
                 {editors
                     .filter((editor) => editor.isOpen)
@@ -30,7 +30,7 @@ export default function OpenFileTabs() {
                                 className={cn(
                                     "flex h-full cursor-pointer flex-row flex-nowrap items-center gap-1 rounded-none border-x border-t border-t-transparent bg-[#ececec] pl-2 text-[#3d3d3d] first:border-l-0 hover:bg-[#d9d9d9]",
                                     isCurrent &&
-                                        "border-t-0 bg-white text-[#3d3d3d] hover:bg-background dark:border-t dark:border-t-blue-600 dark:text-secondary-foreground",
+                                        "border-t-0 bg-white text-[#3d3d3d] hover:bg-background",
                                 )}
                                 data-current={isCurrent || undefined}
                                 key={editor.path}
@@ -61,9 +61,9 @@ export default function OpenFileTabs() {
                                         }
                                     }}
                                     className={cn(
-                                        "flex h-full items-center bg-inherit px-2 hover:bg-gray-200 dark:hover:bg-gray-200/10",
+                                        "flex h-full items-center bg-inherit px-2 hover:bg-gray-200",
                                         isCurrent &&
-                                            "hover:bg-secondary dark:hover:bg-muted-foreground/10",
+                                            "hover:bg-secondary",
                                     )}
                                 >
                                     <X

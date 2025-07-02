@@ -50,7 +50,7 @@ export default function Playground() {
             className={cn(
                 "flex size-full bg-inherit",
                 isDragActive &&
-                    "bg-gray-100 transition-colors duration-200 ease-in-out dark:bg-gray-800",
+                    "bg-gray-100 transition-colors duration-200 ease-in-out",
             )}
         >
             <PanelGroup

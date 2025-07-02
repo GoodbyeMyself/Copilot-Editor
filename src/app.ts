@@ -1,3 +1,4 @@
+import React from 'react';
 import { setupGlobalErrorHandling } from '@/utils/errorHandling';
 
 // 引入全局样式文件
@@ -14,6 +15,16 @@ import type { RequestConfig } from '@umijs/max';
 
 // request 请求拦截
 import { errorConfig } from './server/requestErrorConfig';
+
+// 导入 query-toolbar 组件
+import Toolbar from '@/components/query-toolbar';
+
+// 导入必要的 Provider
+import { SessionProvider } from '@/context/session/provider';
+import { DbProvider } from '@/context/db/provider';
+import { QueryProvider } from '@/context/query/provider';
+import { EditorProvider } from '@/context/editor/provider';
+import { EditorSettingsProvider } from '@/context/editor-settings/provider';
 
 // TS 方法实现过滤 React 和 Antd 常见控制台警告
 setupGlobalErrorHandling();
@@ -34,6 +45,21 @@ export async function getInitialState(): Promise<{
     };
 }
 
+// 包装根容器，提供全局 Provider
+export function rootContainer(container: React.ReactElement) {
+    return React.createElement(SessionProvider, null,
+        React.createElement(DbProvider, null,
+            React.createElement(QueryProvider, null,
+                React.createElement(EditorProvider, null,
+                    React.createElement(EditorSettingsProvider, null,
+                        container
+                    )
+                )
+            )
+        )
+    );
+}
+
 export const layout = ({
     initialState,
 }: {
@@ -50,6 +76,10 @@ export const layout = ({
         // 自定义 页面 title
         pageTitleRender: () => {
             return 'SQL Copilot';
+        },
+        // 头部右上角内容渲染
+        rightContentRender: () => {
+            return React.createElement(Toolbar);
         },
         // 全局
         ...initialState?.settings

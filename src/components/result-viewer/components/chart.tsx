@@ -26,13 +26,132 @@ import { getArrowTableSchema } from "@/utils/arrow/helpers";
 
 import EmptyResults from "./empty";
 
-export const ChartContainer = memo(function ChartContainer() {
+type OptionPickerProps = {
+    title: string;
+    onValueChange: (value: string) => void;
+    current: string;
+    options: string[];
+};
+
+function OptionPicker(props: OptionPickerProps) {
+    const { onValueChange, current, options, title } = props;
+
     return (
-        <ChartProvider>
-            <ChartViewer />
-        </ChartProvider>
+        <div className="flex flex-col gap-2">
+            <p className="text-xs text-gray-500">{title}</p>
+            <Select
+                value={current}
+                onValueChange={onValueChange}
+            >
+                <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder={`Select ${title}`} />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectGroup>
+                        <SelectLabel>{`${title}`}</SelectLabel>
+                        {options.map((option) => (
+                            <SelectItem
+                                key={option}
+                                value={option}
+                            >
+                                {option}
+                            </SelectItem>
+                        ))}
+                    </SelectGroup>
+                </SelectContent>
+            </Select>
+        </div>
     );
-});
+}
+
+const markOptions: NonNullable<AutoOptions["mark"]>[] = [
+    "line",
+    "area",
+    "bar",
+    "dot",
+    "rule",
+];
+
+function MarkPicker() {
+    const { _dispatch, mark } = useChart();
+
+    const onValueChange = (mark: AutoOptions["mark"]) => {
+        _dispatch({
+            type: "SET_MARK",
+            payload: {
+                mark,
+            },
+        });
+    };
+
+    return (
+        <OptionPicker
+            current={mark ?? "line"}
+            onValueChange={(v) => onValueChange(v as AutoOptions["mark"])}
+            options={markOptions}
+            title="Mark"
+        />
+    );
+}
+
+type SelectAxisProps = {
+    axis: "x" | "y";
+};
+
+function SelectAxis(props: SelectAxisProps) {
+    const { axis } = props;
+
+    const { x, y, _dispatch, columns } = useChart();
+
+    const current = axis === "x" ? x : y;
+    const options = columns.map((c) => c.name);
+
+    const onValueChange = (value: string) => {
+        _dispatch({
+            type: axis === "x" ? "SET_X" : "SET_Y",
+            payload: {
+                ...(axis === "x" ? { x: value } : { y: value }),
+            },
+        });
+    };
+
+    return (
+        <div className="flex flex-col gap-2">
+            <p className="text-xs text-gray-500">{`${axis.toUpperCase()} Axis`}</p>
+            <Select
+                value={current?.toString() || ""}
+                onValueChange={onValueChange}
+            >
+                <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder={`Select ${axis}`} />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectGroup>
+                        <SelectLabel>{`${axis} Axis`}</SelectLabel>
+                        {options.map((option) => (
+                            <SelectItem
+                                key={option}
+                                value={option}
+                            >
+                                {option}
+                            </SelectItem>
+                        ))}
+                    </SelectGroup>
+                </SelectContent>
+            </Select>
+        </div>
+    );
+}
+
+function Settings() {
+    return (
+        <div className="inline-flex w-full items-center gap-2">
+            <MarkPicker />
+            <SelectAxis axis="x" />
+            <SelectAxis axis="y" />
+        </div>
+    );
+}
 
 /**
  * WIP
@@ -76,129 +195,10 @@ function ChartViewer() {
     );
 }
 
-function Settings() {
+export const ChartContainer = memo(function ChartContainer() {
     return (
-        <div className="inline-flex w-full items-center gap-2">
-            <MarkPicker />
-            <SelectAxis axis="x" />
-            <SelectAxis axis="y" />
-        </div>
+        <ChartProvider>
+            <ChartViewer />
+        </ChartProvider>
     );
-}
-
-type SelectAxisProps = {
-    axis: "x" | "y";
-};
-
-function SelectAxis(props: SelectAxisProps) {
-    const { axis } = props;
-
-    const { x, y, _dispatch, columns } = useChart();
-
-    const current = axis === "x" ? x : y;
-    const options = columns.map((c) => c.name);
-
-    const onValueChange = (value: string) => {
-        _dispatch({
-            type: axis === "x" ? "SET_X" : "SET_Y",
-            payload: {
-                ...(axis === "x" ? { x: value } : { y: value }),
-            },
-        });
-    };
-
-    return (
-        <div className="flex flex-col gap-2">
-            <p className="text-xs text-gray-500">{`${axis.toUpperCase()} Axis`}</p>
-            <Select
-                value={current?.toString()}
-                onValueChange={onValueChange}
-            >
-                <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder={`Select ${axis}`} />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectGroup>
-                        <SelectLabel>{`${axis} Axis`}</SelectLabel>
-                        {options.map((option) => (
-                            <SelectItem
-                                key={option}
-                                value={option}
-                            >
-                                {option}
-                            </SelectItem>
-                        ))}
-                    </SelectGroup>
-                </SelectContent>
-            </Select>
-        </div>
-    );
-}
-
-type OptionPickerProps = {
-    title: string;
-    onValueChange: (value: string) => void;
-    current: string;
-    options: string[];
-};
-
-const markOptions: NonNullable<AutoOptions["mark"]>[] = [
-    "line",
-    "area",
-    "bar",
-    "dot",
-    "rule",
-];
-
-function MarkPicker() {
-    const { _dispatch, mark } = useChart();
-
-    const onValueChange = (mark: AutoOptions["mark"]) => {
-        _dispatch({
-            type: "SET_MARK",
-            payload: {
-                mark,
-            },
-        });
-    };
-
-    return (
-        <OptionPicker
-            current={mark ?? "line"}
-            onValueChange={(v) => onValueChange(v as AutoOptions["mark"])}
-            options={markOptions}
-            title="Mark"
-        />
-    );
-}
-
-function OptionPicker(props: OptionPickerProps) {
-    const { onValueChange, current, options, title } = props;
-
-    return (
-        <div className="flex flex-col gap-2">
-            <p className="text-xs text-gray-500">{title}</p>
-            <Select
-                value={current}
-                onValueChange={onValueChange}
-            >
-                <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder={`Select ${title}`} />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectGroup>
-                        <SelectLabel>{`${title}`}</SelectLabel>
-                        {options.map((option) => (
-                            <SelectItem
-                                key={option}
-                                value={option}
-                            >
-                                {option}
-                            </SelectItem>
-                        ))}
-                    </SelectGroup>
-                </SelectContent>
-            </Select>
-        </div>
-    );
-}
+});
