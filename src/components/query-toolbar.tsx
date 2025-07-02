@@ -1,10 +1,8 @@
-import { Button } from "@/components/base/ui/button";
+import { Button } from "antd";
 
 import { useLocalStorage } from "@uidotdev/usehooks";
 
-import { ChevronDown, Play } from "lucide-react";
-
-import { useCallback, useState, type MouseEventHandler } from "react";
+import { useCallback } from "react";
 
 import { useHotkeys } from "react-hotkeys-hook";
 
@@ -12,200 +10,27 @@ import { toast } from "sonner";
 
 import { useSpinDelay } from "spin-delay";
 
-import { Tag } from "@/components/base/tag";
-import {
-    Menubar,
-    MenubarContent,
-    MenubarItem,
-    MenubarMenu,
-    MenubarSeparator,
-    MenubarSub,
-    MenubarSubContent,
-    MenubarSubTrigger,
-    MenubarTrigger,
-} from "@/components/base/ui/menubar";
-import { Separator } from "@/components/base/ui/separator";
-import { useDB } from "@/context/db/useDB";
 import { useEditor } from "@/context/editor/useEditor";
+
 import { useQuery } from "@/context/query/useQuery";
 
-// Helper functions
-const endsWithNewline = (text: string) => /\n$/.test(text);
-const removeTrailingNewline = (text: string) => {
-    if (endsWithNewline(text)) {
-        return text.slice(0, -1);
-    }
-    return text;
-};
-const removeWhitespace = (text: string) => text.replaceAll(/\s+/g, " ");
+import { useSession } from "@/context/session/useSession";
 
-const unformatSQL = (sql: string) => {
-    return removeTrailingNewline(removeWhitespace(sql));
-};
+import { LoadingOutlined, PlayCircleOutlined } from "@ant-design/icons";
 
-type FileExt = "CSV" | "PARQUET" | "JSON" | "ARROW" | "DuckDB" | "SQL";
-type ExporterProps = {
-    ext: FileExt;
-    disabled?: boolean;
-};
-
-function Exporter(props: ExporterProps) {
-    const [isExporting, setIsExporting] = useState(false);
-
-    const { db } = useDB();
-    const { meta } = useQuery();
-
-    const { ext, disabled } = props;
-    const lastRunSQL = meta?.sql;
-
-    const onExport = useCallback(
-        async (format: FileExt) => {
-            if (!db) return;
-            if (!lastRunSQL) return;
-
-            setIsExporting(true);
-
-            let downloadUrl: string | undefined;
-
-            toast.info("Exporting data...", {
-                description: `Your data is being exported in the background`,
-            });
-            try {
-                const tableName = "DataWorks_Copilot_Export";
-
-                // remove any trailing whitespace and newlines
-                const cleanSQL = unformatSQL(lastRunSQL);
-                const queries = cleanSQL
-                    .split(";")
-                    .filter((query) => query.trim().length);
-
-                // assume the last query is a SELECT query for exporting
-                const selectQuery = queries[queries.length - 1];
-
-                if (!selectQuery) {
-                    throw new Error("No query to export", {
-                        cause: `The last query executed was: ${selectQuery}`,
-                    });
-                }
-
-                await db.query(
-                    `CREATE OR REPLACE TABLE '${tableName}' AS (${selectQuery})`,
-                );
-
-                let sql: string = "";
-                switch (format) {
-                    case "PARQUET": {
-                        sql = `COPY (SELECT * FROM '${tableName}') TO 'output.${format.toLowerCase()}' (FORMAT 'PARQUET');`;
-                        break;
-                    }
-                    case "CSV": {
-                        sql = `COPY '${tableName}' TO 'output.${format.toLowerCase()}' (HEADER, DELIMITER ',');`;
-                        break;
-                    }
-                    default:
-                        break;
-                }
-
-                if (!sql) {
-                    throw new Error(`Unsupported export format: ${format}`);
-                }
-
-                await db.query(sql);
-                const _db = await db._getDB();
-
-                const buffer = await _db.copyFileToBuffer(
-                    `output.${format.toLowerCase()}`,
-                );
-
-                // Generate a download link (ensure to revoke the object URL after the download).
-                // We could use window.showSaveFilePicker() but it is only supported in Chrome.
-                downloadUrl = URL.createObjectURL(new Blob([buffer]));
-
-                const a = document.createElement("a");
-                a.href = downloadUrl;
-                a.download = `${tableName}.${format.toLowerCase()}`;
-
-                a.click();
-
-                toast.success("Data exported successfully", {
-                    description: `Your data has been exported as ${format.toLowerCase()}`,
-                });
-
-                await _db
-                    .dropFile(`output.${format.toLowerCase()}`)
-                    .catch((e) => {
-                        console.error("Failed to drop file: ", e);
-                    });
-                await db.query(`DROP TABLE '${tableName}'`).catch((e) => {
-                    console.error("Failed to drop table: ", e);
-                });
-            } catch (e) {
-                console.error("Failed to export data: ", e);
-                toast.error("Failed to export data", {
-                    description:
-                        e instanceof Error
-                            ? e.message
-                            : "Something went wrong. Please try again.",
-                });
-            } finally {
-                if (downloadUrl) URL.revokeObjectURL(downloadUrl);
-                setIsExporting(false);
-            }
-        },
-        [db, lastRunSQL],
-    );
-    return (
-        <MenubarItem
-            disabled={disabled || isExporting}
-            onSelect={async () => await onExport(ext)}
-        >
-            <span className="mr-2">{ext}</span>
-            {disabled && (
-                <Tag
-                    color="amber"
-                    variant="small"
-                >
-                    soon
-                </Tag>
-            )}
-        </MenubarItem>
-    );
-}
-
-function ExportToCopy() {
-    const { table } = useQuery();
-
-    const onCopy: MouseEventHandler<HTMLDivElement> = useCallback(
-        async () => {
-            try {
-                const rows = table.toArray().map((row) => row.toJSON());
-                const dataset = JSON.stringify(rows, null, 2);
-                await navigator.clipboard.writeText(dataset);
-                toast.success("Copied to clipboard", {
-                    duration: 5000,
-                });
-            } catch (e) {
-                console.error("Failed to copy to clipboard", e);
-                toast.error("Failed to copy to clipboard", {
-                    description: e instanceof Error ? e.message : String(e),
-                });
-            }
-        },
-        [table],
-    );
-
-    return <MenubarItem onClick={onCopy}>Copy Rows</MenubarItem>;
-}
 
 export default function Toolbar() {
     const { status, onCancelQuery, onRunQuery } = useQuery();
 
     const { editorRef } = useEditor();
-
+    
+    const { editors } = useSession();
+    
     const [, setTab] = useLocalStorage<"table" | "chart" | "json" | "history" | "log">(`results-viewer-tab`, `table`);
 
-    // run the whole file contents rather than the selected text;
-    // Don't wait;
+    // 检查当前是否有正在编辑的文件
+    const currentEditor = editors.find((editor) => editor.isFocused);
+    const hasActiveEditor = !!currentEditor;
 
     const onRun = useCallback(async () => {
         const controller = new AbortController();
@@ -272,76 +97,30 @@ export default function Toolbar() {
     if (isLoading) {
         return (
             <Button
-                size="sm"
+                type="primary"
+                danger
                 onClick={() => onCancelQuery("cancelled")}
-                className="h-7 w-20"
-                variant="destructive"
+                icon={<LoadingOutlined />}
             >
-                Cancel
+                取消
             </Button>
         );
     }
 
-    return (
-        <Menubar className="rounded-none border-none bg-inherit p-0 shadow-none">
-            <MenubarMenu>
-                <div className="inline-flex h-8 items-center overflow-hidden rounded-sm bg-[#30a46c] text-white shadow-sm">
-                    <button
-                        type="button"
-                        onClick={onRun}
-                        className="inline-flex h-8 items-center justify-center whitespace-nowrap px-3 text-xs font-semibold transition-colors hover:bg-[#2b9a66] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-                    >
-                        <span className="hidden sm:block">执行查询</span>
-                        <Play
-                            size={16}
-                            className="block sm:hidden"
-                        />
-                    </button>
-                    <Separator
-                        orientation="vertical"
-                        className="h-full"
-                    />
-                    <MenubarTrigger className="inline-flex size-full items-center justify-center rounded-none px-1.5 hover:bg-[#2b9a66]">
-                        <ChevronDown size={16} />
-                    </MenubarTrigger>
-                </div>
-                <MenubarContent className="mr-12">
-                    <MenubarItem
-                        disabled
-                        className="inline-flex items-center"
-                    >
-                        <span className="mr-2">Import Session</span>
-                        <Tag
-                            color="amber"
-                            variant="small"
-                        >
-                            soon
-                        </Tag>
-                    </MenubarItem>
-                    <MenubarSeparator />
-                    <MenubarSub>
-                        <MenubarSubTrigger>Export</MenubarSubTrigger>
-                        <MenubarSubContent>
-                            <Exporter ext="CSV" />
-                            <Exporter ext="PARQUET" />
-                            <Exporter
-                                ext="JSON"
-                                disabled
-                            />
-                            <Exporter
-                                ext="DuckDB"
-                                disabled
-                            />
-                            <Exporter
-                                ext="SQL"
-                                disabled
-                            />
+    // 只有当有正在编辑的文件时才显示执行查询按钮
+    if (!hasActiveEditor) {
+        return null;
+    }
 
-                            <ExportToCopy />
-                        </MenubarSubContent>
-                    </MenubarSub>
-                </MenubarContent>
-            </MenubarMenu>
-        </Menubar>
+    return (
+        <div className="">
+            <Button
+                type="primary"
+                onClick={onRun}
+                icon={<PlayCircleOutlined />}
+            >
+                执行查询
+            </Button>
+        </div>
     );
 }
