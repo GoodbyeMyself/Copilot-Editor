@@ -380,35 +380,10 @@ function SessionProvider({ children }: SessionProviderProps) {
      * #TODO: Not implemented yet.
      */
     const onSessionChange = useCallback((_session: string) => {
+        console.log(_session, '<- _session');
         return null;
     }, []);
 
-    /**
-     * Add data sources to the session.
-     *
-     * 注意：localStorage模式下暂不支持数据源管理
-     */
-    const onAddDataSources: SessionMethods["onAddDataSources"] = useCallback(
-        async (entries) => {
-            console.log("数据源管理暂不支持:", entries);
-            toast.error("数据源管理暂不支持", {
-                description: "当前使用localStorage模式，暂不支持数据源管理功能",
-            });
-            return [];
-        },
-        [],
-    );
-
-    const onDeleteDataSource: SessionMethods["onDeleteDataSource"] =
-        useCallback(
-            async (path) => {
-                console.log("删除数据源暂不支持:", path);
-                toast.error("数据源管理暂不支持", {
-                    description: "当前使用localStorage模式，暂不支持数据源管理功能",
-                });
-            },
-            [],
-        );
 
     const onAddEditor = useCallback(async () => {
         if (!session.sessionId) return;
@@ -447,6 +422,7 @@ function SessionProvider({ children }: SessionProviderProps) {
 
             // 保存到localStorage
             const storageKey = `session_${session.sessionId}_editor_${newPath}`;
+            
             LocalStorageManager.setItem(storageKey, {
                 content: editorData.content,
                 metadata: {
@@ -657,31 +633,28 @@ function SessionProvider({ children }: SessionProviderProps) {
         [session.sessionId],
     );
 
+
     const value = useMemo(
         () => ({
             ...session,
             onSessionChange,
             dispatch,
-            onAddDataSources,
             onAddEditor,
             onDeleteEditor,
             onSaveEditor,
             onCloseEditor,
             onBurstCache,
-            onRenameEditor,
-            onDeleteDataSource,
+            onRenameEditor
         }),
         [
             onSessionChange,
             session,
-            onAddDataSources,
             onAddEditor,
             onDeleteEditor,
             onSaveEditor,
             onCloseEditor,
             onBurstCache,
-            onRenameEditor,
-            onDeleteDataSource,
+            onRenameEditor
         ],
     );
 

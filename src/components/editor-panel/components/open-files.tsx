@@ -82,18 +82,3 @@ export default function OpenFileTabs() {
         </div>
     );
 }
-
-// function AddNewFileButton() {
-//     const { onAddEditor } = useSession();
-
-//     return (
-//         <button
-//             onClick={onAddEditor}
-//             title="添加新文件"
-//             className="flex h-9 w-12 items-center justify-center rounded-none hover:bg-secondary dark:hover:bg-gray-200/10"
-//             type="button"
-//         >
-//             <Plus className="size-5" />
-//         </button>
-//     );
-// }

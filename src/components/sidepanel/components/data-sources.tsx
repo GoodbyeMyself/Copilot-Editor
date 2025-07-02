@@ -77,9 +77,8 @@ type DeleteModalProps = {
  * Delete the editor (not close the file).
  */
 function DeleteEditorModal(props: DeleteModalProps) {
-    const { isOpen, onOpenChange, path } = props;
+    const { isOpen, onOpenChange } = props;
 
-    const { onDeleteDataSource } = useSession();
 
     return (
         <AlertDialog
@@ -97,9 +96,7 @@ function DeleteEditorModal(props: DeleteModalProps) {
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel>取消</AlertDialogCancel>
-                    <AlertDialogAction
-                        onClick={async () => await onDeleteDataSource(path)}
-                    >
+                    <AlertDialogAction>
                         确认
                     </AlertDialogAction>
                 </AlertDialogFooter>
