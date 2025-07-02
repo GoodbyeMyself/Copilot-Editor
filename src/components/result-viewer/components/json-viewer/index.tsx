@@ -18,6 +18,7 @@ const LazyShiki = lazy(() =>
 
 export const JSONViewer = memo(function JSONViewer() {
     const { table, count } = useQuery();
+    
     const { limit, offset, onSetCount } = usePagination();
 
     // Update the count when we receive data (don't like this pattern...)
@@ -32,13 +33,13 @@ export const JSONViewer = memo(function JSONViewer() {
             .slice(offset, offset + limit)
             .toArray()
             .map((row) => row.toJSON());
-        return JSON.stringify(rows, null, 2);
+        return JSON.stringify(rows, null, 4);
     }, [table, offset, limit]);
 
     const lazyCopy = useCallback(() => {
         if (!table || table.numRows === 0) return "[]";
         const rows = table.toArray().map((row) => row.toJSON());
-        return JSON.stringify(rows, null, 2);
+        return JSON.stringify(rows, null, 4);
     }, [table]);
 
     return (
