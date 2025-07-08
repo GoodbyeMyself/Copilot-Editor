@@ -1,44 +1,21 @@
 import { PageContainer } from '@ant-design/pro-components';
 
 import {
-    AppstoreAddOutlined,
-    CloseOutlined,
-    CloudUploadOutlined,
-    CommentOutlined,
-    CopyOutlined,
-    DislikeOutlined,
-    LikeOutlined,
-    PaperClipOutlined,
-    PlusOutlined,
-    ProductOutlined,
-    ReloadOutlined,
-    RobotOutlined,
-    ScheduleOutlined,
-    UserOutlined,
-} from '@ant-design/icons';
-
-import {
     Attachments,
     type AttachmentsProps,
-    Bubble,
-    Conversations,
-    Prompts,
-    Sender,
-    Suggestion,
     useXAgent,
     useXChat,
 } from '@ant-design/x';
 
 import type { Conversation } from '@ant-design/x/es/conversations';
 
-import { Avatar, Button, GetProp, GetRef, Image, Popover, Space, Spin, message } from 'antd';
-
-import dayjs from 'dayjs';
+import { GetProp, GetRef } from 'antd';
 
 import React, { useEffect, useRef, useState } from 'react';
 
 import { useCopilotStyle, useWorkareaStyle } from './styles';
-import { MOCK_SESSION_LIST, MOCK_SUGGESTIONS, MOCK_QUESTIONS, AGENT_PLACEHOLDER } from './constants';
+import { MOCK_SESSION_LIST } from './constants';
+import { ChatHeader, ChatList, ChatSender } from './components';
 
 type BubbleDataType = {
     role: string;
@@ -156,238 +133,47 @@ const Copilot = (props: CopilotProps) => {
         setAttachmentsOpen(true);
     };
 
-    // ==================== Nodes ====================
-    const chatHeader = (
-        <div className={styles.chatHeader}>
-            <div className={styles.headerTitle}>✨ AI Copilot</div>
-            <Space size={0}>
-                <Button
-                    type="text"
-                    icon={<PlusOutlined />}
-                    onClick={() => {
-                        if (agent.isRequesting()) {
-                            message.error(
-                                'Message is Requesting, you can create a new conversation after request done or abort it right now...',
-                            );
-                            return;
-                        }
+    // 准备传递给子组件的 props
+    const chatHeaderProps = {
+        styles,
+        sessionList,
+        curSession,
+        messages,
+        isRequesting: agent.isRequesting(),
+        onSetCopilotOpen: setCopilotOpen,
+        onSetSessionList: setSessionList,
+        onSetCurSession: setCurSession,
+        onSetMessages: setMessages,
+        onAbort: () => abortController.current?.abort(),
+        messageHistory,
+    };
 
-                        if (messages?.length) {
-                            const timeNow = dayjs().valueOf().toString();
-                            abortController.current?.abort();
-                            // The abort execution will trigger an asynchronous requestFallback, which may lead to timing issues.
-                            // In future versions, the sessionId capability will be added to resolve this problem.
-                            setTimeout(() => {
-                                setSessionList([
-                                    { key: timeNow, label: 'New session', group: 'Today' },
-                                    ...sessionList,
-                                ]);
-                                setCurSession(timeNow);
-                                setMessages([]);
-                            }, 100);
-                        } else {
-                            message.error('It is now a new conversation.');
-                        }
-                    }}
-                    className={styles.headerButton}
-                />
-                <Popover
-                    placement="bottom"
-                    styles={{ body: { padding: 0, maxHeight: 600 } }}
-                    content={
-                        <Conversations
-                            items={sessionList?.map((i) =>
-                                i.key === curSession ? { ...i, label: `[current] ${i.label}` } : i,
-                            )}
-                            activeKey={curSession}
-                            groupable
-                            onActiveChange={async (val) => {
-                                abortController.current?.abort();
-                                // The abort execution will trigger an asynchronous requestFallback, which may lead to timing issues.
-                                // In future versions, the sessionId capability will be added to resolve this problem.
-                                setTimeout(() => {
-                                    setCurSession(val);
-                                    setMessages(messageHistory?.[val] || []);
-                                }, 100);
-                            }}
-                            styles={{ item: { padding: '0 8px' } }}
-                            className={styles.conversations}
-                        />
-                    }
-                >
-                    <Button type="text" icon={<CommentOutlined />} className={styles.headerButton} />
-                </Popover>
-                <Button
-                    type="text"
-                    icon={<CloseOutlined />}
-                    onClick={() => setCopilotOpen(false)}
-                    className={styles.headerButton}
-                />
-            </Space>
-        </div>
-    );
-    const chatList = (
-        <div className={styles.chatList}>
-            {messages?.length ? (
-                /** 消息列表 */
-                <Bubble.List
-                    style={{ height: '100%', paddingInline: 16 }}
-                    items={messages?.map((i) => ({
-                        ...i.message,
-                        classNames: {
-                            content: i.status === 'loading' ? styles.loadingMessage : '',
-                        },
-                        typing: i.status === 'loading' ? { step: 5, interval: 20, suffix: <>💗</> } : false,
-                    }))}
-                    roles={{
-                        assistant: {
-                            placement: 'start',
-                            avatar: (
-                                <Avatar 
-                                    style={{ backgroundColor: '#1677ff' }}
-                                    icon={<RobotOutlined />}
-                                />
-                            ),
-                            header: (
-                                <div className={styles.assistantHeader}>
-                                    AI 助手
-                                </div>
-                            ),
-                            footer: (
-                                <div style={{ display: 'flex' }}>
-                                    <Button type="text" size="small" icon={<ReloadOutlined />} />
-                                    <Button type="text" size="small" icon={<CopyOutlined />} />
-                                    <Button type="text" size="small" icon={<LikeOutlined />} />
-                                    <Button type="text" size="small" icon={<DislikeOutlined />} />
-                                </div>
-                            ),
-                            loadingRender: () => (
-                                <Space>
-                                    <Spin size="small" />
-                                    {AGENT_PLACEHOLDER}
-                                </Space>
-                            ),
-                        },
-                        user: {
-                            placement: 'end',
-                            avatar: (
-                                <Avatar 
-                                    style={{ backgroundColor: '#87d068' }}
-                                    icon={<UserOutlined />}
-                                />
-                            ),
-                            header: (
-                                <div className={styles.userHeader}>
-                                    用户
-                                </div>
-                            ),
-                        },
-                    }}
-                />
-            ) : (
-                <>
-                    <Prompts
-                        vertical
-                        title="I can help："
-                        items={MOCK_QUESTIONS.map((i) => ({ key: i, description: i }))}
-                        onItemClick={(info) => handleUserSubmit(info?.data?.description as string)}
-                        style={{
-                            marginInline: 16,
-                        }}
-                        styles={{
-                            title: { fontSize: 14 },
-                        }}
-                    />
-                </>
-            )}
-        </div>
-    );
-    const sendHeader = (
-        <Sender.Header
-            title="Upload File"
-            styles={{ content: { padding: 0 } }}
-            open={attachmentsOpen}
-            onOpenChange={setAttachmentsOpen}
-            forceRender
-        >
-            <Attachments
-                ref={attachmentsRef}
-                beforeUpload={() => false}
-                items={files}
-                onChange={({ fileList }) => setFiles(fileList)}
-                placeholder={(type) =>
-                    type === 'drop'
-                        ? { title: 'Drop file here' }
-                        : {
-                            icon: <CloudUploadOutlined />,
-                            title: 'Upload files',
-                            description: 'Click or drag files to this area to upload',
-                        }
-                }
-            />
-        </Sender.Header>
-    );
-    const chatSender = (
-        <div className={styles.chatSend}>
-            <div className={styles.sendAction}>
-                <Button
-                    icon={<ScheduleOutlined />}
-                    onClick={() => handleUserSubmit('What has Ant Design X upgraded?')}
-                >
-                    Upgrades
-                </Button>
-                <Button
-                    icon={<ProductOutlined />}
-                    onClick={() => handleUserSubmit('What component assets are available in Ant Design X?')}
-                >
-                    Components
-                </Button>
-                <Button icon={<AppstoreAddOutlined />}>More</Button>
-            </div>
+    const chatListProps = {
+        styles,
+        messages,
+        onUserSubmit: handleUserSubmit,
+    };
 
-            {/** 输入框 */}
-            <Suggestion items={MOCK_SUGGESTIONS} onSelect={(itemVal) => setInputValue(`[${itemVal}]:`)}>
-                {({ onTrigger, onKeyDown }) => (
-                    <Sender
-                        loading={loading}
-                        value={inputValue}
-                        onChange={(v) => {
-                            onTrigger(v === '/');
-                            setInputValue(v);
-                        }}
-                        onSubmit={() => {
-                            handleUserSubmit(inputValue);
-                            setInputValue('');
-                        }}
-                        onCancel={() => {
-                            abortController.current?.abort();
-                        }}
-                        allowSpeech
-                        placeholder="Ask or input / use skills"
-                        onKeyDown={onKeyDown}
-                        header={sendHeader}
-                        prefix={
-                            <Button
-                                type="text"
-                                icon={<PaperClipOutlined style={{ fontSize: 18 }} />}
-                                onClick={() => setAttachmentsOpen(!attachmentsOpen)}
-                            />
-                        }
-                        onPasteFile={onPasteFile}
-                        actions={(_, info) => {
-                            const { SendButton, LoadingButton, SpeechButton } = info.components;
-                            return (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                    <SpeechButton className={styles.speechButton} />
-                                    {loading ? <LoadingButton type="default" /> : <SendButton type="primary" />}
-                                </div>
-                            );
-                        }}
-                    />
-                )}
-            </Suggestion>
-        </div>
-    );
+    const sendHeaderProps = {
+        attachmentsOpen,
+        onAttachmentsOpenChange: setAttachmentsOpen,
+        attachmentsRef,
+        files,
+        onFilesChange: setFiles,
+    };
+
+    const chatSenderProps = {
+        styles,
+        inputValue,
+        loading,
+        attachmentsOpen,
+        sendHeaderProps,
+        onInputValueChange: setInputValue,
+        onUserSubmit: handleUserSubmit,
+        onAttachmentsOpenChange: setAttachmentsOpen,
+        onAbort: () => abortController.current?.abort(),
+        onPasteFile,
+    };
 
     useEffect(() => {
         // history mock
@@ -402,13 +188,13 @@ const Copilot = (props: CopilotProps) => {
     return (
         <div className={styles.copilotChat} style={{ width: copilotOpen ? 400 : 0 }}>
             {/** 对话区 - header */}
-            {chatHeader}
+            <ChatHeader {...chatHeaderProps} />
 
             {/** 对话区 - 消息列表 */}
-            {chatList}
+            <ChatList {...chatListProps} />
 
             {/** 对话区 - 输入框 */}
-            {chatSender}
+            <ChatSender {...chatSenderProps} />
         </div>
     );
 };
