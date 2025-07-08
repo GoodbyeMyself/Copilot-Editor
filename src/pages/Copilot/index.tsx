@@ -39,11 +39,11 @@ import {
 
 import { Avatar, Button, Flex, type GetProp, Space, Spin, message } from 'antd';
 
-import { createStyles } from 'antd-style';
-
 import dayjs from 'dayjs';
 
 import { useEffect, useRef, useState } from 'react';
+
+import { useStyle } from './styles';
 
 type BubbleDataType = {
     role: string;
@@ -67,38 +67,6 @@ const DEFAULT_CONVERSATIONS_ITEMS = [
         group: 'Yesterday',
     },
 ];
-
-const HOT_TOPICS = {
-    key: '1',
-    label: 'Hot Topics',
-    children: [
-        {
-            key: '1-1',
-            description: 'What has Ant Design X upgraded?',
-            icon: <span style={{ color: '#f93a4a', fontWeight: 700 }}>1</span>,
-        },
-        {
-            key: '1-2',
-            description: 'New AGI Hybrid Interface',
-            icon: <span style={{ color: '#ff6565', fontWeight: 700 }}>2</span>,
-        },
-        {
-            key: '1-3',
-            description: 'What components are in Ant Design X?',
-            icon: <span style={{ color: '#ff8f1f', fontWeight: 700 }}>3</span>,
-        },
-        {
-            key: '1-4',
-            description: 'Come and discover the new design paradigm of the AI era.',
-            icon: <span style={{ color: '#00000040', fontWeight: 700 }}>4</span>,
-        },
-        {
-            key: '1-5',
-            description: 'How to quickly install and import components?',
-            icon: <span style={{ color: '#00000040', fontWeight: 700 }}>5</span>,
-        },
-    ],
-};
 
 const DESIGN_GUIDE = {
     key: '2',
@@ -154,134 +122,42 @@ const SENDER_PROMPTS: GetProp<typeof Prompts, 'items'> = [
     },
 ];
 
-const useStyle = createStyles(({ token, css }) => {
-    return {
-        layout: css`
-        width: 100%;
-        min-width: 1000px;
-        height: 80vh;
-        display: flex;
-        background: ${token.colorBgContainer};
-        font-family: AlibabaPuHuiTi, ${token.fontFamily}, sans-serif;
-      `,
-        // sider 样式
-        sider: css`
-        background: ${token.colorBgLayout}80;
-        width: 280px;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        padding: 0 12px;
-        box-sizing: border-box;
-      `,
-        logo: css`
-        display: flex;
-        align-items: center;
-        justify-content: start;
-        padding: 0 24px;
-        box-sizing: border-box;
-        gap: 8px;
-        margin: 24px 0;
-  
-        span {
-          font-weight: bold;
-          color: ${token.colorText};
-          font-size: 16px;
-        }
-      `,
-        addBtn: css`
-        background: #1677ff0f;
-        border: 1px solid #1677ff34;
-        height: 40px;
-      `,
-        conversations: css`
-        flex: 1;
-        overflow-y: auto;
-        margin-top: 12px;
-        padding: 0;
-  
-        .ant-conversations-list {
-          padding-inline-start: 0;
-        }
-      `,
-        siderFooter: css`
-        border-top: 1px solid ${token.colorBorderSecondary};
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-      `,
-        // chat list 样式
-        chat: css`
-        height: 100%;
-        width: 100%;
-        box-sizing: border-box;
-        display: flex;
-        flex-direction: column;
-        padding-block: ${token.paddingLG}px;
-        gap: 16px;
-      `,
-        chatPrompt: css`
-        .ant-prompts-label {
-          color: #000000e0 !important;
-        }
-        .ant-prompts-desc {
-          color: #000000a6 !important;
-          width: 100%;
-        }
-        .ant-prompts-icon {
-          color: #000000a6 !important;
-        }
-      `,
-        chatList: css`
-        flex: 1;
-        overflow: auto;
-      `,
-        loadingMessage: css`
-        background-image: linear-gradient(90deg, #ff6b23 0%, #af3cb8 31%, #53b6ff 89%);
-        background-size: 100% 2px;
-        background-repeat: no-repeat;
-        background-position: bottom;
-      `,
-        placeholder: css`
-        padding-top: 32px;
-      `,
-        // sender 样式
-        sender: css`
-        width: 100%;
-        max-width: 700px;
-        margin: 0 auto;
-      `,
-        speechButton: css`
-        font-size: 18px;
-        color: ${token.colorText} !important;
-      `,
-        senderPrompt: css`
-        width: 100%;
-        max-width: 700px;
-        margin: 0 auto;
-        color: ${token.colorText};
-      `,
-        // 新增的 header 样式
-        assistantHeader: css`
-        font-size: 12px;
-        color: #666;
-        margin: 5px 0;
-        font-weight: 500;
-      `,
-        userHeader: css`
-        font-size: 12px;
-        color: #666;
-        margin: 5px 0;
-        font-weight: 500;
-        text-align: right;
-      `,
-    };
-});
-
 const AccessPage: React.FC = () => {
     const { styles } = useStyle();
     const abortController = useRef<AbortController | null>(null);
+
+    // HOT_TOPICS 配置移到组件内部以使用样式
+    const HOT_TOPICS = {
+        key: '1',
+        label: 'Hot Topics',
+        children: [
+            {
+                key: '1-1',
+                description: 'What has Ant Design X upgraded?',
+                icon: <span className={styles.hotTopicIcon1}>1</span>,
+            },
+            {
+                key: '1-2',
+                description: 'New AGI Hybrid Interface',
+                icon: <span className={styles.hotTopicIcon2}>2</span>,
+            },
+            {
+                key: '1-3',
+                description: 'What components are in Ant Design X?',
+                icon: <span className={styles.hotTopicIcon3}>3</span>,
+            },
+            {
+                key: '1-4',
+                description: 'Come and discover the new design paradigm of the AI era.',
+                icon: <span className={styles.hotTopicIcon4}>4</span>,
+            },
+            {
+                key: '1-5',
+                description: 'How to quickly install and import components?',
+                icon: <span className={styles.hotTopicIcon5}>5</span>,
+            },
+        ],
+    };
 
     // ==================== State ====================
     const [messageHistory, setMessageHistory] = useState<Record<string, any>>({});
