@@ -35,14 +35,14 @@
   dependencies:
     "@ctrl/tinycolor" "^3.4.0"
 
-"@ant-design/colors@^7.0.0", "@ant-design/colors@^7.2.1":
+"@ant-design/colors@^7.0.0", "@ant-design/colors@^7.1.0", "@ant-design/colors@^7.2.1":
   version "7.2.1"
   resolved "https://registry.npmjs.org/@ant-design/colors/-/colors-7.2.1.tgz"
   integrity sha512-lCHDcEzieu4GA3n8ELeZ5VQ8pKQAWcGGLRTQ50aQM2iqPpq2evTxER84jfdPvsPAtEcZ7m44NI45edFMo8oOYQ==
   dependencies:
     "@ant-design/fast-color" "^2.0.6"
 
-"@ant-design/cssinjs-utils@^1.1.3":
+"@ant-design/cssinjs-utils@^1.1.0", "@ant-design/cssinjs-utils@^1.1.3":
   version "1.1.3"
   resolved "https://registry.npmjs.org/@ant-design/cssinjs-utils/-/cssinjs-utils-1.1.3.tgz"
   integrity sha512-nOoQMLW1l+xR1Co8NFVYiP8pZp3VjIIzqV6D6ShYF2ljtdwWJn5WSsH+7kvCktXL/yhEtWURKOfH5Xz/gzlwsg==
@@ -88,7 +88,7 @@
     lodash "^4.17.15"
     rc-util "^5.9.4"
 
-"@ant-design/icons@^5.0.0", "@ant-design/icons@^5.0.1", "@ant-design/icons@^5.6.1":
+"@ant-design/icons@^5.0.0", "@ant-design/icons@^5.0.1", "@ant-design/icons@^5.4.0", "@ant-design/icons@^5.6.1":
   version "5.6.1"
   resolved "https://registry.npmjs.org/@ant-design/icons/-/icons-5.6.1.tgz"
   integrity sha512-0/xS39c91WjPAZOWsvi1//zjx6kAp4kxWwctR6kuU6p133w8RU0D2dSCvZC19uQyharg/sAvYxGYWl01BbZZfg==
@@ -303,6 +303,21 @@
     json2mq "^0.2.0"
     resize-observer-polyfill "^1.5.1"
     throttle-debounce "^5.0.0"
+
+"@ant-design/x@^1.4.0":
+  version "1.4.0"
+  resolved "https://registry.npmmirror.com/@ant-design/x/-/x-1.4.0.tgz#10a5bee84990e8db19c6f099e49414a0dc6176bd"
+  integrity sha512-0zoCzjrvHtopGvztOOuSlXGaSOBykWLkcNUfuicX59gJCPyiShALY1FHhd5EM6/uSvAf2MQdmQNR3WJUNjfZ3g==
+  dependencies:
+    "@ant-design/colors" "^7.1.0"
+    "@ant-design/cssinjs" "^1.21.1"
+    "@ant-design/cssinjs-utils" "^1.1.0"
+    "@ant-design/fast-color" "^2.0.6"
+    "@ant-design/icons" "^5.4.0"
+    "@babel/runtime" "^7.25.6"
+    classnames "^2.5.1"
+    rc-motion "^2.9.2"
+    rc-util "^5.43.0"
 
 "@antfu/install-pkg@^0.1.1":
   version "0.1.1"
@@ -624,7 +639,7 @@
   dependencies:
     regenerator-runtime "^0.14.0"
 
-"@babel/runtime@^7.0.0", "@babel/runtime@^7.10.1", "@babel/runtime@^7.10.4", "@babel/runtime@^7.10.5", "@babel/runtime@^7.11.1", "@babel/runtime@^7.11.2", "@babel/runtime@^7.12.1", "@babel/runtime@^7.12.5", "@babel/runtime@^7.16.3", "@babel/runtime@^7.16.7", "@babel/runtime@^7.18.0", "@babel/runtime@^7.18.3", "@babel/runtime@^7.20.0", "@babel/runtime@^7.20.7", "@babel/runtime@^7.21.0", "@babel/runtime@^7.22.5", "@babel/runtime@^7.23.2", "@babel/runtime@^7.23.6", "@babel/runtime@^7.23.8", "@babel/runtime@^7.23.9", "@babel/runtime@^7.24.4", "@babel/runtime@^7.24.7", "@babel/runtime@^7.24.8", "@babel/runtime@^7.25.7", "@babel/runtime@^7.26.0", "@babel/runtime@^7.7.2", "@babel/runtime@^7.7.6", "@babel/runtime@^7.7.7", "@babel/runtime@^7.9.2":
+"@babel/runtime@^7.0.0", "@babel/runtime@^7.10.1", "@babel/runtime@^7.10.4", "@babel/runtime@^7.10.5", "@babel/runtime@^7.11.1", "@babel/runtime@^7.11.2", "@babel/runtime@^7.12.1", "@babel/runtime@^7.12.5", "@babel/runtime@^7.16.3", "@babel/runtime@^7.16.7", "@babel/runtime@^7.18.0", "@babel/runtime@^7.18.3", "@babel/runtime@^7.20.0", "@babel/runtime@^7.20.7", "@babel/runtime@^7.21.0", "@babel/runtime@^7.22.5", "@babel/runtime@^7.23.2", "@babel/runtime@^7.23.6", "@babel/runtime@^7.23.8", "@babel/runtime@^7.23.9", "@babel/runtime@^7.24.4", "@babel/runtime@^7.24.7", "@babel/runtime@^7.24.8", "@babel/runtime@^7.25.6", "@babel/runtime@^7.25.7", "@babel/runtime@^7.26.0", "@babel/runtime@^7.7.2", "@babel/runtime@^7.7.6", "@babel/runtime@^7.7.7", "@babel/runtime@^7.9.2":
   version "7.27.6"
   resolved "https://registry.npmjs.org/@babel/runtime/-/runtime-7.27.6.tgz"
   integrity sha512-vbavdySgbTTrmFE+EsiqUTzlOr5bzlnJtUv9PynGCAKvfQqjIXbvFdumPM/GxMDfyuGMJaJAU6TO4zc1Jf1i8Q==
@@ -3123,7 +3138,7 @@
   dependencies:
     tsx "3.12.2"
 
-"@umijs/plugins@4.4.11":
+"@umijs/plugins@4.4.11", "@umijs/plugins@^4.4.11":
   version "4.4.11"
   resolved "https://registry.npmjs.org/@umijs/plugins/-/plugins-4.4.11.tgz"
   integrity sha512-5I3cuCSr5yW+uDlBVwwghOcOj9Q+Gqy0X3mWzKCoPfKWtxDK5q4CxoR1OfiBzRJ+asS+/CPHg4CVDJA+cmxSTA==
@@ -9603,7 +9618,7 @@ rc-menu@~9.8.0, rc-menu@~9.8.4:
     rc-trigger "^5.1.2"
     rc-util "^5.27.0"
 
-rc-motion@^2.0.0, rc-motion@^2.0.1, rc-motion@^2.2.0, rc-motion@^2.3.0, rc-motion@^2.3.4, rc-motion@^2.4.3, rc-motion@^2.4.4, rc-motion@^2.6.1, rc-motion@^2.6.2, rc-motion@^2.9.0, rc-motion@^2.9.5:
+rc-motion@^2.0.0, rc-motion@^2.0.1, rc-motion@^2.2.0, rc-motion@^2.3.0, rc-motion@^2.3.4, rc-motion@^2.4.3, rc-motion@^2.4.4, rc-motion@^2.6.1, rc-motion@^2.6.2, rc-motion@^2.9.0, rc-motion@^2.9.2, rc-motion@^2.9.5:
   version "2.9.5"
   resolved "https://registry.npmjs.org/rc-motion/-/rc-motion-2.9.5.tgz"
   integrity sha512-w+XTUrfh7ArbYEd2582uDrEhmBHwK1ZENJiSJVb7uRxdE7qJSYjbO2eksRXmndqyKqKoYPc9ClpPh5242mV1vA==
