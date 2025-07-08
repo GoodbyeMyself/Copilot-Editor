@@ -8,7 +8,6 @@ import {
     CopyOutlined,
     DislikeOutlined,
     LikeOutlined,
-    OpenAIFilled,
     PaperClipOutlined,
     PlusOutlined,
     ProductOutlined,
@@ -39,58 +38,12 @@ import dayjs from 'dayjs';
 import React, { useEffect, useRef, useState } from 'react';
 
 import { useCopilotStyle, useWorkareaStyle } from './styles';
+import { MOCK_SESSION_LIST, MOCK_SUGGESTIONS, MOCK_QUESTIONS, AGENT_PLACEHOLDER } from './constants';
 
 type BubbleDataType = {
     role: string;
     content: string;
 };
-
-const MOCK_SESSION_LIST = [
-    {
-        key: '5',
-        label: 'New session',
-        group: 'Today',
-    },
-    {
-        key: '4',
-        label: 'What has Ant Design X upgraded?',
-        group: 'Today',
-    },
-    {
-        key: '3',
-        label: 'New AGI Hybrid Interface',
-        group: 'Today',
-    },
-    {
-        key: '2',
-        label: 'How to quickly install and import components?',
-        group: 'Yesterday',
-    },
-    {
-        key: '1',
-        label: 'What is Ant Design X?',
-        group: 'Yesterday',
-    },
-];
-const MOCK_SUGGESTIONS = [
-    { label: 'Write a report', value: 'report' },
-    { label: 'Draw a picture', value: 'draw' },
-    {
-        label: 'Check some knowledge',
-        value: 'knowledge',
-        icon: <OpenAIFilled />,
-        children: [
-            { label: 'About React', value: 'react' },
-            { label: 'About Ant Design', value: 'antd' },
-        ],
-    },
-];
-const MOCK_QUESTIONS = [
-    'What has Ant Design X upgraded?',
-    'What components are in Ant Design X?',
-    'How to quickly install and import components?',
-];
-const AGENT_PLACEHOLDER = 'Generating content, please wait...';
 
 interface CopilotProps {
     copilotOpen: boolean;
