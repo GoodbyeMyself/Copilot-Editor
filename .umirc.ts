@@ -15,10 +15,24 @@ export default defineConfig({
             redirect: "/home",
         },
         {
-            name: "Copilot",
+            name: "SQL Editor",
             path: "/home",
             icon: "Dashboard",
             component: "./Home",
+        },
+        // 独立式 Copilot
+        {
+            name: "Copilot",
+            path: "/Copilot",
+            icon: "Discord",
+            component: "./Copilot",
+        },
+        // 助手式 Copilot
+        {
+            name: "Helper",
+            path: "/Helper",
+            icon: "Slack",
+            component: "./Helper",
         },
         {
             name: "权限演示",
