@@ -22,6 +22,8 @@ import {
     ScheduleOutlined,
     ShareAltOutlined,
     SmileOutlined,
+    UserOutlined,
+    RobotOutlined,
 } from '@ant-design/icons';
 
 import {
@@ -260,6 +262,20 @@ const useStyle = createStyles(({ token, css }) => {
         margin: 0 auto;
         color: ${token.colorText};
       `,
+        // 新增的 header 样式
+        assistantHeader: css`
+        font-size: 12px;
+        color: #666;
+        margin: 5px 0;
+        font-weight: 500;
+      `,
+        userHeader: css`
+        font-size: 12px;
+        color: #666;
+        margin: 5px 0;
+        font-weight: 500;
+        text-align: right;
+      `,
     };
 });
 
@@ -288,6 +304,7 @@ const AccessPage: React.FC = () => {
         model: 'DeepSeek-R1-Distill-Qwen-7B',
         dangerouslyApiKey: 'Bearer sk-xxxxxxxxxxxxxxxxxxxx',
     });
+
     const loading = agent.isRequesting();
 
     const { onRequest, messages, setMessages } = useXChat({
@@ -459,6 +476,7 @@ const AccessPage: React.FC = () => {
             </div>
         </div>
     );
+
     const chatList = (
         <div className={styles.chatList}>
             {messages?.length ? (
@@ -471,10 +489,24 @@ const AccessPage: React.FC = () => {
                         },
                         typing: i.status === 'loading' ? { step: 5, interval: 20, suffix: <>💗</> } : false,
                     }))}
-                    style={{ height: '100%', paddingInline: 'calc(calc(100% - 700px) /2)' }}
+                    style={{
+                        height: '100%',
+                        paddingInline: 'calc(10%)'
+                    }}
                     roles={{
                         assistant: {
                             placement: 'start',
+                            avatar: (
+                                <Avatar 
+                                    style={{ backgroundColor: '#1677ff' }}
+                                    icon={<RobotOutlined />}
+                                />
+                            ),
+                            header: (
+                                <div className={styles.assistantHeader}>
+                                    AI 助手
+                                </div>
+                            ),
                             footer: (
                                 <div style={{ display: 'flex' }}>
                                     <Button type="text" size="small" icon={<ReloadOutlined />} />
@@ -485,7 +517,20 @@ const AccessPage: React.FC = () => {
                             ),
                             loadingRender: () => <Spin size="small" />,
                         },
-                        user: { placement: 'end' },
+                        user: {
+                            placement: 'end',
+                            avatar: (
+                                <Avatar 
+                                    style={{ backgroundColor: '#87d068' }}
+                                    icon={<UserOutlined />}
+                                />
+                            ),
+                            header: (
+                                <div className={styles.userHeader}>
+                                    用户
+                                </div>
+                            ),
+                        },
                     }}
                 />
             ) : (
@@ -547,6 +592,7 @@ const AccessPage: React.FC = () => {
             )}
         </div>
     );
+
     const senderHeader = (
         <Sender.Header
             title="Upload File"
@@ -570,6 +616,7 @@ const AccessPage: React.FC = () => {
             />
         </Sender.Header>
     );
+
     const chatSender = (
         <>
             {/* 🌟 提示词 */}

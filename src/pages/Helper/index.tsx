@@ -13,7 +13,9 @@ import {
     PlusOutlined,
     ProductOutlined,
     ReloadOutlined,
+    RobotOutlined,
     ScheduleOutlined,
+    UserOutlined,
 } from '@ant-design/icons';
 
 import {
@@ -24,14 +26,13 @@ import {
     Prompts,
     Sender,
     Suggestion,
-    Welcome,
     useXAgent,
     useXChat,
 } from '@ant-design/x';
 
 import type { Conversation } from '@ant-design/x/es/conversations';
 
-import { Button, GetProp, GetRef, Image, Popover, Space, Spin, message } from 'antd';
+import { Avatar, Button, GetProp, GetRef, Image, Popover, Space, Spin, message } from 'antd';
 
 import { createStyles } from 'antd-style';
 
@@ -128,13 +129,6 @@ const useCopilotStyle = createStyles(({ token, css }) => {
         padding-block: 16px;
         flex: 1;
       `,
-        chatWelcome: css`
-        margin-inline: 16px;
-        padding: 12px 16px;
-        border-radius: 2px 12px 12px 12px;
-        background: ${token.colorBgTextHover};
-        margin-bottom: 16px;
-      `,
         loadingMessage: css`
         background-image: linear-gradient(90deg, #ff6b23 0%, #af3cb8 31%, #53b6ff 89%);
         background-size: 100% 2px;
@@ -154,6 +148,20 @@ const useCopilotStyle = createStyles(({ token, css }) => {
         speechButton: css`
         font-size: 18px;
         color: ${token.colorText} !important;
+      `,
+       // 新增的 header 样式
+       assistantHeader: css`
+       font-size: 12px;
+       color: #666;
+       margin: 5px 0;
+       font-weight: 500;
+     `,
+     userHeader: css`
+        font-size: 12px;
+        color: #666;
+        margin: 5px 0;
+        font-weight: 500;
+        text-align: right;
       `,
     };
 });
@@ -355,6 +363,17 @@ const Copilot = (props: CopilotProps) => {
                     roles={{
                         assistant: {
                             placement: 'start',
+                            avatar: (
+                                <Avatar 
+                                    style={{ backgroundColor: '#1677ff' }}
+                                    icon={<RobotOutlined />}
+                                />
+                            ),
+                            header: (
+                                <div className={styles.assistantHeader}>
+                                    AI 助手
+                                </div>
+                            ),
                             footer: (
                                 <div style={{ display: 'flex' }}>
                                     <Button type="text" size="small" icon={<ReloadOutlined />} />
@@ -370,19 +389,24 @@ const Copilot = (props: CopilotProps) => {
                                 </Space>
                             ),
                         },
-                        user: { placement: 'end' },
+                        user: {
+                            placement: 'end',
+                            avatar: (
+                                <Avatar 
+                                    style={{ backgroundColor: '#87d068' }}
+                                    icon={<UserOutlined />}
+                                />
+                            ),
+                            header: (
+                                <div className={styles.userHeader}>
+                                    用户
+                                </div>
+                            ),
+                        },
                     }}
                 />
             ) : (
-                /** 没有消息时的 welcome */
                 <>
-                    <Welcome
-                        variant="borderless"
-                        title="👋 Hello, I'm Ant Design X"
-                        description="Base on Ant Design, AGI product interface solution, create a better intelligent vision~"
-                        className={styles.chatWelcome}
-                    />
-
                     <Prompts
                         vertical
                         title="I can help："
