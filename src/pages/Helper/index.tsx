@@ -450,44 +450,7 @@ const AccessPage: React.FC = () => {
                         style={{ margin: copilotOpen ? 16 : '16px 48px' }}
                     >
                         <div className={workareaStyles.bodyContent}>
-                            <Image
-                                src="https://mdn.alipayobjects.com/huamei_iwk9zp/afts/img/A*48RLR41kwHIAAAAAAAAAAAAADgCCAQ/fmt.webp"
-                                preview={false}
-                            />
-                            <div className={workareaStyles.bodyText}>
-                                <h4>What is the RICH design paradigm?</h4>
-                                <div>
-                                    RICH is an AI interface design paradigm we propose, similar to how the WIMP paradigm
-                                    relates to graphical user interfaces.
-                                </div>
-                                <br />
-                                <div>
-                                    The ACM SIGCHI 2005 (the premier conference on human-computer interaction) defined
-                                    that the core issues of human-computer interaction can be divided into three levels:
-                                </div>
-                                <ul>
-                                    <li>
-                                        Interface Paradigm Layer: Defines the design elements of human-computer
-                                        interaction interfaces, guiding designers to focus on core issues.
-                                    </li>
-                                    <li>
-                                        User model layer: Build an interface experience evaluation model to measure the
-                                        quality of the interface experience.
-                                    </li>
-                                    <li>
-                                        Software framework layer: The underlying support algorithms and data structures
-                                        for human-computer interfaces, which are the contents hidden behind the front-end
-                                        interface.
-                                    </li>
-                                </ul>
-                                <div>
-                                    The interface paradigm is the aspect that designers need to focus on and define the
-                                    most when a new human-computer interaction technology is born. The interface
-                                    paradigm defines the design elements that designers should pay attention to, and
-                                    based on this, it is possible to determine what constitutes good design and how to
-                                    achieve it.
-                                </div>
-                            </div>
+                            业务区域
                         </div>
                     </div>
                 </div>
