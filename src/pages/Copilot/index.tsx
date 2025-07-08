@@ -2,162 +2,33 @@ import React from 'react';
 
 import { PageContainer } from '@ant-design/pro-components';
 
-import {
-    AppstoreAddOutlined,
-    CloudUploadOutlined,
-    CommentOutlined,
-    CopyOutlined,
-    DeleteOutlined,
-    DislikeOutlined,
-    EditOutlined,
-    EllipsisOutlined,
-    FileSearchOutlined,
-    HeartOutlined,
-    LikeOutlined,
-    PaperClipOutlined,
-    PlusOutlined,
-    ProductOutlined,
-    QuestionCircleOutlined,
-    ReloadOutlined,
-    ScheduleOutlined,
-    ShareAltOutlined,
-    SmileOutlined,
-    UserOutlined,
-    RobotOutlined,
-} from '@ant-design/icons';
+import { type GetProp, message } from 'antd';
 
 import {
     Attachments,
-    Bubble,
-    Conversations,
-    Prompts,
-    Sender,
-    Welcome,
     useXAgent,
     useXChat,
 } from '@ant-design/x';
 
-import { Avatar, Button, Flex, type GetProp, Space, Spin, message } from 'antd';
-
-import dayjs from 'dayjs';
-
 import { useEffect, useRef, useState } from 'react';
 
 import { useStyle } from './styles';
+// 定义常量
+import { DEFAULT_CONVERSATIONS_ITEMS, DESIGN_GUIDE, SENDER_PROMPTS, getHotTopics } from './constant';
+// 导入子组件
+import { ChatSider, ChatList, SenderHeader, ChatSender } from './components';
 
 type BubbleDataType = {
     role: string;
     content: string;
 };
 
-const DEFAULT_CONVERSATIONS_ITEMS = [
-    {
-        key: 'default-0',
-        label: 'What is Ant Design X?',
-        group: 'Today',
-    },
-    {
-        key: 'default-1',
-        label: 'How to quickly install and import components?',
-        group: 'Today',
-    },
-    {
-        key: 'default-2',
-        label: 'New AGI Hybrid Interface',
-        group: 'Yesterday',
-    },
-];
-
-const DESIGN_GUIDE = {
-    key: '2',
-    label: 'Design Guide',
-    children: [
-        {
-            key: '2-1',
-            icon: <HeartOutlined />,
-            label: 'Intention',
-            description: 'AI understands user needs and provides solutions.',
-        },
-        {
-            key: '2-2',
-            icon: <SmileOutlined />,
-            label: 'Role',
-            description: "AI's public persona and image",
-        },
-        {
-            key: '2-3',
-            icon: <CommentOutlined />,
-            label: 'Chat',
-            description: 'How AI Can Express Itself in a Way Users Understand',
-        },
-        {
-            key: '2-4',
-            icon: <PaperClipOutlined />,
-            label: 'Interface',
-            description: 'AI balances "chat" & "do" behaviors.',
-        },
-    ],
-};
-
-const SENDER_PROMPTS: GetProp<typeof Prompts, 'items'> = [
-    {
-        key: '1',
-        description: 'Upgrades',
-        icon: <ScheduleOutlined />,
-    },
-    {
-        key: '2',
-        description: 'Components',
-        icon: <ProductOutlined />,
-    },
-    {
-        key: '3',
-        description: 'RICH Guide',
-        icon: <FileSearchOutlined />,
-    },
-    {
-        key: '4',
-        description: 'Installation Introduction',
-        icon: <AppstoreAddOutlined />,
-    },
-];
-
 const AccessPage: React.FC = () => {
     const { styles } = useStyle();
     const abortController = useRef<AbortController | null>(null);
 
-    // HOT_TOPICS 配置移到组件内部以使用样式
-    const HOT_TOPICS = {
-        key: '1',
-        label: 'Hot Topics',
-        children: [
-            {
-                key: '1-1',
-                description: 'What has Ant Design X upgraded?',
-                icon: <span className={styles.hotTopicIcon1}>1</span>,
-            },
-            {
-                key: '1-2',
-                description: 'New AGI Hybrid Interface',
-                icon: <span className={styles.hotTopicIcon2}>2</span>,
-            },
-            {
-                key: '1-3',
-                description: 'What components are in Ant Design X?',
-                icon: <span className={styles.hotTopicIcon3}>3</span>,
-            },
-            {
-                key: '1-4',
-                description: 'Come and discover the new design paradigm of the AI era.',
-                icon: <span className={styles.hotTopicIcon4}>4</span>,
-            },
-            {
-                key: '1-5',
-                description: 'How to quickly install and import components?',
-                icon: <span className={styles.hotTopicIcon5}>5</span>,
-            },
-        ],
-    };
+    // 使用样式获取 HOT_TOPICS 配置
+    const HOT_TOPICS = getHotTopics(styles);
 
     // ==================== State ====================
     const [messageHistory, setMessageHistory] = useState<Record<string, any>>({});
@@ -250,296 +121,14 @@ const AccessPage: React.FC = () => {
         });
     };
 
-    // ==================== Nodes ====================
-    const chatSider = (
-        <div className={styles.sider}>
-            {/* 🌟 Logo */}
-            <div className={styles.logo}>
-                <img
-                    src="https://mdn.alipayobjects.com/huamei_iwk9zp/afts/img/A*eco6RrQhxbMAAAAAAAAAAAAADgCCAQ/original"
-                    draggable={false}
-                    alt="logo"
-                    width={24}
-                    height={24}
-                />
-                <span>独立式 Copilot</span>
-            </div>
-
-            {/* 🌟 添加会话 */}
-            <Button
-                onClick={() => {
-                    if (agent.isRequesting()) {
-                        message.error(
-                            '消息正在请求中，您可以在请求完成后创建新会话或立即中止它...',
-                        );
-                        return;
-                    }
-
-                    const now = dayjs().valueOf().toString();
-                    setConversations([
-                        {
-                            key: now,
-                            label: `新会话 ${conversations.length + 1}`,
-                            group: 'Today',
-                        },
-                        ...conversations,
-                    ]);
-                    setCurConversation(now);
-                    setMessages([]);
-                }}
-                type="link"
-                className={styles.addBtn}
-                icon={<PlusOutlined />}
-            >
-                新建会话
-            </Button>
-
-            {/* 🌟 会话管理 */}
-            <Conversations
-                items={conversations}
-                className={styles.conversations}
-                activeKey={curConversation}
-                onActiveChange={async (val) => {
-                    // 安全地中止当前请求
-                    if (abortController.current) {
-                        try {
-                            abortController.current.abort('切换会话');
-                        } catch (error) {
-                            console.warn('中止请求时出错:', error);
-                        }
-                    }
-                    // 等待中止操作完成，避免时序问题
-                    setTimeout(() => {
-                        setCurConversation(val);
-                        setMessages(messageHistory?.[val] || []);
-                    }, 100);
-                }}
-                groupable
-                styles={{ item: { padding: '0 8px' } }}
-                menu={(conversation) => ({
-                    items: [
-                        {
-                            label: '重命名',
-                            key: 'rename',
-                            icon: <EditOutlined />,
-                        },
-                        {
-                            label: '删除',
-                            key: 'delete',
-                            icon: <DeleteOutlined />,
-                            danger: true,
-                            onClick: () => {
-                                const newList = conversations.filter((item) => item.key !== conversation.key);
-                                const newKey = newList?.[0]?.key;
-                                setConversations(newList);
-                                // 删除操作会修改 curConversation 并触发 onActiveChange，因此需要延迟执行以确保最终正确覆盖
-                                // 此功能将在未来版本中修复
-                                setTimeout(() => {
-                                    if (conversation.key === curConversation) {
-                                        setCurConversation(newKey);
-                                        setMessages(messageHistory?.[newKey] || []);
-                                    }
-                                }, 200);
-                            },
-                        },
-                    ],
-                })}
-            />
-
-            <div className={styles.siderFooter}>
-                <Avatar size={24} />
-                <Button type="text" icon={<QuestionCircleOutlined />} />
-            </div>
-        </div>
-    );
-
-    const chatList = (
-        <div className={styles.chatList}>
-            {messages?.length ? (
-                /* 🌟 消息列表 */
-                <Bubble.List
-                    items={messages?.map((i) => ({
-                        ...i.message,
-                        classNames: {
-                            content: i.status === 'loading' ? styles.loadingMessage : '',
-                        },
-                        typing: i.status === 'loading' ? { step: 5, interval: 20, suffix: <>💗</> } : false,
-                    }))}
-                    style={{
-                        height: '100%',
-                        paddingInline: 'calc(10%)'
-                    }}
-                    roles={{
-                        assistant: {
-                            placement: 'start',
-                            avatar: (
-                                <Avatar 
-                                    style={{ backgroundColor: '#1677ff' }}
-                                    icon={<RobotOutlined />}
-                                />
-                            ),
-                            header: (
-                                <div className={styles.assistantHeader}>
-                                    AI 助手
-                                </div>
-                            ),
-                            footer: (
-                                <div style={{ display: 'flex' }}>
-                                    <Button type="text" size="small" icon={<ReloadOutlined />} />
-                                    <Button type="text" size="small" icon={<CopyOutlined />} />
-                                    <Button type="text" size="small" icon={<LikeOutlined />} />
-                                    <Button type="text" size="small" icon={<DislikeOutlined />} />
-                                </div>
-                            ),
-                            loadingRender: () => <Spin size="small" />,
-                        },
-                        user: {
-                            placement: 'end',
-                            avatar: (
-                                <Avatar 
-                                    style={{ backgroundColor: '#87d068' }}
-                                    icon={<UserOutlined />}
-                                />
-                            ),
-                            header: (
-                                <div className={styles.userHeader}>
-                                    用户
-                                </div>
-                            ),
-                        },
-                    }}
-                />
-            ) : (
-                <Space
-                    direction="vertical"
-                    size={16}
-                    style={{ paddingInline: 'calc(calc(100% - 700px) /2)' }}
-                    className={styles.placeholder}
-                >
-                    <Welcome
-                        variant="borderless"
-                        icon="https://mdn.alipayobjects.com/huamei_iwk9zp/afts/img/A*s5sNRo5LjfQAAAAAAAAAAAAADgCCAQ/fmt.webp"
-                        title="Hello, I'm Ant Design X"
-                        description="Base on Ant Design, AGI product interface solution, create a better intelligent vision~"
-                        extra={
-                            <Space>
-                                <Button icon={<ShareAltOutlined />} />
-                                <Button icon={<EllipsisOutlined />} />
-                            </Space>
-                        }
-                    />
-                    <Flex gap={16}>
-                        <Prompts
-                            items={[HOT_TOPICS]}
-                            styles={{
-                                list: { height: '100%' },
-                                item: {
-                                    flex: 1,
-                                    backgroundImage: 'linear-gradient(123deg, #e5f4ff 0%, #efe7ff 100%)',
-                                    borderRadius: 12,
-                                    border: 'none',
-                                },
-                                subItem: { padding: 0, background: 'transparent' },
-                            }}
-                            onItemClick={(info) => {
-                                onSubmit(info.data.description as string);
-                            }}
-                            className={styles.chatPrompt}
-                        />
-
-                        <Prompts
-                            items={[DESIGN_GUIDE]}
-                            styles={{
-                                item: {
-                                    flex: 1,
-                                    backgroundImage: 'linear-gradient(123deg, #e5f4ff 0%, #efe7ff 100%)',
-                                    borderRadius: 12,
-                                    border: 'none',
-                                },
-                                subItem: { background: '#ffffffa6' },
-                            }}
-                            onItemClick={(info) => {
-                                onSubmit(info.data.description as string);
-                            }}
-                            className={styles.chatPrompt}
-                        />
-                    </Flex>
-                </Space>
-            )}
-        </div>
-    );
-
+    // ==================== 组件渲染 ====================
     const senderHeader = (
-        <Sender.Header
-            title="Upload File"
-            open={attachmentsOpen}
-            onOpenChange={setAttachmentsOpen}
-            styles={{ content: { padding: 0 } }}
-        >
-            <Attachments
-                beforeUpload={() => false}
-                items={attachedFiles}
-                onChange={(info) => setAttachedFiles(info.fileList)}
-                placeholder={(type) =>
-                    type === 'drop'
-                        ? { title: 'Drop file here' }
-                        : {
-                            icon: <CloudUploadOutlined />,
-                            title: 'Upload files',
-                            description: 'Click or drag files to this area to upload',
-                        }
-                }
-            />
-        </Sender.Header>
-    );
-
-    const chatSender = (
-        <>
-            {/* 🌟 提示词 */}
-            <Prompts
-                items={SENDER_PROMPTS}
-                onItemClick={(info) => {
-                    onSubmit(info.data.description as string);
-                }}
-                styles={{
-                    item: { padding: '6px 12px' },
-                }}
-                className={styles.senderPrompt}
-            />
-            {/* 🌟 输入框 */}
-            <Sender
-                value={inputValue}
-                header={senderHeader}
-                onSubmit={() => {
-                    onSubmit(inputValue);
-                    setInputValue('');
-                }}
-                onChange={setInputValue}
-                onCancel={() => {
-                    abortController.current?.abort();
-                }}
-                prefix={
-                    <Button
-                        type="text"
-                        icon={<PaperClipOutlined style={{ fontSize: 18 }} />}
-                        onClick={() => setAttachmentsOpen(!attachmentsOpen)}
-                    />
-                }
-                loading={loading}
-                className={styles.sender}
-                allowSpeech
-                actions={(_, info) => {
-                    const { SendButton, LoadingButton, SpeechButton } = info.components;
-                    return (
-                        <Flex gap={4}>
-                            <SpeechButton className={styles.speechButton} />
-                            {loading ? <LoadingButton type="default" /> : <SendButton type="primary" />}
-                        </Flex>
-                    );
-                }}
-                placeholder="Ask or input / use skills"
-            />
-        </>
+        <SenderHeader
+            attachmentsOpen={attachmentsOpen}
+            attachedFiles={attachedFiles}
+            onAttachmentsOpenChange={setAttachmentsOpen}
+            onAttachedFilesChange={setAttachedFiles}
+        />
     );
 
     useEffect(() => {
@@ -557,11 +146,37 @@ const AccessPage: React.FC = () => {
             ghost
         >
             <div className={styles.layout}>
-                {chatSider}
+                <ChatSider
+                    styles={styles}
+                    conversations={conversations}
+                    curConversation={curConversation}
+                    messageHistory={messageHistory}
+                    isRequesting={agent.isRequesting()}
+                    abortController={abortController}
+                    onConversationsChange={setConversations}
+                    onCurConversationChange={setCurConversation}
+                    onMessagesChange={setMessages}
+                />
 
                 <div className={styles.chat}>
-                    {chatList}
-                    {chatSender}
+                    <ChatList
+                        styles={styles}
+                        messages={messages}
+                        hotTopics={HOT_TOPICS}
+                        designGuide={DESIGN_GUIDE}
+                        onSubmit={onSubmit}
+                    />
+                    <ChatSender
+                        styles={styles}
+                        senderPrompts={SENDER_PROMPTS}
+                        inputValue={inputValue}
+                        loading={loading}
+                        senderHeader={senderHeader}
+                        abortController={abortController}
+                        onSubmit={onSubmit}
+                        onInputChange={setInputValue}
+                        onAttachmentsToggle={() => setAttachmentsOpen(!attachmentsOpen)}
+                    />
                 </div>
             </div>
         </PageContainer>
