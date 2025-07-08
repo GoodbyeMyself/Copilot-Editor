@@ -369,7 +369,7 @@ const AccessPage: React.FC = () => {
                     width={24}
                     height={24}
                 />
-                <span>Ant Design X</span>
+                <span>独立式 Copilot</span>
             </div>
 
             {/* 🌟 添加会话 */}
@@ -632,9 +632,6 @@ const AccessPage: React.FC = () => {
     return (
         <PageContainer
             ghost
-            header={{
-                title: '独立式 Copilot',
-            }}
         >
             <div className={styles.layout}>
                 {chatSider}
