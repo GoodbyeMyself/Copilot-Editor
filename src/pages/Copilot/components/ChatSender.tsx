@@ -4,7 +4,6 @@ import { Prompts, Sender } from '@ant-design/x';
 import { PaperClipOutlined } from '@ant-design/icons';
 
 interface ChatSenderProps {
-    styles: any;
     senderPrompts: any[];
     inputValue: string;
     loading: boolean;
@@ -16,7 +15,6 @@ interface ChatSenderProps {
 }
 
 const ChatSender: React.FC<ChatSenderProps> = ({
-    styles,
     senderPrompts,
     inputValue,
     loading,
@@ -37,7 +35,7 @@ const ChatSender: React.FC<ChatSenderProps> = ({
                 styles={{
                     item: { padding: '6px 12px' },
                 }}
-                className={styles.senderPrompt}
+                className="copilot-sender-prompt"
             />
             {/* 🌟 输入框 */}
             <Sender
@@ -59,13 +57,13 @@ const ChatSender: React.FC<ChatSenderProps> = ({
                     />
                 }
                 loading={loading}
-                className={styles.sender}
+                className="copilot-sender"
                 allowSpeech
                 actions={(_, info) => {
                     const { SendButton, LoadingButton, SpeechButton } = info.components;
                     return (
                         <Flex gap={4}>
-                            <SpeechButton className={styles.speechButton} />
+                            <SpeechButton className="copilot-speech-button" />
                             {loading ? <LoadingButton type="default" /> : <SendButton type="primary" />}
                         </Flex>
                     );

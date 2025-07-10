@@ -1,0 +1,163 @@
+/* Copilot 页面样式 */
+
+.copilot-layout {
+    width: 100%;
+    min-width: 1000px;
+    height: 80vh;
+    display: flex;
+    background: #ffffff;
+    font-family: AlibabaPuHuiTi, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+/* Sider 样式 */
+.copilot-sider {
+    background: #f1f1f1;
+    width: 280px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 0 12px;
+    box-sizing: border-box;
+}
+
+.copilot-logo {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0 24px;
+    box-sizing: border-box;
+    gap: 8px;
+    margin: 24px 0;
+}
+
+.copilot-logo span {
+    font-weight: bold;
+    color: var(--ant-color-text);
+    font-size: 16px;
+}
+
+.copilot-add-btn {
+    background: rgba(22, 119, 255, 0.06);
+    border: 1px solid rgba(22, 119, 255, 0.2);
+    height: 40px;
+}
+
+.copilot-conversations {
+    flex: 1;
+    overflow-y: auto;
+    margin-top: 12px;
+    padding: 0;
+}
+
+.copilot-conversations .ant-conversations-list {
+    padding-inline-start: 0;
+}
+
+.copilot-sider-footer {
+    border-top: 1px solid var(--ant-color-border-secondary);
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Chat 样式 */
+.copilot-chat {
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    padding-block: 24px;
+    gap: 16px;
+}
+
+.copilot-chat-prompt .ant-prompts-label {
+    color: rgba(0, 0, 0, 0.88) !important;
+}
+
+.copilot-chat-prompt .ant-prompts-desc {
+    color: rgba(0, 0, 0, 0.65) !important;
+    width: 100%;
+}
+
+.copilot-chat-prompt .ant-prompts-icon {
+    color: rgba(0, 0, 0, 0.65) !important;
+}
+
+.copilot-chat-list {
+    flex: 1;
+    overflow: auto;
+}
+
+.copilot-loading-message {
+    background-image: linear-gradient(90deg, #ff6b23 0%, #af3cb8 31%, #53b6ff 89%);
+    background-size: 100% 2px;
+    background-repeat: no-repeat;
+    background-position: bottom;
+}
+
+.copilot-placeholder {
+    padding-top: 32px;
+}
+
+/* Sender 样式 */
+.copilot-sender {
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.copilot-speech-button {
+    font-size: 18px;
+    color: var(--ant-color-text) !important;
+}
+
+.copilot-sender-prompt {
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto;
+    color: var(--ant-color-text);
+}
+
+/* Header 样式 */
+.copilot-assistant-header {
+    font-size: 12px;
+    color: #666;
+    margin: 5px 0;
+    font-weight: 500;
+}
+
+.copilot-user-header {
+    font-size: 12px;
+    color: #666;
+    margin: 5px 0;
+    font-weight: 500;
+    text-align: right;
+}
+
+/* 热门话题图标样式 */
+.copilot-hot-topic-icon-1 {
+    color: #f93a4a;
+    font-weight: 700;
+}
+
+.copilot-hot-topic-icon-2 {
+    color: #ff6565;
+    font-weight: 700;
+}
+
+.copilot-hot-topic-icon-3 {
+    color: #ff8f1f;
+    font-weight: 700;
+}
+
+.copilot-hot-topic-icon-4 {
+    color: rgba(0, 0, 0, 0.25);
+    font-weight: 700;
+}
+
+.copilot-hot-topic-icon-5 {
+    color: rgba(0, 0, 0, 0.25);
+    font-weight: 700;
+} 

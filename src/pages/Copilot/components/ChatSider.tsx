@@ -5,7 +5,6 @@ import { EditOutlined, DeleteOutlined, PlusOutlined, QuestionCircleOutlined } fr
 import dayjs from 'dayjs';
 
 interface ChatSiderProps {
-    styles: any;
     conversations: any[];
     curConversation: string;
     messageHistory: Record<string, any>;
@@ -17,7 +16,6 @@ interface ChatSiderProps {
 }
 
 const ChatSider: React.FC<ChatSiderProps> = ({
-    styles,
     conversations,
     curConversation,
     messageHistory,
@@ -28,9 +26,9 @@ const ChatSider: React.FC<ChatSiderProps> = ({
     onMessagesChange,
 }) => {
     return (
-        <div className={styles.sider}>
+        <div className="copilot-sider">
             {/* 🌟 Logo */}
-            <div className={styles.logo}>
+            <div className="copilot-logo">
                 <img
                     src="https://mdn.alipayobjects.com/huamei_iwk9zp/afts/img/A*eco6RrQhxbMAAAAAAAAAAAAADgCCAQ/original"
                     draggable={false}
@@ -65,7 +63,7 @@ const ChatSider: React.FC<ChatSiderProps> = ({
                     onMessagesChange([]);
                 }}
                 type="link"
-                className={styles.addBtn}
+                className="copilot-add-btn"
                 icon={<PlusOutlined />}
             >
                 新建会话
@@ -74,7 +72,7 @@ const ChatSider: React.FC<ChatSiderProps> = ({
             {/* 🌟 会话管理 */}
             <Conversations
                 items={conversations}
-                className={styles.conversations}
+                className="copilot-conversations"
                 activeKey={curConversation}
                 onActiveChange={async (val) => {
                     // 安全地中止当前请求
@@ -123,7 +121,7 @@ const ChatSider: React.FC<ChatSiderProps> = ({
                 })}
             />
 
-            <div className={styles.siderFooter}>
+            <div className="copilot-sider-footer">
                 <Avatar size={24} />
                 <Button type="text" icon={<QuestionCircleOutlined />} />
             </div>

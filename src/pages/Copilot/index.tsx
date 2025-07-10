@@ -12,7 +12,7 @@ import {
 
 import { useEffect, useRef, useState } from 'react';
 
-import { useStyle } from './styles';
+import './styles.css';
 // 定义常量
 import { DEFAULT_CONVERSATIONS_ITEMS, DESIGN_GUIDE, SENDER_PROMPTS, getHotTopics } from './constant';
 // 导入子组件
@@ -24,11 +24,16 @@ type BubbleDataType = {
 };
 
 const AccessPage: React.FC = () => {
-    const { styles } = useStyle();
     const abortController = useRef<AbortController | null>(null);
 
-    // 使用样式获取 HOT_TOPICS 配置
-    const HOT_TOPICS = getHotTopics(styles);
+    // 使用 CSS 类名获取 HOT_TOPICS 配置
+    const HOT_TOPICS = getHotTopics({
+        hotTopicIcon1: 'copilot-hot-topic-icon-1',
+        hotTopicIcon2: 'copilot-hot-topic-icon-2',
+        hotTopicIcon3: 'copilot-hot-topic-icon-3',
+        hotTopicIcon4: 'copilot-hot-topic-icon-4',
+        hotTopicIcon5: 'copilot-hot-topic-icon-5',
+    });
 
     // ==================== State ====================
     const [messageHistory, setMessageHistory] = useState<Record<string, any>>({});
@@ -145,9 +150,8 @@ const AccessPage: React.FC = () => {
         <PageContainer
             ghost
         >
-            <div className={styles.layout}>
+            <div className="copilot-layout">
                 <ChatSider
-                    styles={styles}
                     conversations={conversations}
                     curConversation={curConversation}
                     messageHistory={messageHistory}
@@ -158,16 +162,14 @@ const AccessPage: React.FC = () => {
                     onMessagesChange={setMessages}
                 />
 
-                <div className={styles.chat}>
+                <div className="copilot-chat">
                     <ChatList
-                        styles={styles}
                         messages={messages}
                         hotTopics={HOT_TOPICS}
                         designGuide={DESIGN_GUIDE}
                         onSubmit={onSubmit}
                     />
                     <ChatSender
-                        styles={styles}
                         senderPrompts={SENDER_PROMPTS}
                         inputValue={inputValue}
                         loading={loading}

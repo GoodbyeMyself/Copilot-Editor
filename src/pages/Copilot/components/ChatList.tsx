@@ -13,7 +13,6 @@ import {
 } from '@ant-design/icons';
 
 interface ChatListProps {
-    styles: any;
     messages: any[];
     hotTopics: any;
     designGuide: any;
@@ -21,21 +20,20 @@ interface ChatListProps {
 }
 
 const ChatList: React.FC<ChatListProps> = ({
-    styles,
     messages,
     hotTopics,
     designGuide,
     onSubmit,
 }) => {
     return (
-        <div className={styles.chatList}>
+        <div className="copilot-chat-list">
             {messages?.length ? (
                 /* 🌟 消息列表 */
                 <Bubble.List
                     items={messages?.map((i) => ({
                         ...i.message,
                         classNames: {
-                            content: i.status === 'loading' ? styles.loadingMessage : '',
+                            content: i.status === 'loading' ? 'copilot-loading-message' : '',
                         },
                         typing: i.status === 'loading' ? { step: 5, interval: 20, suffix: <>💗</> } : false,
                     }))}
@@ -53,7 +51,7 @@ const ChatList: React.FC<ChatListProps> = ({
                                 />
                             ),
                             header: (
-                                <div className={styles.assistantHeader}>
+                                <div className="copilot-assistant-header">
                                     AI 助手
                                 </div>
                             ),
@@ -76,7 +74,7 @@ const ChatList: React.FC<ChatListProps> = ({
                                 />
                             ),
                             header: (
-                                <div className={styles.userHeader}>
+                                <div className="copilot-user-header">
                                     用户
                                 </div>
                             ),
@@ -88,7 +86,7 @@ const ChatList: React.FC<ChatListProps> = ({
                     direction="vertical"
                     size={16}
                     style={{ paddingInline: 'calc(calc(100% - 700px) /2)' }}
-                    className={styles.placeholder}
+                    className="copilot-placeholder"
                 >
                     <Welcome
                         variant="borderless"
@@ -118,7 +116,7 @@ const ChatList: React.FC<ChatListProps> = ({
                             onItemClick={(info) => {
                                 onSubmit(info.data.description as string);
                             }}
-                            className={styles.chatPrompt}
+                            className="copilot-chat-prompt"
                         />
 
                         <Prompts
@@ -135,7 +133,7 @@ const ChatList: React.FC<ChatListProps> = ({
                             onItemClick={(info) => {
                                 onSubmit(info.data.description as string);
                             }}
-                            className={styles.chatPrompt}
+                            className="copilot-chat-prompt"
                         />
                     </Flex>
                 </Space>
