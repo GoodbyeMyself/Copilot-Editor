@@ -16,6 +16,14 @@ import React, { useEffect, useRef, useState } from 'react';
 import './styles.css';
 import { MOCK_SESSION_LIST } from './constants';
 import { ChatHeader, ChatList, ChatSender } from './components';
+import { 
+    saveSessionList, 
+    loadSessionList, 
+    saveMessageHistory, 
+    loadMessageHistory, 
+    saveCurrentSession, 
+    loadCurrentSession 
+} from './utils/storage';
 
 type BubbleDataType = {
     role: string;
@@ -36,8 +44,24 @@ const Copilot = (props: CopilotProps) => {
 
     const [messageHistory, setMessageHistory] = useState<Record<string, any>>({});
 
-    const [sessionList, setSessionList] = useState<Conversation[]>(MOCK_SESSION_LIST);
-    const [curSession, setCurSession] = useState(sessionList[0].key);
+    // 初始化时从localStorage加载数据
+    const [sessionList, setSessionList] = useState<Conversation[]>(() => {
+        const savedSessions = loadSessionList();
+        return savedSessions && savedSessions.length > 0 ? savedSessions : MOCK_SESSION_LIST;
+    });
+    
+    const [curSession, setCurSession] = useState(() => {
+        const savedCurrentSession = loadCurrentSession();
+        const initialSessionList = loadSessionList() || MOCK_SESSION_LIST;
+        // 确保当前会话在会话列表中存在
+        if (savedCurrentSession && initialSessionList.some(session => session.key === savedCurrentSession)) {
+            return savedCurrentSession;
+        }
+        return initialSessionList[0]?.key || '';
+    });
+
+    // 添加初始化完成状态
+    const [isInitialized, setIsInitialized] = useState(false);
 
     const [attachmentsOpen, setAttachmentsOpen] = useState(false);
     const [files, setFiles] = useState<GetProp<AttachmentsProps, 'items'>>([]);
@@ -132,9 +156,12 @@ const Copilot = (props: CopilotProps) => {
 
         // session title mock
         if (sessionList.find((i) => i.key === curSession)?.label === 'New session') {
-            setSessionList(
-                sessionList.map((i) => (i.key !== curSession ? i : { ...i, label: val?.slice(0, 20) })),
+            const updatedSessionList = sessionList.map((i) => 
+                i.key !== curSession ? i : { ...i, label: val?.slice(0, 20) }
             );
+            setSessionList(updatedSessionList);
+            // 保存到localStorage
+            saveSessionList(updatedSessionList);
         }
     };
 
@@ -152,11 +179,28 @@ const Copilot = (props: CopilotProps) => {
         messages,
         isRequesting: agent.isRequesting(),
         onSetCopilotOpen: setCopilotOpen,
-        onSetSessionList: setSessionList,
-        onSetCurSession: setCurSession,
+        onSetSessionList: (newSessionList: Conversation[]) => {
+            setSessionList(newSessionList);
+            // 保存到localStorage
+            saveSessionList(newSessionList);
+        },
+        onSetCurSession: (newSession: string) => {
+            setCurSession(newSession);
+            // 保存到localStorage
+            saveCurrentSession(newSession);
+            // 恢复该会话的历史消息
+            const sessionHistory = messageHistory[newSession] || [];
+            setMessages(sessionHistory);
+        },
         onSetMessages: setMessages,
         onAbort: () => abortController.current?.abort(),
-        messageHistory,
+        onClearHistory: () => {
+            // 重置所有状态到初始值
+            setSessionList(MOCK_SESSION_LIST);
+            setMessageHistory({});
+            setCurSession(MOCK_SESSION_LIST[0].key);
+            setMessages([]);
+        },
     };
 
     const chatListProps = {
@@ -184,15 +228,52 @@ const Copilot = (props: CopilotProps) => {
         onPasteFile,
     };
 
+    // 组件初始化时加载历史数据
     useEffect(() => {
-        // history mock
-        if (messages?.length) {
-            setMessageHistory((prev) => ({
-                ...prev,
+        const initializeData = async () => {
+            // 加载消息历史记录
+            const savedMessageHistory = loadMessageHistory();
+            setMessageHistory(savedMessageHistory);
+            
+            // 如果当前会话有历史消息，则恢复它们
+            if (savedMessageHistory[curSession] && savedMessageHistory[curSession].length > 0) {
+                setMessages(savedMessageHistory[curSession]);
+            }
+            
+            // 标记初始化完成
+            setIsInitialized(true);
+        };
+
+        initializeData();
+    }, []); // 只在组件挂载时执行一次
+
+    // 监听messages变化，自动保存到localStorage
+    useEffect(() => {
+        // 只有在初始化完成后才保存，避免覆盖已加载的历史数据
+        if (isInitialized && messages?.length) {
+            const updatedHistory = {
+                ...messageHistory,
                 [curSession]: messages,
-            }));
+            };
+            setMessageHistory(updatedHistory);
+            // 保存到localStorage
+            saveMessageHistory(updatedHistory);
         }
-    }, [messages]);
+    }, [messages, curSession, isInitialized, messageHistory]);
+
+    // 监听会话列表变化，自动保存到localStorage
+    useEffect(() => {
+        if (isInitialized) {
+            saveSessionList(sessionList);
+        }
+    }, [sessionList, isInitialized]);
+
+    // 监听当前会话变化，自动保存到localStorage
+    useEffect(() => {
+        if (isInitialized) {
+            saveCurrentSession(curSession);
+        }
+    }, [curSession, isInitialized]);
 
     return (
         <div className="helper-copilot-chat" style={{ width: copilotOpen ? 400 : 0 }}>
