@@ -1,5 +1,5 @@
-import React from 'react';
-import { Avatar, Button, message } from 'antd';
+import React, { useState } from 'react';
+import { Avatar, Button, message, Modal, Input } from 'antd';
 import { Conversations } from '@ant-design/x';
 import { EditOutlined, DeleteOutlined, PlusOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
@@ -29,6 +29,82 @@ const ChatSider: React.FC<ChatSiderProps> = ({
     onMessageHistoryChange,
     isInitialLoad = false,
 }) => {
+    // 重命名相关状态
+    const [renameModalVisible, setRenameModalVisible] = useState(false);
+    const [renameConversationKey, setRenameConversationKey] = useState<string>('');
+    const [newConversationName, setNewConversationName] = useState<string>('');
+
+    // 处理重命名
+    const handleRename = (conversationKey: string, currentName: string) => {
+        setRenameConversationKey(conversationKey);
+        setNewConversationName(currentName);
+        setRenameModalVisible(true);
+    };
+
+    // 确认重命名
+    const handleRenameConfirm = () => {
+        if (!newConversationName.trim()) {
+            message.error('会话名称不能为空');
+            return;
+        }
+
+        const updatedConversations = conversations.map(conversation => 
+            conversation.key === renameConversationKey 
+                ? { ...conversation, label: newConversationName.trim() }
+                : conversation
+        );
+        
+        onConversationsChange(updatedConversations);
+        setRenameModalVisible(false);
+        setRenameConversationKey('');
+        setNewConversationName('');
+        message.success('重命名成功');
+    };
+
+    // 处理删除
+    const handleDelete = (conversationKey: string) => {
+        Modal.confirm({
+            title: '删除会话',
+            content: '确定要删除这个会话吗？此操作不可恢复。',
+            okText: '确定',
+            cancelText: '取消',
+            okType: 'danger',
+            onOk() {
+                const newConversations = conversations.filter(conversation => conversation.key !== conversationKey);
+                
+                // 如果删除后没有会话了，创建一个新的默认会话
+                if (newConversations.length === 0) {
+                    const timeNow = dayjs().valueOf().toString();
+                    const defaultConversation = { 
+                        key: timeNow, 
+                        label: '新会话 1', 
+                        group: 'Today' 
+                    };
+                    onConversationsChange([defaultConversation]);
+                    onCurConversationChange(timeNow);
+                    onMessagesChange([]);
+                } else {
+                    onConversationsChange(newConversations);
+                    // 如果删除的是当前会话，切换到第一个会话
+                    if (conversationKey === curConversation) {
+                        const newKey = newConversations[0].key;
+                        onCurConversationChange(newKey);
+                        onMessagesChange(messageHistory?.[newKey] || []);
+                    }
+                }
+                
+                // 删除对应的消息历史
+                if (onMessageHistoryChange) {
+                    const newHistory = { ...messageHistory };
+                    delete newHistory[conversationKey];
+                    onMessageHistoryChange(newHistory);
+                }
+                
+                message.success('会话删除成功');
+            },
+        });
+    };
+
     return (
         <div className="copilot-sider">
             {/* 🌟 Logo */}
@@ -101,42 +177,45 @@ const ChatSider: React.FC<ChatSiderProps> = ({
                             label: '重命名',
                             key: 'rename',
                             icon: <EditOutlined />,
+                            onClick: () => handleRename(conversation.key, String(conversation.label || '')),
                         },
                         {
                             label: '删除',
                             key: 'delete',
                             icon: <DeleteOutlined />,
                             danger: true,
-                            onClick: () => {
-                                const newList = conversations.filter((item) => item.key !== conversation.key);
-                                const newKey = newList?.[0]?.key;
-                                onConversationsChange(newList);
-                                
-                                // 删除对应的消息历史
-                                if (onMessageHistoryChange) {
-                                    const newHistory = { ...messageHistory };
-                                    delete newHistory[conversation.key];
-                                    onMessageHistoryChange(newHistory);
-                                }
-                                
-                                // 删除操作会修改 curConversation 并触发 onActiveChange，因此需要延迟执行以确保最终正确覆盖
-                                // 此功能将在未来版本中修复
-                                setTimeout(() => {
-                                    if (conversation.key === curConversation) {
-                                        onCurConversationChange(newKey);
-                                        onMessagesChange(messageHistory?.[newKey] || []);
-                                    }
-                                }, 200);
-                            },
+                            onClick: () => handleDelete(conversation.key),
                         },
                     ],
                 })}
             />
 
+            {/* 🌟 底部 */}
             <div className="copilot-sider-footer">
                 <Avatar size={24} />
                 <Button type="text" icon={<QuestionCircleOutlined />} />
             </div>
+
+            {/* 重命名模态框 */}
+            <Modal
+                title="重命名会话"
+                open={renameModalVisible}
+                onOk={handleRenameConfirm}
+                onCancel={() => {
+                    setRenameModalVisible(false);
+                    setRenameConversationKey('');
+                    setNewConversationName('');
+                }}
+                okText="确定"
+                cancelText="取消"
+            >
+                <Input
+                    value={newConversationName}
+                    onChange={(e) => setNewConversationName(e.target.value)}
+                    placeholder="请输入新的会话名称"
+                    onPressEnter={handleRenameConfirm}
+                />
+            </Modal>
         </div>
     );
 };
