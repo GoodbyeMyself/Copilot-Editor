@@ -46,6 +46,9 @@ const AccessPage: React.FC = () => {
 
     const [inputValue, setInputValue] = useState('');
 
+    // 保存AI已经输出的内容
+    const currentAIContent = useRef<string>('');
+
     /**
      * 🔔 Please replace the BASE_URL, PATH, MODEL, API_KEY with your own values.
      */
@@ -61,21 +64,36 @@ const AccessPage: React.FC = () => {
 
     const { onRequest, messages, setMessages } = useXChat({
         agent,
-        requestFallback: (_, { error }) => {
+        requestFallback: (currentMessage, { error }) => {
+
+            console.log('currentMessage', currentMessage);
+
             if (error?.name === 'AbortError') {
+                // 获取AI已经输出的内容（originMessage的content）
+                const existingContent = currentAIContent.current || '';
+                const cancelledContent = existingContent 
+                    ? `${existingContent}\n\n *** [请求已取消] ***`
+                    : '请求已取消';
+                
                 return {
-                    content: '请求已取消',
+                    content: cancelledContent,
                     role: 'assistant',
                 };
             }
-            console.error('Request error:', error);
             return {
                 content: '请求失败，请重试！',
                 role: 'assistant',
             };
         },
         transformMessage: (info) => {
+
+            console.log(info, '<- 打印 xxx');
+
             const { originMessage, chunk } = info || {};
+            
+            // 保存AI已经输出的内容
+            currentAIContent.current = originMessage?.content || '';
+            
             let currentContent = '';
             let currentThink = '';
             try {
