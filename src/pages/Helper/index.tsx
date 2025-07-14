@@ -194,12 +194,13 @@ const Copilot = (props: CopilotProps) => {
         },
         onSetMessages: setMessages,
         onAbort: () => abortController.current?.abort(),
-        onClearHistory: () => {
-            // 重置所有状态到初始值
-            setSessionList(MOCK_SESSION_LIST);
-            setMessageHistory({});
-            setCurSession(MOCK_SESSION_LIST[0].key);
-            setMessages([]);
+        onDeleteSession: (sessionId: string) => {
+            // 从消息历史中删除对应的会话记录
+            const updatedHistory = { ...messageHistory };
+            delete updatedHistory[sessionId];
+            setMessageHistory(updatedHistory);
+            // 保存到localStorage
+            saveMessageHistory(updatedHistory);
         },
     };
 

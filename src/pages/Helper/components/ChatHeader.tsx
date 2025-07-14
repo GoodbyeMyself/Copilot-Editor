@@ -2,6 +2,7 @@ import {
     CloseOutlined,
     CommentOutlined,
     DeleteOutlined,
+    EditOutlined,
     PlusOutlined,
 } from '@ant-design/icons';
 
@@ -11,13 +12,11 @@ import {
 
 import type { Conversation } from '@ant-design/x/es/conversations';
 
-import { Button, Popover, Space, message, Modal } from 'antd';
+import { Button, Popover, Space, message, Modal, Input } from 'antd';
 
 import dayjs from 'dayjs';
 
-import React from 'react';
-
-import { clearAllStorage } from '../utils/storage';
+import React, { useState } from 'react';
 
 interface ChatHeaderProps {
     sessionList: Conversation[];
@@ -29,7 +28,7 @@ interface ChatHeaderProps {
     onSetCurSession: (session: string) => void;
     onSetMessages: (messages: any[]) => void;
     onAbort: () => void;
-    onClearHistory?: () => void;
+    onDeleteSession: (sessionId: string) => void;
 }
 
 const ChatHeader: React.FC<ChatHeaderProps> = ({
@@ -42,20 +41,64 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
     onSetCurSession,
     onSetMessages,
     onAbort,
-    onClearHistory,
+    onDeleteSession,
 }) => {
+    const [renameModalVisible, setRenameModalVisible] = useState(false);
+    const [renameSessionId, setRenameSessionId] = useState<string>('');
+    const [newSessionName, setNewSessionName] = useState<string>('');
 
-    const handleClearHistory = () => {
+    const handleRename = (sessionId: string, currentName: string) => {
+        setRenameSessionId(sessionId);
+        setNewSessionName(currentName);
+        setRenameModalVisible(true);
+    };
+
+    const handleRenameConfirm = () => {
+        if (!newSessionName.trim()) {
+            message.error('会话名称不能为空');
+            return;
+        }
+
+        const updatedSessionList = sessionList.map(session => 
+            session.key === renameSessionId 
+                ? { ...session, label: newSessionName.trim() }
+                : session
+        );
+        
+        onSetSessionList(updatedSessionList);
+        setRenameModalVisible(false);
+        setRenameSessionId('');
+        setNewSessionName('');
+        message.success('重命名成功');
+    };
+
+    const handleDelete = (sessionId: string) => {
         Modal.confirm({
-            title: '清除历史记录',
-            content: '确定要清除所有会话历史记录吗？此操作不可恢复。',
+            title: '删除会话',
+            content: '确定要删除这个会话吗？此操作不可恢复。',
             okText: '确定',
             cancelText: '取消',
             okType: 'danger',
             onOk() {
-                clearAllStorage();
-                onClearHistory?.();
-                message.success('历史记录已清除');
+                const newSessionList = sessionList.filter(session => session.key !== sessionId);
+                
+                // 如果删除后没有会话了，创建一个新的默认会话
+                if (newSessionList.length === 0) {
+                    const timeNow = dayjs().valueOf().toString();
+                    const defaultSession = { key: timeNow, label: 'New session', group: 'Today' };
+                    onSetSessionList([defaultSession]);
+                    onSetCurSession(timeNow);
+                    onSetMessages([]);
+                } else {
+                    onSetSessionList(newSessionList);
+                    // 如果删除的是当前会话，切换到第一个会话
+                    if (sessionId === curSession) {
+                        onSetCurSession(newSessionList[0].key);
+                    }
+                }
+                
+                onDeleteSession(sessionId);
+                message.success('会话已删除');
             },
         });
     };
@@ -98,37 +141,39 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
                     placement="bottom"
                     styles={{ body: { padding: 0, maxHeight: 600 } }}
                     content={
-                        <div>
-                            <Conversations
-                                items={sessionList?.map((i) =>
-                                    i.key === curSession ? { ...i, label: `[current] ${i.label}` } : i,
-                                )}
-                                activeKey={curSession}
-                                groupable
-                                onActiveChange={async (val) => {
-                                    onAbort();
-                                    // The abort execution will trigger an asynchronous requestFallback, which may lead to timing issues.
-                                    // In future versions, the sessionId capability will be added to resolve this problem.
-                                    setTimeout(() => {
-                                        onSetCurSession(val);
-                                        // 消息恢复逻辑已移至主组件的onSetCurSession回调中处理
-                                    }, 100);
-                                }}
-                                styles={{ item: { padding: '0 8px' } }}
-                                className="helper-conversations"
-                            />
-                            <div style={{ padding: '8px', borderTop: '1px solid #f0f0f0' }}>
-                                <Button 
-                                    danger
-                                    size="small"
-                                    icon={<DeleteOutlined />}
-                                    onClick={handleClearHistory}
-                                    style={{ width: '100%' }}
-                                >
-                                    清除历史记录
-                                </Button>
-                            </div>
-                        </div>
+                        <Conversations
+                            items={sessionList?.map((i) => i)}
+                            activeKey={curSession}
+                            groupable
+                            onActiveChange={async (val) => {
+                                onAbort();
+                                // The abort execution will trigger an asynchronous requestFallback, which may lead to timing issues.
+                                // In future versions, the sessionId capability will be added to resolve this problem.
+                                setTimeout(() => {
+                                    onSetCurSession(val);
+                                    // 消息恢复逻辑已移至主组件的onSetCurSession回调中处理
+                                }, 100);
+                            }}
+                            styles={{ item: { padding: '0 8px' } }}
+                            className="helper-conversations"
+                            menu={(conversation) => ({
+                                items: [
+                                    {
+                                        label: '重命名',
+                                        key: 'rename',
+                                        icon: <EditOutlined />,
+                                        onClick: () => handleRename(conversation.key, String(conversation.label || '')),
+                                    },
+                                    {
+                                        label: '删除',
+                                        key: 'delete',
+                                        icon: <DeleteOutlined />,
+                                        danger: true,
+                                        onClick: () => handleDelete(conversation.key),
+                                    },
+                                ],
+                            })}
+                        />
                     }
                 >
                     <Button type="text" icon={<CommentOutlined />} className="helper-header-button" />
@@ -140,6 +185,28 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
                     className="helper-header-button"
                 />
             </Space>
+
+            {/* 重命名模态框 */}
+            <Modal
+                title="重命名会话"
+                open={renameModalVisible}
+                onOk={handleRenameConfirm}
+                onCancel={() => {
+                    setRenameModalVisible(false);
+                    setRenameSessionId('');
+                    setNewSessionName('');
+                }}
+                okText="确定"
+                cancelText="取消"
+            >
+                <Input
+                    value={newSessionName}
+                    onChange={(e) => setNewSessionName(e.target.value)}
+                    placeholder="请输入新的会话名称"
+                    onPressEnter={handleRenameConfirm}
+                    autoFocus
+                />
+            </Modal>
         </div>
     );
 };
