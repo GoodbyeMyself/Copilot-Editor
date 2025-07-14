@@ -176,4 +176,13 @@
 .helper-body-text {
     color: #000000d9;
     padding: 8px;
-} 
+}
+
+.helper-chat-list .ant-welcome {
+    width: calc(100% - 32px);
+    margin: 0 16px 24px 16px;
+}
+.helper-chat-list .ant-welcome .ant-welcome-icon {
+    width: 72px;
+    height: 40px;
+}

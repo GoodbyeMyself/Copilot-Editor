@@ -10,6 +10,7 @@ import {
 import {
     Bubble,
     Prompts,
+    Welcome
 } from '@ant-design/x';
 
 import { Avatar, Button, Space, Spin } from 'antd';
@@ -87,6 +88,15 @@ const ChatList: React.FC<ChatListProps> = ({
                 />
             ) : (
                 <>
+                    <Welcome
+                        style={{
+                            backgroundImage: 'linear-gradient(97deg, #f2f9fe 0%, #f7f3ff 100%)',
+                            borderStartStartRadius: 4,
+                        }}
+                        icon="https://mdn.alipayobjects.com/huamei_iwk9zp/afts/img/A*s5sNRo5LjfQAAAAAAAAAAAAADgCCAQ/fmt.webp"
+                        title="Hi! I'm SQL Copilot 智能助手"
+                        description="Base on Ant Design, AGI product interface solution, create a better intelligent vision~"
+                    />
                     <Prompts
                         vertical
                         title="我可以帮助您："
