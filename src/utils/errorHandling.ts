@@ -22,7 +22,7 @@ interface ErrorHandlingConfig {
 // 扩展全局 Error 构造函数的类型定义
 declare global {
     interface ErrorConstructor {
-        captureStackTrace?(targetObject: object, constructorOpt?: Function): void;
+        captureStackTrace?(targetObject: object, constructorOpt?: (...args: any[]) => any): void;
     }
 }
 
@@ -45,6 +45,10 @@ const IGNORED_WARNING_MESSAGES = [
     "Warning: StrictMode double-invocation",
     "Warning: Cannot update a component while rendering a different component",
     "[antd: Form.Item] `children` is array",
+    // 忽略 AbortError 相关的错误消息
+    "AbortError: BodyStreamBuffer was aborted",
+    "AbortError: The operation was aborted",
+    "AbortError: Aborted",
 ] as const;
 
 // 默认配置
@@ -57,7 +61,17 @@ const DEFAULT_CONFIG: ErrorHandlingConfig = {
 // 简化的警告过滤器
 class WarningFilter {
     static shouldIgnore(message: unknown): boolean {
-        if (typeof message !== "string") return false;
+        if (typeof message !== "string") {
+            // 检查是否是 AbortError 对象
+            if (message instanceof Error && message.name === "AbortError") {
+                return true;
+            }
+            // 检查是否是 DOMException AbortError
+            if (message instanceof DOMException && message.name === "AbortError") {
+                return true;
+            }
+            return false;
+        }
 
         return IGNORED_WARNING_MESSAGES.some((warningMsg) =>
             message.includes(warningMsg)
@@ -105,6 +119,11 @@ class ErrorHandler {
     };
 
     handle(error: Error | unknown, errorInfo: ErrorInfo): void {
+        // 首先检查是否应该忽略这个错误
+        if (WarningFilter.shouldIgnore(error)) {
+            return;
+        }
+
         if (this.throttler.shouldThrottle()) {
             console.warn("Too many errors, throttling error handling");
             return;
