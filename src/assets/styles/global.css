@@ -35,3 +35,7 @@
     height: calc(100vh - 58px);
     background-color: #fff;
 }
+
+.ant-bubble .ant-bubble-content-wrapper {
+    max-width: calc(100% - 88px);
+}
