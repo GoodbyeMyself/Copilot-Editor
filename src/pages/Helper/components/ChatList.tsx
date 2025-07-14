@@ -19,18 +19,16 @@ import React from 'react';
 import { MOCK_QUESTIONS, AGENT_PLACEHOLDER } from '../constants';
 
 interface ChatListProps {
-    styles: any;
     messages: any[];
-    onUserSubmit: (val: string) => void;
+    onUserSubmit?: (val: string) => void;
 }
 
 const ChatList: React.FC<ChatListProps> = ({
-    styles,
     messages,
     onUserSubmit,
 }) => {
     return (
-        <div className={styles.chatList}>
+        <div className="helper-chat-list">
             {messages?.length ? (
                 /** 消息列表 */
                 <Bubble.List
@@ -38,7 +36,7 @@ const ChatList: React.FC<ChatListProps> = ({
                     items={messages?.map((i) => ({
                         ...i.message,
                         classNames: {
-                            content: i.status === 'loading' ? styles.loadingMessage : '',
+                            content: i.status === 'loading' ? 'helper-loading-message' : '',
                         },
                         typing: i.status === 'loading' ? { step: 5, interval: 20, suffix: <>💗</> } : false,
                     }))}
@@ -52,7 +50,7 @@ const ChatList: React.FC<ChatListProps> = ({
                                 />
                             ),
                             header: (
-                                <div className={styles.assistantHeader}>
+                                <div className="helper-assistant-header">
                                     AI 助手
                                 </div>
                             ),
@@ -80,7 +78,7 @@ const ChatList: React.FC<ChatListProps> = ({
                                 />
                             ),
                             header: (
-                                <div className={styles.userHeader}>
+                                <div className="helper-user-header">
                                     用户
                                 </div>
                             ),
@@ -91,9 +89,9 @@ const ChatList: React.FC<ChatListProps> = ({
                 <>
                     <Prompts
                         vertical
-                        title="I can help："
+                        title="我可以帮助您："
                         items={MOCK_QUESTIONS.map((i) => ({ key: i, description: i }))}
-                        onItemClick={(info) => onUserSubmit(info?.data?.description as string)}
+                        onItemClick={(info) => onUserSubmit?.(info?.data?.description as string)}
                         style={{
                             marginInline: 16,
                         }}

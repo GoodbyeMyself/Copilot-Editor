@@ -13,7 +13,7 @@ import { GetProp, GetRef } from 'antd';
 
 import React, { useEffect, useRef, useState } from 'react';
 
-import { useCopilotStyle, useWorkareaStyle } from './styles';
+import './styles.css';
 import { MOCK_SESSION_LIST } from './constants';
 import { ChatHeader, ChatList, ChatSender } from './components';
 
@@ -29,7 +29,6 @@ interface CopilotProps {
 
 const Copilot = (props: CopilotProps) => {
     const { copilotOpen, setCopilotOpen } = props;
-    const { styles } = useCopilotStyle();
     const attachmentsRef = useRef<GetRef<typeof Attachments>>(null);
     const abortController = useRef<AbortController | null>(null);
 
@@ -135,7 +134,6 @@ const Copilot = (props: CopilotProps) => {
 
     // 准备传递给子组件的 props
     const chatHeaderProps = {
-        styles,
         sessionList,
         curSession,
         messages,
@@ -149,7 +147,6 @@ const Copilot = (props: CopilotProps) => {
     };
 
     const chatListProps = {
-        styles,
         messages,
         onUserSubmit: handleUserSubmit,
     };
@@ -163,7 +160,6 @@ const Copilot = (props: CopilotProps) => {
     };
 
     const chatSenderProps = {
-        styles,
         inputValue,
         loading,
         attachmentsOpen,
@@ -186,7 +182,7 @@ const Copilot = (props: CopilotProps) => {
     }, [messages]);
 
     return (
-        <div className={styles.copilotChat} style={{ width: copilotOpen ? 400 : 0 }}>
+        <div className="helper-copilot-chat" style={{ width: copilotOpen ? 400 : 0 }}>
             {/** 对话区 - header */}
             <ChatHeader {...chatHeaderProps} />
 
@@ -201,8 +197,6 @@ const Copilot = (props: CopilotProps) => {
 
 const AccessPage: React.FC = () => {
 
-    const { styles: workareaStyles } = useWorkareaStyle();
-
     // ==================== State =================
     const [copilotOpen, setCopilotOpen] = useState(true);
 
@@ -210,11 +204,11 @@ const AccessPage: React.FC = () => {
         <PageContainer
             ghost
         >
-            <div className={workareaStyles.copilotWrapper}>
+            <div className="helper-copilot-wrapper">
                 {/** 左侧工作区 */}
-                <div className={workareaStyles.workarea}>
-                    <div className={workareaStyles.workareaHeader}>
-                        <div className={workareaStyles.headerTitle}>
+                <div className="helper-workarea">
+                    <div className="helper-workarea-header">
+                        <div className="helper-workarea-header-title">
                             <img
                                 src="https://mdn.alipayobjects.com/huamei_iwk9zp/afts/img/A*eco6RrQhxbMAAAAAAAAAAAAADgCCAQ/original"
                                 draggable={false}
@@ -225,17 +219,17 @@ const AccessPage: React.FC = () => {
                             助手式 Copilot
                         </div>
                         {!copilotOpen && (
-                            <div onClick={() => setCopilotOpen(true)} className={workareaStyles.headerButton}>
+                            <div onClick={() => setCopilotOpen(true)} className="helper-workarea-header-button">
                                 ✨ AI Copilot
                             </div>
                         )}
                     </div>
 
                     <div
-                        className={workareaStyles.workareaBody}
+                        className="helper-workarea-body"
                         style={{ margin: copilotOpen ? 16 : '16px 48px' }}
                     >
-                        <div className={workareaStyles.bodyContent}>
+                        <div className="helper-body-content">
                             业务区域
                         </div>
                     </div>

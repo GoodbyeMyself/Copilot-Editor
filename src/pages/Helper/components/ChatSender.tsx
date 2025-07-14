@@ -18,7 +18,6 @@ import { MOCK_SUGGESTIONS } from '../constants';
 import SendHeader from './SendHeader';
 
 interface ChatSenderProps {
-    styles: any;
     inputValue: string;
     loading: boolean;
     attachmentsOpen: boolean;
@@ -31,7 +30,6 @@ interface ChatSenderProps {
 }
 
 const ChatSender: React.FC<ChatSenderProps> = ({
-    styles,
     inputValue,
     loading,
     attachmentsOpen,
@@ -43,8 +41,8 @@ const ChatSender: React.FC<ChatSenderProps> = ({
     onPasteFile,
 }) => {
     return (
-        <div className={styles.chatSend}>
-            <div className={styles.sendAction}>
+        <div className="helper-chat-send">
+            <div className="helper-send-action">
                 <Button
                     icon={<ScheduleOutlined />}
                     onClick={() => onUserSubmit('What has Ant Design X upgraded?')}
@@ -93,7 +91,7 @@ const ChatSender: React.FC<ChatSenderProps> = ({
                             const { SendButton, LoadingButton, SpeechButton } = info.components;
                             return (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                    <SpeechButton className={styles.speechButton} />
+                                    <SpeechButton className="helper-speech-button" />
                                     {loading ? <LoadingButton type="default" /> : <SendButton type="primary" />}
                                 </div>
                             );

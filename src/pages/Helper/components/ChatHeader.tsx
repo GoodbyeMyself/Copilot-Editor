@@ -17,7 +17,6 @@ import dayjs from 'dayjs';
 import React from 'react';
 
 interface ChatHeaderProps {
-    styles: any;
     sessionList: Conversation[];
     curSession: string;
     messages: any[];
@@ -31,7 +30,6 @@ interface ChatHeaderProps {
 }
 
 const ChatHeader: React.FC<ChatHeaderProps> = ({
-    styles,
     sessionList,
     curSession,
     messages,
@@ -44,8 +42,8 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
     messageHistory,
 }) => {
     return (
-        <div className={styles.chatHeader}>
-            <div className={styles.headerTitle}>✨ AI Copilot</div>
+        <div className="helper-chat-header">
+            <div className="helper-header-title">✨ AI Copilot</div>
             <Space size={0}>
                 <Button
                     type="text"
@@ -75,7 +73,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
                             message.error('It is now a new conversation.');
                         }
                     }}
-                    className={styles.headerButton}
+                    className="helper-header-button"
                 />
                 <Popover
                     placement="bottom"
@@ -97,17 +95,17 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
                                 }, 100);
                             }}
                             styles={{ item: { padding: '0 8px' } }}
-                            className={styles.conversations}
+                            className="helper-conversations"
                         />
                     }
                 >
-                    <Button type="text" icon={<CommentOutlined />} className={styles.headerButton} />
+                    <Button type="text" icon={<CommentOutlined />} className="helper-header-button" />
                 </Popover>
                 <Button
                     type="text"
                     icon={<CloseOutlined />}
                     onClick={() => onSetCopilotOpen(false)}
-                    className={styles.headerButton}
+                    className="helper-header-button"
                 />
             </Space>
         </div>
