@@ -44,6 +44,9 @@ const Copilot = (props: CopilotProps) => {
 
     const [inputValue, setInputValue] = useState('');
 
+    // 保存AI已经输出的内容
+    const currentAIContent = useRef<string>('');
+
     /**
      * 🔔 Please replace the BASE_URL, PATH, MODEL, API_KEY with your own values.
      */
@@ -62,8 +65,14 @@ const Copilot = (props: CopilotProps) => {
         agent,
         requestFallback: (_, { error }) => {
             if (error.name === 'AbortError') {
+                // 获取AI已经输出的内容（originMessage的content）
+                const existingContent = currentAIContent.current || '';
+                const cancelledContent = existingContent 
+                    ? `${existingContent}\n\n --- [请求已取消] ---`
+                    : '请求已取消';
+                
                 return {
-                    content: 'Request is aborted',
+                    content: cancelledContent,
                     role: 'assistant',
                 };
             }
@@ -74,6 +83,10 @@ const Copilot = (props: CopilotProps) => {
         },
         transformMessage: (info) => {
             const { originMessage, chunk } = info || {};
+            
+            // 保存AI已经输出的内容
+            currentAIContent.current = originMessage?.content || '';
+            
             let currentContent = '';
             let currentThink = '';
             try {
