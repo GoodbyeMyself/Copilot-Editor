@@ -23,6 +23,33 @@ type BubbleDataType = {
     content: string;
 };
 
+// localStorage 键名常量
+const STORAGE_KEYS = {
+    CONVERSATIONS: 'copilot_conversations',
+    MESSAGE_HISTORY: 'copilot_message_history',
+    CURRENT_CONVERSATION: 'copilot_current_conversation',
+};
+
+// 从localStorage加载数据的工具函数
+const loadFromStorage = (key: string, defaultValue: any) => {
+    try {
+        const stored = localStorage.getItem(key);
+        return stored ? JSON.parse(stored) : defaultValue;
+    } catch (error) {
+        console.warn(`从 localStorage 加载 ${key} 失败:`, error);
+        return defaultValue;
+    }
+};
+
+// 保存数据到localStorage的工具函数
+const saveToStorage = (key: string, value: any) => {
+    try {
+        localStorage.setItem(key, JSON.stringify(value));
+    } catch (error) {
+        console.warn(`保存 ${key} 到 localStorage 失败:`, error);
+    }
+};
+
 const AccessPage: React.FC = () => {
     const abortController = useRef<AbortController | null>(null);
 
@@ -36,10 +63,29 @@ const AccessPage: React.FC = () => {
     });
 
     // ==================== State ====================
-    const [messageHistory, setMessageHistory] = useState<Record<string, any>>({});
+    // 从localStorage加载会话记录，如果没有则使用默认值
+    const [messageHistory, setMessageHistory] = useState<Record<string, any>>(() => 
+        loadFromStorage(STORAGE_KEYS.MESSAGE_HISTORY, {})
+    );
 
-    const [conversations, setConversations] = useState(DEFAULT_CONVERSATIONS_ITEMS);
-    const [curConversation, setCurConversation] = useState(DEFAULT_CONVERSATIONS_ITEMS[0].key);
+    // 从localStorage加载会话列表，如果没有则使用默认值
+    const [conversations, setConversations] = useState(() => 
+        loadFromStorage(STORAGE_KEYS.CONVERSATIONS, DEFAULT_CONVERSATIONS_ITEMS)
+    );
+
+    // 从localStorage加载当前会话，如果没有则使用默认值
+    const [curConversation, setCurConversation] = useState(() => {
+        const stored = loadFromStorage(STORAGE_KEYS.CURRENT_CONVERSATION, null);
+        const loadedConversations = loadFromStorage(STORAGE_KEYS.CONVERSATIONS, DEFAULT_CONVERSATIONS_ITEMS);
+        // 确保当前会话在会话列表中存在
+        if (stored && loadedConversations.some((conv: any) => conv.key === stored)) {
+            return stored;
+        }
+        return loadedConversations[0]?.key || DEFAULT_CONVERSATIONS_ITEMS[0].key;
+    });
+
+    // 添加一个状态来标记是否是首次加载（用于控制是否显示欢迎页面）
+    const [isInitialLoad, setIsInitialLoad] = useState(true);
 
     const [attachmentsOpen, setAttachmentsOpen] = useState(false);
     const [attachedFiles, setAttachedFiles] = useState<GetProp<typeof Attachments, 'items'>>([]);
@@ -65,9 +111,6 @@ const AccessPage: React.FC = () => {
     const { onRequest, messages, setMessages } = useXChat({
         agent,
         requestFallback: (currentMessage, { error }) => {
-
-            console.log('currentMessage', currentMessage);
-
             if (error?.name === 'AbortError') {
                 // 获取AI已经输出的内容（originMessage的content）
                 const existingContent = currentAIContent.current || '';
@@ -86,9 +129,6 @@ const AccessPage: React.FC = () => {
             };
         },
         transformMessage: (info) => {
-
-            console.log(info, '<- 打印 xxx');
-
             const { originMessage, chunk } = info || {};
             
             // 保存AI已经输出的内容
@@ -138,11 +178,49 @@ const AccessPage: React.FC = () => {
             return;
         }
 
+        // 如果是首次加载，提交消息时结束首次加载状态
+        if (isInitialLoad) {
+            setIsInitialLoad(false);
+        }
+
         onRequest({
             stream: true,
             message: { role: 'user', content: val },
         });
     };
+
+    // 处理会话切换
+    const handleConversationChange = (conversationKey: string) => {
+        // 手动点击会话时，结束首次加载状态并加载对话内容
+        setIsInitialLoad(false);
+        setCurConversation(conversationKey);
+        const conversationMessages = messageHistory[conversationKey] || [];
+        setMessages(conversationMessages);
+    };
+
+    // ==================== localStorage 持久化 ====================
+    // 保存会话列表到localStorage
+    useEffect(() => {
+        saveToStorage(STORAGE_KEYS.CONVERSATIONS, conversations);
+    }, [conversations]);
+
+    // 保存当前会话到localStorage
+    useEffect(() => {
+        saveToStorage(STORAGE_KEYS.CURRENT_CONVERSATION, curConversation);
+    }, [curConversation]);
+
+    // 保存消息历史到localStorage
+    useEffect(() => {
+        saveToStorage(STORAGE_KEYS.MESSAGE_HISTORY, messageHistory);
+    }, [messageHistory]);
+
+    // 只有在非首次加载时才自动加载当前会话的消息
+    useEffect(() => {
+        if (!isInitialLoad) {
+            const currentMessages = messageHistory[curConversation] || [];
+            setMessages(currentMessages);
+        }
+    }, [curConversation, messageHistory, setMessages, isInitialLoad]);
 
     // ==================== 组件渲染 ====================
     const senderHeader = (
@@ -155,14 +233,14 @@ const AccessPage: React.FC = () => {
     );
 
     useEffect(() => {
-        // history mock
+        // 保存消息历史到状态和localStorage
         if (messages?.length) {
             setMessageHistory((prev) => ({
                 ...prev,
                 [curConversation]: messages,
             }));
         }
-    }, [messages]);
+    }, [messages, curConversation]);
 
     return (
         <PageContainer
@@ -176,13 +254,15 @@ const AccessPage: React.FC = () => {
                     isRequesting={agent.isRequesting()}
                     abortController={abortController}
                     onConversationsChange={setConversations}
-                    onCurConversationChange={setCurConversation}
+                    onCurConversationChange={handleConversationChange}
                     onMessagesChange={setMessages}
+                    onMessageHistoryChange={setMessageHistory}
+                    isInitialLoad={isInitialLoad}
                 />
 
                 <div className="copilot-chat">
                     <ChatList
-                        messages={messages}
+                        messages={isInitialLoad ? [] : messages}
                         hotTopics={HOT_TOPICS}
                         designGuide={DESIGN_GUIDE}
                         onSubmit={onSubmit}

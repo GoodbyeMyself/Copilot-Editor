@@ -13,6 +13,8 @@ interface ChatSiderProps {
     onConversationsChange: (conversations: any[]) => void;
     onCurConversationChange: (key: string) => void;
     onMessagesChange: (messages: any[]) => void;
+    onMessageHistoryChange?: (history: Record<string, any>) => void;
+    isInitialLoad?: boolean;
 }
 
 const ChatSider: React.FC<ChatSiderProps> = ({
@@ -24,6 +26,8 @@ const ChatSider: React.FC<ChatSiderProps> = ({
     onConversationsChange,
     onCurConversationChange,
     onMessagesChange,
+    onMessageHistoryChange,
+    isInitialLoad = false,
 }) => {
     return (
         <div className="copilot-sider">
@@ -59,8 +63,8 @@ const ChatSider: React.FC<ChatSiderProps> = ({
                         ...conversations,
                     ];
                     onConversationsChange(newConversations);
+                    // 使用 onCurConversationChange 而不是直接调用 onMessagesChange
                     onCurConversationChange(now);
-                    onMessagesChange([]);
                 }}
                 type="link"
                 className="copilot-add-btn"
@@ -73,7 +77,7 @@ const ChatSider: React.FC<ChatSiderProps> = ({
             <Conversations
                 items={conversations}
                 className="copilot-conversations"
-                activeKey={curConversation}
+                activeKey={isInitialLoad ? undefined : curConversation}
                 onActiveChange={async (val) => {
                     // 安全地中止当前请求
                     if (abortController.current) {
@@ -107,6 +111,14 @@ const ChatSider: React.FC<ChatSiderProps> = ({
                                 const newList = conversations.filter((item) => item.key !== conversation.key);
                                 const newKey = newList?.[0]?.key;
                                 onConversationsChange(newList);
+                                
+                                // 删除对应的消息历史
+                                if (onMessageHistoryChange) {
+                                    const newHistory = { ...messageHistory };
+                                    delete newHistory[conversation.key];
+                                    onMessageHistoryChange(newHistory);
+                                }
+                                
                                 // 删除操作会修改 curConversation 并触发 onActiveChange，因此需要延迟执行以确保最终正确覆盖
                                 // 此功能将在未来版本中修复
                                 setTimeout(() => {
