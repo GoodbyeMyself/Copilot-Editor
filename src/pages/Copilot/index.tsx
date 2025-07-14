@@ -191,11 +191,20 @@ const AccessPage: React.FC = () => {
 
     // 处理会话切换
     const handleConversationChange = (conversationKey: string) => {
+        // 如果切换到相同的会话，不需要做任何操作
+        if (conversationKey === curConversation && !isInitialLoad) {
+            return;
+        }
+        
         // 手动点击会话时，结束首次加载状态并加载对话内容
         setIsInitialLoad(false);
         setCurConversation(conversationKey);
         const conversationMessages = messageHistory[conversationKey] || [];
-        setMessages(conversationMessages);
+        
+        // 只有当消息实际不同时才更新
+        if (JSON.stringify(conversationMessages) !== JSON.stringify(messages)) {
+            setMessages(conversationMessages);
+        }
     };
 
     // ==================== localStorage 持久化 ====================
@@ -214,13 +223,22 @@ const AccessPage: React.FC = () => {
         saveToStorage(STORAGE_KEYS.MESSAGE_HISTORY, messageHistory);
     }, [messageHistory]);
 
+    // 添加一个ref来缓存上一次的消息，避免重复比较
+    const prevMessagesRef = useRef<any[]>([]);
+    // 添加一个ref来缓存上一次保存到历史的消息
+    const prevSavedMessagesRef = useRef<Record<string, any[]>>({});
+
     // 只有在非首次加载时才自动加载当前会话的消息
     useEffect(() => {
-        if (!isInitialLoad) {
+        if (!isInitialLoad && curConversation) {
             const currentMessages = messageHistory[curConversation] || [];
-            setMessages(currentMessages);
+            // 只有当消息实际不同时才更新，避免无限循环
+            if (JSON.stringify(currentMessages) !== JSON.stringify(prevMessagesRef.current)) {
+                prevMessagesRef.current = currentMessages;
+                setMessages(currentMessages);
+            }
         }
-    }, [curConversation, messageHistory, setMessages, isInitialLoad]);
+    }, [curConversation, isInitialLoad]); // 移除 messageHistory 和 setMessages 从依赖数组
 
     // ==================== 组件渲染 ====================
     const senderHeader = (
@@ -234,11 +252,23 @@ const AccessPage: React.FC = () => {
 
     useEffect(() => {
         // 保存消息历史到状态和localStorage
-        if (messages?.length) {
-            setMessageHistory((prev) => ({
-                ...prev,
-                [curConversation]: messages,
-            }));
+        if (messages?.length && curConversation) {
+            // 检查是否与上次保存的消息相同
+            const lastSavedMessages = prevSavedMessagesRef.current[curConversation];
+            if (JSON.stringify(lastSavedMessages) !== JSON.stringify(messages)) {
+                prevSavedMessagesRef.current[curConversation] = messages;
+                setMessageHistory((prev) => {
+                    // 避免不必要的状态更新
+                    const currentMessages = prev[curConversation];
+                    if (JSON.stringify(currentMessages) !== JSON.stringify(messages)) {
+                        return {
+                            ...prev,
+                            [curConversation]: messages,
+                        };
+                    }
+                    return prev;
+                });
+            }
         }
     }, [messages, curConversation]);
 
