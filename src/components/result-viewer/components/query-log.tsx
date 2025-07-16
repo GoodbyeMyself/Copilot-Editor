@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useQuery } from "@/context/query/useQuery";
+import EmptyResults from "./empty";
 
 export default function QueryLog() {
     const { logs, status } = useQuery();
@@ -12,37 +13,18 @@ export default function QueryLog() {
         }
     }, [logs]);
 
+    if (logs?.length === 0) {
+        return <div className="flex h-full max-h-full flex-1 flex-col justify-between gap-4 overflow-y-auto px-2 py-16 pb-20">
+            <EmptyResults text="暂无查询日志" />
+        </div> ;
+    }
+
     return (
         <div className="scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-gray-50 h-full w-full overflow-auto rounded-lg border border-gray-200 bg-gray-50/50 px-4 pb-8 pt-4">
             <div
                 ref={logRef}
                 className="flex min-h-[200px] flex-col space-y-2 font-mono text-sm"
             >
-                {logs?.length === 0 && (
-                    <div className="flex flex-1 items-center justify-center">
-                        <div className="size-full space-y-3 text-center">
-                            <div className="text-gray-300">
-                                <svg
-                                    className="mx-auto h-12 w-12"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={1.5}
-                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                    />
-                                </svg>
-                            </div>
-                            <p className="text-sm font-medium text-gray-400">
-                                暂无查询日志
-                            </p>
-                        </div>
-                    </div>
-                )}
                 {logs?.map((log: string, index: number) => (
                     <div
                         key={index}

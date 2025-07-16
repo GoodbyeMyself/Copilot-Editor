@@ -182,7 +182,9 @@ function ChartViewer() {
     }, [_dispatch, table]);
 
     if (table.numRows === 0) {
-        return <EmptyResults />;
+        return <div className="flex h-full max-h-full flex-1 flex-col justify-between gap-4 overflow-y-auto px-2 py-4 pb-20">
+            <EmptyResults />
+        </div> ;
     }
 
     return (

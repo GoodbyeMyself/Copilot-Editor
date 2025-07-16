@@ -31,30 +31,35 @@ export const TableViewer = memo(function TableViewer() {
 
     return (
         <div className="flex h-full max-h-full flex-1 flex-col justify-between gap-4 overflow-y-auto px-2 py-4 pb-20">
-            {noQuery && <EmptyResults />}
-            <ScrollArea className="h-full border">
-                {view === "table" && (
-                    <DataGrid
-                        count={count}
-                        table={table}
-                        meta={meta}
-                    />
-                )}
-                {view === "list" && <VirtualizedGrid />}
-            </ScrollArea>
-            <div className="flex w-full flex-wrap-reverse items-center justify-between sm:h-12">
-                <div className="flex items-center space-x-2">
-                    <Switch
-                        onChange={(checked) => {
-                            setView(checked ? "list" : "table");
-                        }}
-                        size="small"
-                    />
-                    <span className="text-sm">列表展示</span>
-                </div>
+            {noQuery ? (
+                <EmptyResults />
+            ) : (
+                <>
+                    <ScrollArea className="h-full border">
+                        {view === "table" && (
+                            <DataGrid
+                                count={count}
+                                table={table}
+                                meta={meta}
+                            />
+                        )}
+                        {view === "list" && <VirtualizedGrid />}
+                    </ScrollArea>
+                    <div className="flex w-full flex-wrap-reverse items-center justify-between sm:h-12">
+                        <div className="flex items-center space-x-2">
+                            <Switch
+                                onChange={(checked) => {
+                                    setView(checked ? "list" : "table");
+                                }}
+                                size="small"
+                            />
+                            <span className="text-sm">列表展示</span>
+                        </div>
 
-                {view === "table" && <PaginationToolbar />}
-            </div>
+                        {view === "table" && <PaginationToolbar />}
+                    </div>
+                </>
+            )}
         </div>
     );
 });
