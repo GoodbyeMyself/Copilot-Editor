@@ -1,5 +1,6 @@
 import React from 'react';
 import { setupGlobalErrorHandling } from '@/utils/errorHandling';
+import { App } from 'antd';
 
 // 引入全局样式文件
 import '@/assets/styles/index.less';
@@ -47,12 +48,16 @@ export async function getInitialState(): Promise<{
 
 // 包装根容器，提供全局 Provider
 export function rootContainer(container: React.ReactElement) {
-    return React.createElement(SessionProvider, null,
-        React.createElement(DbProvider, null,
-            React.createElement(QueryProvider, null,
-                React.createElement(EditorProvider, null,
-                    React.createElement(EditorSettingsProvider, null,
-                        container
+    return React.createElement(
+        App,
+        {},
+        React.createElement(SessionProvider, null,
+            React.createElement(DbProvider, null,
+                React.createElement(QueryProvider, null,
+                    React.createElement(EditorProvider, null,
+                        React.createElement(EditorSettingsProvider, null,
+                            container
+                        )
                     )
                 )
             )

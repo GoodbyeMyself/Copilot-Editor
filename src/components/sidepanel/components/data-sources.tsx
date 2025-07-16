@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 
 import { DownOutlined } from '@ant-design/icons';
-import { Tree, TreeDataNode, Button, Dropdown, MenuProps, Modal, message } from "antd";
+import { Tree, TreeDataNode, Button, Dropdown, MenuProps, Modal, App } from "antd";
 
 import { useEditor } from "@/context/editor/useEditor";
 
@@ -20,6 +20,8 @@ import { useSession } from "@/context/session/useSession";
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 
 import { useState } from "react";
+
+import './data-sources.module.less';
 
 /**
  * Manage datasets.
@@ -250,9 +252,25 @@ function NodeMoreActions({
 }) {
     const { copyToClipboard } = useCopyToClipboard();
     const { editorRef } = useEditor();
+    const { editors } = useSession();
+    const { message } = App.useApp();
     const nodeType = getNodeType(nodeKey);
 
+    // 检查是否有SQL文件打开
+    const checkSQLEditorOpen = () => {
+        const openSQLEditors = editors.filter(editor => 
+            editor.isOpen && (editor.ext === 'sql' || editor.mimeType === 'text/sql')
+        );
+        return openSQLEditors.length > 0;
+    };
+
     const handleInsertSQL = async () => {
+        // 检查是否有SQL文件打开
+        if (!checkSQLEditorOpen()) {
+            message.warning('请先打开一个SQL文件');
+            return;
+        }
+
         let snippet = "";
         
         // 根据节点类型生成不同的 SQL
@@ -334,9 +352,8 @@ function NodeMoreActions({
                 label: (
                     <span>
                         <ArrowDownToDot size={16} />
-                        {nodeType === NodeType.DATABASE && '插入SQL'}
-                        {nodeType === NodeType.TABLE && '插入表SQL'}
-                        {nodeType === NodeType.FIELD && '插入字段SQL'}
+                        {nodeType === NodeType.DATABASE && '插入数据库'}
+                        {nodeType === NodeType.TABLE && '插入数据表'}
                     </span>
                 ),
                 onClick: () => {
@@ -349,8 +366,8 @@ function NodeMoreActions({
             baseItems.push({
                 key: 'delete',
                 label: (
-                    <span style={{ color: '#ff4d4f' }}>
-                        <Trash2 size={16} style={{ marginRight: 8 }} />
+                    <span className='deleteMenuItem'>
+                        <Trash2 size={16} className='deleteMenuIcon' />
                         删除数据源
                     </span>
                 ),
@@ -371,11 +388,7 @@ function NodeMoreActions({
                 type="text"
                 size="small"
                 icon={<MoreVertical size={12} />}
-                style={{ 
-                    width: 24, 
-                    height: 24, 
-                    padding: 0
-                }}
+                className='moreButton'
                 onClick={(e) => {
                     e.stopPropagation();
                 }}
@@ -396,28 +409,94 @@ function CustomTreeTitle({
 }) {
     const [isHovered, setIsHovered] = useState(false);
 
+    const { copyToClipboard } = useCopyToClipboard();
+
+    const { editorRef } = useEditor();
+
+    const { editors } = useSession();
+
+    const { message } = App.useApp();
+    
+    const nodeType = getNodeType(nodeKey);
+
+    // 检查是否有SQL文件打开
+    const checkSQLEditorOpen = () => {
+        const openSQLEditors = editors.filter(editor => 
+            editor.isOpen && (editor.ext === 'sql' || editor.mimeType === 'text/sql')
+        );
+        return openSQLEditors.length > 0;
+    };
+
+    // 处理字段点击，直接插入SQL
+    const handleFieldClick = async (e: React.MouseEvent) => {
+        if (nodeType === NodeType.FIELD) {
+            e.stopPropagation();
+            
+            // 检查是否有SQL文件打开
+            if (!checkSQLEditorOpen()) {
+                message.warning('请先打开一个 SQL 文件');
+                return;
+            }
+            
+            const fieldName = children as string;
+            const snippet = ` ${fieldName} `;
+
+            await copyToClipboard(snippet);
+
+            // 插入到编辑器光标位置
+            const editor = editorRef.current?.getEditor();
+            if (editor) {
+                const position = editor.getPosition();
+                if (position) {
+                    editor.executeEdits("insert-field", [
+                        {
+                            text: snippet,
+                            forceMoveMarkers: false,
+                            range: {
+                                startLineNumber: position.lineNumber,
+                                startColumn: position.column,
+                                endLineNumber: position.lineNumber,
+                                endColumn: position.column,
+                            },
+                        },
+                    ]);
+                    
+                    // 移动光标到插入文本之后
+                    const newPosition = {
+                        lineNumber: position.lineNumber,
+                        column: position.column + snippet.length,
+                    };
+                    editor.setPosition(newPosition);
+                    
+                    // 聚焦编辑器
+                    editor.focus();
+                }
+            }
+        }
+    };
+
     return (
         <div 
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
+            onClick={handleFieldClick}
+            className={`${'customTreeTitle'} ${nodeType === NodeType.FIELD ? 'customTreeTitleField' : ''}`}
         >
-            <span style={{ flex: 1 }}>
+            <span className='titleText'>
                 {children}
             </span>
-            <div
-                className='antd-tree-button-wamper'
-                style={{
-                    opacity: isHovered ? 1 : 0,
-                    transition: 'opacity 0.2s'
-                }}
-            >
-                <NodeMoreActions 
-                    nodeKey={nodeKey} 
-                    nodeTitle={children as string} 
-                    onDeleteDataSource={onDeleteDataSource}
-                />
-            </div>
+            {/* 只有非字段节点才显示操作按钮 */}
+            {nodeType !== NodeType.FIELD && (
+                <div
+                    className={`antd-tree-button-wamper ${'buttonWrapper'} ${isHovered ? 'buttonWrapperVisible' : 'buttonWrapperHidden'}`}
+                >
+                    <NodeMoreActions 
+                        nodeKey={nodeKey} 
+                        nodeTitle={children as string} 
+                        onDeleteDataSource={onDeleteDataSource}
+                    />
+                </div>
+            )}
         </div>
     );
 }
