@@ -32,6 +32,14 @@ const LazyTableViewer = lazy(() =>
     })),
 );
 
+function Fallback() {
+    return (
+        <span className="m-2">
+            <Loader2 className="size-5 animate-spin" />
+        </span>
+    );
+}
+
 type ResultView = "table" | "chart" | "json" | "history" | "log" | "error";
 
 const TAB_LABELS = {
@@ -120,7 +128,7 @@ export default function ResultsView() {
                             )}
                         </TabsList>
                         <div className="inline-flex items-center gap-1">
-                            <DatasetActions />
+                            {tab === "history" && <DatasetActions />}
                         </div>
                     </div>
                     <TabsContent
@@ -176,13 +184,5 @@ export default function ResultsView() {
                 </Tabs>
             </div>
         </PaginationProvider>
-    );
-}
-
-function Fallback() {
-    return (
-        <span className="m-2">
-            <Loader2 className="size-5 animate-spin" />
-        </span>
     );
 }

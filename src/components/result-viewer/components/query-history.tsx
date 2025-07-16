@@ -1,8 +1,8 @@
 import { motion } from "framer-motion";
 
-import { del, get } from "idb-keyval";
+import { get } from "idb-keyval";
 
-import { ChevronRight, CopyCheck, History } from "lucide-react";
+import { ChevronRight, CopyCheck } from "lucide-react";
 
 import { useEffect, useState } from "react";
 
@@ -172,7 +172,6 @@ function RunHoverCard(props: QueryMeta) {
 
 export default function QueryHistory() {
     const [runs, setRuns] = useState<QueryMeta[]>([]);
-    const [showClearConfirm, setShowClearConfirm] = useState(false);
     const { meta } = useQuery();
     const uniqueId = `${meta?.hash}_${meta?.created}`;
 
@@ -187,32 +186,26 @@ export default function QueryHistory() {
 
         refresh();
 
+        // 监听清空历史记录事件
+        const handleHistoryCleared = () => {
+            if (!ignore) {
+                setRuns([]);
+            }
+        };
+
+        window.addEventListener('queryHistoryCleared', handleHistoryCleared);
+
         return () => {
             ignore = true;
+            window.removeEventListener('queryHistoryCleared', handleHistoryCleared);
         };
     }, [uniqueId]);
-
-    const onClearHistory = async () => {
-        await del(IDB_KEYS.QUERY_HISTORY);
-        setRuns([]);
-        setShowClearConfirm(false);
-        message.success("运行记录已清空");
-    };
 
     return (
         <div className="flex h-[calc(100%-48px)] flex-col">
             <div className="sticky top-0 z-10 flex w-full items-center justify-between bg-background p-2">
                 <div className="flex grow">
                     <span className="text-sm font-semibold"></span>
-                </div>
-                <div className="flex items-center gap-1">
-                    <Button
-                        size="small"
-                        type="text"
-                        icon={<History size={16} />}
-                        onClick={() => setShowClearConfirm(true)}
-                        disabled={runs.length === 0}
-                    />
                 </div>
             </div>
             {runs.length === 0 && (
@@ -236,18 +229,6 @@ export default function QueryHistory() {
                     })}
                 </motion.div>
             </div>
-
-            <Modal
-                title="确定要清空运行记录吗？"
-                open={showClearConfirm}
-                onCancel={() => setShowClearConfirm(false)}
-                onOk={onClearHistory}
-                okText="确认"
-                cancelText="取消"
-                okType="danger"
-            >
-                <p>此操作无法撤销，这将永久删除所有运行记录。</p>
-            </Modal>
         </div>
     );
 }
