@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useQuery } from "@/context/query/useQuery";
-import EmptyResults from "./empty";
+import EmptyResults from "./slot/empty";
 
 export default function QueryLog() {
     const { logs, status } = useQuery();
@@ -14,9 +14,11 @@ export default function QueryLog() {
     }, [logs]);
 
     if (logs?.length === 0) {
-        return <div className="flex h-full max-h-full flex-1 flex-col justify-between gap-4 overflow-y-auto px-2 py-16 pb-20">
-            <EmptyResults text="暂无查询日志" />
-        </div> ;
+        return (
+            <div className="flex h-full max-h-full flex-1 flex-col justify-between gap-4 overflow-y-auto px-2 py-4">
+                <EmptyResults text="暂无运行日志" />
+            </div>
+        );
     }
 
     return (

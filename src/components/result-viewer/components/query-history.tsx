@@ -19,6 +19,8 @@ import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 import { cn } from "@/lib/utils";
 
 import { queryMetaSchema, type QueryMeta } from "@/types/query";
+
+import EmptyResults from "./slot/empty";
 /**
  * Note: idb-keyval is probably the wrong tool for anything more advanced than this.
  * Would be better to avoid keyval and use a proper indexeddb schema.
@@ -201,18 +203,16 @@ export default function QueryHistory() {
         };
     }, [uniqueId]);
 
-    return (
-        <div className="flex h-[calc(100%-48px)] flex-col">
-            <div className="sticky top-0 z-10 flex w-full items-center justify-between bg-background p-2">
-                <div className="flex grow">
-                    <span className="text-sm font-semibold"></span>
-                </div>
+    if (runs.length === 0) {
+        return (
+            <div className="flex h-full max-h-full flex-1 flex-col justify-between gap-4 overflow-y-auto px-2 py-4 pb-20">
+                <EmptyResults text="暂无运行记录" />
             </div>
-            {runs.length === 0 && (
-                <div className={cn("py-2 pl-6 text-sm text-gray-400")}>
-                    暂无运行日志
-                </div>
-            )}
+        );
+    }
+
+    return (
+        <div className="flex h-[calc(100%-12px)] flex-col">
             <div className="flex-1 overflow-hidden">
                 <motion.div
                     className="flex h-full w-full flex-col gap-1 divide-y divide-white/5 overflow-y-auto px-4 py-1 pr-2 transition-all"

@@ -16,7 +16,7 @@ const Settings: ProLayoutProps & {
     fixedHeader: false,
     fixSiderbar: true,
     colorWeak: false,
-    title: 'SQL Copilot',
+    title: 'DataWorks Copilot',
     pwa: true,
     /**
      * @description: logo 可以访问本地文件, 也可以访问网络地址

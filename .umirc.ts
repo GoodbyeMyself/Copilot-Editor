@@ -7,7 +7,7 @@ export default defineConfig({
     initialState: {},
     request: {},
     layout: {
-        title: "SQL Copilot",
+        title: "DataWorks Copilot",
     },
     routes: [
         {

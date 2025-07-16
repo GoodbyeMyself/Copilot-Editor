@@ -24,7 +24,7 @@ import { useQuery } from "@/context/query/useQuery";
 
 import { getArrowTableSchema } from "@/utils/arrow/helpers";
 
-import EmptyResults from "./empty";
+import EmptyResults from "./slot/empty";
 
 type OptionPickerProps = {
     title: string;
@@ -182,13 +182,13 @@ function ChartViewer() {
     }, [_dispatch, table]);
 
     if (table.numRows === 0) {
-        return <div className="flex h-full max-h-full flex-1 flex-col justify-between gap-4 overflow-y-auto px-2 py-4 pb-20">
+        return <div className="flex h-full max-h-full flex-1 flex-col justify-between gap-4 overflow-y-auto px-2 py-4">
             <EmptyResults />
         </div> ;
     }
 
     return (
-        <div className="flex h-full max-h-full flex-1 flex-col justify-between gap-4 overflow-y-auto px-2 py-4 pb-20">
+        <div className="flex h-full max-h-full flex-1 flex-col justify-between gap-4 overflow-y-auto px-2 py-4">
             <Settings />
             <ScrollArea className="mb-4 h-full max-h-[550px] border p-4">
                 <Chart />

@@ -43,7 +43,7 @@ export const JSONViewer = memo(function JSONViewer() {
     }, [table]);
 
     return (
-        <div className="flex h-full max-h-full flex-1 flex-col justify-between gap-4 overflow-y-auto px-2 py-4 pb-20">
+        <div className="flex h-full max-h-full flex-1 flex-col justify-between gap-4 overflow-y-auto px-2 py-4">
             <ScrollArea className="relative h-full border">
                 <Suspense>
                     <LazyShiki

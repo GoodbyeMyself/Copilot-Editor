@@ -10,7 +10,10 @@ import { PaginationProvider } from "@/context/pagination/provider";
 
 import { useQuery } from "@/context/query/useQuery";
 
-import DatasetActions from "./components/dataset-actions";
+// 按钮集
+import DatasetActions from "./components/slot/dataset-actions";
+
+// components
 import QueryHistory from "./components/query-history";
 import QueryLog from "./components/query-log";
 
@@ -133,7 +136,7 @@ export default function ResultsView() {
                     </div>
                     <TabsContent
                         value="table"
-                        className="h-full flex-col border-none p-0 px-2 data-[state=active]:flex"
+                        className="h-[calc(100%-50px)] flex-col border-none p-0 px-2 data-[state=active]:flex"
                     >
                         <Suspense fallback={<Fallback />}>
                             <LazyTableViewer />
@@ -141,7 +144,7 @@ export default function ResultsView() {
                     </TabsContent>
                     <TabsContent
                         value="chart"
-                        className="h-full flex-col border-none p-0 px-2 data-[state=active]:flex"
+                        className="h-[calc(100%-50px)] flex-col border-none p-0 px-2 data-[state=active]:flex"
                     >
                         <Suspense fallback={<Fallback />}>
                             <LazyChartViewer />
@@ -149,7 +152,7 @@ export default function ResultsView() {
                     </TabsContent>
                     <TabsContent
                         value="json"
-                        className="h-full flex-col border-none p-0 px-2 data-[state=active]:flex"
+                        className="h-[calc(100%-50px)] flex-col border-none p-0 px-2 data-[state=active]:flex"
                     >
                         <Suspense fallback={<Fallback />}>
                             <LazyJSONViewer />
@@ -157,7 +160,7 @@ export default function ResultsView() {
                     </TabsContent>
                     <TabsContent
                         value="history"
-                        className="h-full flex-col border-none p-0 px-2 data-[state=active]:flex"
+                        className="h-[calc(100%-50px)] flex-col border-none p-0 px-2 data-[state=active]:flex"
                     >
                         <QueryHistory />
                     </TabsContent>
@@ -170,7 +173,7 @@ export default function ResultsView() {
                     {showErrorTab && (
                         <TabsContent
                             value="error"
-                            className="h-full flex-col border-none p-0 px-2 data-[state=active]:flex"
+                            className="h-[calc(100%-50px)] flex-col border-none p-0 px-2 data-[state=active]:flex"
                         >
                             <div className="w-full px-4 py-4">
                                 <div className="mx-auto w-full">
