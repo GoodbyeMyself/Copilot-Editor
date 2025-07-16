@@ -22,31 +22,54 @@ export default function QueryLog() {
     }
 
     return (
-        <div className="scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-gray-50 h-full w-full overflow-auto rounded-lg border border-gray-200 bg-gray-50/50 px-4 pb-8 pt-4">
-            <div
-                ref={logRef}
-                className="flex min-h-[200px] flex-col space-y-2 font-mono text-sm"
-            >
-                {logs?.map((log: string, index: number) => (
-                    <div
-                        key={index}
-                        className="rounded border border-gray-100 bg-white p-2 shadow-sm transition-colors duration-150 hover:bg-gray-50"
-                    >
-                        <span className="text-gray-600">
-                            {log}
-                        </span>
-                    </div>
-                ))}
-                {status === "RUNNING" && (
-                    <div className="animate-pulse rounded border border-gray-100 bg-white p-2 shadow-sm">
+        <div className="h-full w-[calc(100%-24px)] overflow-auto rounded-lg border border-gray-300 bg-gray-900 shadow-lg mx-4 my-2">
+            {/* 日志内容区域 */}
+            <div className="p-4">
+                <div
+                    ref={logRef}
+                    className="flex min-h-[200px] flex-col space-y-2"
+                >
+                    {logs?.map((log: string, index: number) => (
+                        <div key={index} className="flex items-start space-x-2">
+                            {/* 终端提示符 */}
+                            <span className="text-green-400 font-mono text-sm shrink-0 mt-0">
+                                $
+                            </span>
+                            {/* 使用 div 组件展示日志 */}
+                            <div
+                                className="flex-1 text-gray-300 font-mono text-sm cursor-text selection:bg-blue-500/30 whitespace-pre-wrap break-words"
+                            >
+                                {log}
+                            </div>
+                        </div>
+                    ))}
+                    
+                    {/* 运行状态指示器 */}
+                    {status === "RUNNING" && (
                         <div className="flex items-center space-x-2">
-                            <div className="h-2 w-2 animate-bounce rounded-full bg-blue-500 delay-0"></div>
-                            <div className="h-2 w-2 animate-bounce rounded-full bg-blue-500 delay-150"></div>
-                            <div className="h-2 w-2 animate-bounce rounded-full bg-blue-500 delay-300"></div>
-                            <span className="text-gray-500">查询中...</span>
+                            <span className="text-green-400 font-mono text-sm shrink-0">
+                                $
+                            </span>
+                            <div className="flex items-center space-x-2">
+                                <span className="text-green-400 font-mono text-sm animate-pulse">
+                                    查询执行中...
+                                </span>
+                            </div>
+                        </div>
+                    )}
+                    
+                    {/* 光标闪烁效果 */}
+                    <div className="flex items-center space-x-2">
+                        <span className="text-green-400 font-mono text-sm shrink-0">
+                            $
+                        </span>
+                        <div className="flex items-center">
+                            <span className="text-gray-300 font-mono text-sm animate-pulse">
+                                _
+                            </span>
                         </div>
                     </div>
-                )}
+                </div>
             </div>
         </div>
     );

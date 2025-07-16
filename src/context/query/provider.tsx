@@ -51,7 +51,7 @@ function queryReducer(state: QueryState, action: QueryAction): QueryState {
                 ...state,
                 ...action.payload,
                 status: "RUNNING",
-                logs: [`开始执行查询: ${action.payload.sql}`],
+                logs: [],
             };
         }
         case "RUN_STOP": {

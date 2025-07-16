@@ -10,6 +10,8 @@ import { usePagination } from "@/context/pagination/usePagination";
 
 import { useQuery } from "@/context/query/useQuery";
 
+import EmptyResults from "./slot/empty";
+
 const LazyShiki = lazy(() =>
     import("@/components/base/lazy-shiki").then((module) => ({
         default: module.default,
@@ -41,6 +43,17 @@ export const JSONViewer = memo(function JSONViewer() {
         const rows = table.toArray().map((row) => row.toJSON());
         return JSON.stringify(rows, null, 4);
     }, [table]);
+
+    // Check if there's no data to display
+    const noQuery = table.numRows === 0 && table.numCols === 0;
+
+    if (noQuery) {
+        return (
+            <div className="flex h-full max-h-full flex-1 flex-col justify-between gap-4 overflow-y-auto px-2 py-4">
+                <EmptyResults />
+            </div>
+        );
+    }
 
     return (
         <div className="flex h-full max-h-full flex-1 flex-col justify-between gap-4 overflow-y-auto px-2 py-4">
