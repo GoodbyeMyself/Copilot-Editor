@@ -64,3 +64,34 @@
     white-space: pre-wrap;
     word-wrap: break-word;
 }
+
+.dataSourcesTree .ant-tree .ant-tree-switcher .ant-tree-switcher-icon {
+    display: inline-flex;
+}
+
+.ant-tree .ant-tree-node-content-wrapper .ant-tree-iconEle svg {
+    display: inline-block;
+    vertical-align: baseline;
+}
+
+.ant-tree .ant-tree-node-content-wrapper {
+    padding-inline: 0;
+    padding-right: 8px;
+    padding-left: 4px;
+}
+
+.ant-tree .ant-tree-node-content-wrapper .ant-tree-iconEle {
+    padding: 3px 4px 0 0;
+}
+
+.ant-tree .ant-tree-switcher {
+    margin-inline-end: 0px;
+}
+
+.ant-tree .ant-tree-treenode {
+    width: 100%;
+}
+
+.ant-tree .ant-tree-treenode .ant-tree-node-content-wrapper {
+    width: 100%;
+}
