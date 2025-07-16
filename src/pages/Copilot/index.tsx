@@ -12,7 +12,7 @@ import {
 
 import { useEffect, useRef, useState } from 'react';
 
-import './styles.css';
+import './styles.less';
 // 定义常量
 import { DEFAULT_CONVERSATIONS_ITEMS, DESIGN_GUIDE, SENDER_PROMPTS, getHotTopics } from './constant';
 // 导入子组件

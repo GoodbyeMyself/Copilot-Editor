@@ -2,7 +2,7 @@ import React from 'react';
 import { setupGlobalErrorHandling } from '@/utils/errorHandling';
 
 // 引入全局样式文件
-import '@/assets/styles/index.css';
+import '@/assets/styles/index.less';
 
 // 系统默认配置
 import defaultSettings from '../config/defaultSettings';

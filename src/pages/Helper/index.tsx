@@ -13,7 +13,7 @@ import { GetProp, GetRef } from 'antd';
 
 import React, { useEffect, useRef, useState } from 'react';
 
-import './styles.css';
+import './styles.less';
 import { MOCK_SESSION_LIST } from './constants';
 import { ChatHeader, ChatList, ChatSender } from './components';
 import { 
