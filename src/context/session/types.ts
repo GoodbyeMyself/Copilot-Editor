@@ -132,6 +132,18 @@ type RENAME_EDITOR = {
     };
 };
 
+type ADD_SOURCES = {
+    type: "ADD_SOURCES";
+    payload: Dataset[];
+};
+
+type REMOVE_SOURCE = {
+    type: "REMOVE_SOURCE";
+    payload: {
+        path: string;
+    };
+};
+
 export type Action =
     | RENAME_EDITOR
     | OpenEditor
@@ -144,4 +156,6 @@ export type Action =
     | OpenSession
     | SetStatus
     | RefreshEditor
-    | RESET_SESSION;
+    | RESET_SESSION
+    | ADD_SOURCES
+    | REMOVE_SOURCE;

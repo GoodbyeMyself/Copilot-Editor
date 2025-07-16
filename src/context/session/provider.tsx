@@ -466,6 +466,20 @@ function SessionProvider({ children }: SessionProviderProps) {
                         path,
                     },
                 });
+
+                // 删除后，如果还有其他文件，切换到第一个文件
+                const remainingEditors = session.editors.filter(editor => editor.path !== path);
+                if (remainingEditors.length > 0) {
+                    const firstEditor = remainingEditors[0];
+                    if (firstEditor) {
+                        dispatch({
+                            type: "FOCUS_EDITOR",
+                            payload: {
+                                path: firstEditor.path,
+                            },
+                        });
+                    }
+                }
             } catch (e) {
                 console.error("Failed to delete editor: ", e);
                 toast.error("删除编辑器失败", {
@@ -473,7 +487,7 @@ function SessionProvider({ children }: SessionProviderProps) {
                 });
             }
         },
-        [session.sessionId],
+        [session.sessionId, session.editors],
     );
 
     /**
