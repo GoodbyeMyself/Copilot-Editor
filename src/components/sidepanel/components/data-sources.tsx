@@ -1,49 +1,25 @@
 // icon
 import {
-    ArrowDownToDot,
     Database,
     Inbox,
     Plus,
-    Trash2,
     Table,
     Type,
+    MoreVertical,
+    Trash2,
+    ArrowDownToDot,
 } from "lucide-react";
 
-import { useState } from "react";
 import { DownOutlined } from '@ant-design/icons';
-import { Tree, TreeDataNode } from "antd";
-import type { TreeProps } from "antd/es/tree";
-
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/base/ui/alert-dialog";
-
-import { Button } from "@/components/base/ui/button";
-
-import {
-    ContextMenu,
-    ContextMenuContent,
-    ContextMenuItem,
-    ContextMenuTrigger,
-} from "@/components/base/ui/context-menu";
-
-import {
-    DropdownMenu,
-    DropdownMenuTrigger,
-} from "@/components/base/ui/dropdown-menu";
+import { Tree, TreeDataNode, Button, Dropdown, MenuProps, Modal, message } from "antd";
 
 import { useEditor } from "@/context/editor/useEditor";
 
 import { useSession } from "@/context/session/useSession";
 
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
+
+import { useState } from "react";
 
 /**
  * Manage datasets.
@@ -53,17 +29,12 @@ import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 function SourcesToolbar() {
     return (
         <>
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button
-                        variant="ghost"
-                        size="xs"
-                        onClick={() => console.log(1)}
-                    >
-                        <Plus size={16} />
-                    </Button>
-                </DropdownMenuTrigger>
-            </DropdownMenu>
+            <Button
+                type="text"
+                size="small"
+                icon={<Plus size={16} />}
+                onClick={() => console.log(1)}
+            />
         </>
     );
 }
@@ -248,48 +219,236 @@ const mockTreeData: TreeDataNode[] = [
     },
 ];
 
-function DataSourcesTree() {
-    // const { copyToClipboard } = useCopyToClipboard();
+// 节点类型枚举
+enum NodeType {
+    DATABASE = 'database',
+    TABLE = 'table', 
+    FIELD = 'field'
+}
 
-    // const { editorRef } = useEditor();
+// 获取节点类型
+function getNodeType(nodeKey: string): NodeType {
+    const parts = nodeKey.split('-');
+    if (parts.length === 1) {
+        return NodeType.DATABASE;
+    } else if (parts.length === 2) {
+        return NodeType.TABLE;
+    } else {
+        return NodeType.FIELD;
+    }
+}
 
-    // const onCopy = async (nodeKey: string, nodeTitle: string) => {
-    //     let snippet = "";
+// 更多操作按钮组件
+function NodeMoreActions({ 
+    nodeKey, 
+    nodeTitle, 
+    onDeleteDataSource 
+}: { 
+    nodeKey: string; 
+    nodeTitle: string;
+    onDeleteDataSource?: (nodeKey: string) => void;
+}) {
+    const { copyToClipboard } = useCopyToClipboard();
+    const { editorRef } = useEditor();
+    const nodeType = getNodeType(nodeKey);
+
+    const handleInsertSQL = async () => {
+        let snippet = "";
         
-    //     // 根据节点类型生成不同的 SQL
-    //     if (nodeKey.includes('-') && !nodeKey.split('-')[2]) {
-    //         // 数据表级别
-    //         snippet = `SELECT * FROM ${nodeTitle} LIMIT 10;`;
-    //     } else if (nodeKey.split('-').length === 3) {
-    //         // 字段级别
-    //         const parts = nodeKey.split('-');
-    //         const tableName = parts[1];
-    //         snippet = `SELECT ${nodeTitle} FROM ${tableName};`;
-    //     } else {
-    //         // 数据库级别
-    //         snippet = `-- 数据库: ${nodeTitle}\nSHOW TABLES;`;
-    //     }
+        // 根据节点类型生成不同的 SQL
+        switch (nodeType) {
+            case NodeType.DATABASE:
+                snippet = `-- 数据库: ${nodeTitle}\nSHOW TABLES;`;
+                break;
+            case NodeType.TABLE:
+                snippet = `SELECT * FROM ${nodeTitle} LIMIT 10;`;
+                break;
+            case NodeType.FIELD: {
+                const parts = nodeKey.split('-');
+                const tableName = parts[1];
+                snippet = `SELECT ${nodeTitle} FROM ${tableName};`;
+                break;
+            }
+        }
 
-    //     await copyToClipboard(snippet.trim());
+        await copyToClipboard(snippet.trim());
 
-    //     // 插入到编辑器
-    //     const editor = editorRef.current?.getEditor();
-    //     if (editor) {
-    //         const selection = editor.getSelection();
-    //         editor.executeEdits("my-source", [
-    //             {
-    //                 text: snippet,
-    //                 forceMoveMarkers: false,
-    //                 range: {
-    //                     startLineNumber: selection?.selectionStartLineNumber || 1,
-    //                     startColumn: selection?.selectionStartColumn || 1,
-    //                     endLineNumber: selection?.endLineNumber || 1,
-    //                     endColumn: selection?.endColumn || 1,
-    //                 },
-    //             },
-    //         ]);
-    //     }
-    // };
+        // 插入到编辑器
+        const editor = editorRef.current?.getEditor();
+        if (editor) {
+            const selection = editor.getSelection();
+            const position = selection ? {
+                lineNumber: selection.endLineNumber,
+                column: selection.endColumn
+            } : editor.getPosition() || { lineNumber: 1, column: 1 };
+
+            editor.executeEdits("insert-sql", [
+                {
+                    text: snippet + '\n',
+                    forceMoveMarkers: false,
+                    range: {
+                        startLineNumber: position.lineNumber,
+                        startColumn: position.column,
+                        endLineNumber: position.lineNumber,
+                        endColumn: position.column,
+                    },
+                },
+            ]);
+            
+            // 聚焦编辑器
+            editor.focus();
+        }
+    };
+
+    const handleDelete = () => {
+        Modal.confirm({
+            title: '确认删除数据源',
+            content: `确定要删除数据源 "${nodeTitle}" 吗？此操作不可撤销。`,
+            okText: '确认删除',
+            cancelText: '取消',
+            okType: 'danger',
+            onOk() {
+                try {
+                    // 调用删除函数
+                    if (onDeleteDataSource) {
+                        onDeleteDataSource(nodeKey);
+                        // 显示成功消息
+                        message.success(`数据源 "${nodeTitle}" 已删除`);
+                    }
+                } catch (error) {
+                    console.error('删除数据源失败:', error);
+                    message.error('删除数据源失败，请重试');
+                }
+            },
+            onCancel() {
+                console.log('取消删除操作');
+            },
+        });
+    };
+
+    // 构建菜单项
+    const getMenuItems = (): MenuProps['items'] => {
+        const baseItems = [
+            {
+                key: 'insert-sql',
+                label: (
+                    <span>
+                        <ArrowDownToDot size={16} />
+                        {nodeType === NodeType.DATABASE && '插入SQL'}
+                        {nodeType === NodeType.TABLE && '插入表SQL'}
+                        {nodeType === NodeType.FIELD && '插入字段SQL'}
+                    </span>
+                ),
+                onClick: () => {
+                    handleInsertSQL();
+                },
+            },
+        ];
+
+        if (nodeType === NodeType.DATABASE) {
+            baseItems.push({
+                key: 'delete',
+                label: (
+                    <span style={{ color: '#ff4d4f' }}>
+                        <Trash2 size={16} style={{ marginRight: 8 }} />
+                        删除数据源
+                    </span>
+                ),
+                onClick: handleDelete,
+            });
+        }
+
+        return baseItems;
+    };
+
+    return (
+        <Dropdown
+            menu={{ items: getMenuItems() }}
+            placement="bottomRight"
+            trigger={['click']}
+        >
+            <Button
+                type="text"
+                size="small"
+                icon={<MoreVertical size={12} />}
+                style={{ 
+                    width: 24, 
+                    height: 24, 
+                    padding: 0
+                }}
+                onClick={(e) => {
+                    e.stopPropagation();
+                }}
+            />
+        </Dropdown>
+    );
+}
+
+// 自定义树节点标题组件
+function CustomTreeTitle({ 
+    nodeKey, 
+    children, 
+    onDeleteDataSource 
+}: { 
+    nodeKey: string; 
+    children: React.ReactNode;
+    onDeleteDataSource?: (nodeKey: string) => void;
+}) {
+    const [isHovered, setIsHovered] = useState(false);
+
+    return (
+        <div 
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+        >
+            <span style={{ flex: 1 }}>
+                {children}
+            </span>
+            <div
+                className='antd-tree-button-wamper'
+                style={{
+                    opacity: isHovered ? 1 : 0,
+                    transition: 'opacity 0.2s'
+                }}
+            >
+                <NodeMoreActions 
+                    nodeKey={nodeKey} 
+                    nodeTitle={children as string} 
+                    onDeleteDataSource={onDeleteDataSource}
+                />
+            </div>
+        </div>
+    );
+}
+
+// 处理树形数据，为每个节点添加自定义标题
+function processTreeData(data: TreeDataNode[], handleDeleteDataSource: (nodeKey: string) => void): TreeDataNode[] {
+    return data.map(node => ({
+        ...node,
+        title: (
+            <CustomTreeTitle 
+                nodeKey={node.key as string} 
+                onDeleteDataSource={handleDeleteDataSource}
+            >
+                {node.title as React.ReactNode}
+            </CustomTreeTitle>
+        ),
+        children: node.children ? processTreeData(node.children, handleDeleteDataSource) : undefined,
+    }));
+}
+
+function DataSourcesTree() {
+    const [treeData, setTreeData] = useState<TreeDataNode[]>(mockTreeData);
+
+    // 删除数据源节点的函数
+    const handleDeleteDataSource = (nodeKey: string) => {
+        setTreeData(prevData => {
+            return prevData.filter(node => node.key !== nodeKey);
+        });
+    };
+
+    const processedTreeData = processTreeData(treeData, handleDeleteDataSource);
 
     return (
         <>
@@ -298,7 +457,7 @@ function DataSourcesTree() {
                 showLine
                 switcherIcon={<DownOutlined />}
                 defaultExpandedKeys={['db1']}
-                treeData={mockTreeData}
+                treeData={processedTreeData}
             />
         </>
     );
