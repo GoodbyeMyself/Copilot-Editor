@@ -180,13 +180,19 @@ function CodeEditorItem(editor: CodeEditor) {
             key: 'open',
             icon: <PanelLeftOpen size={16} />,
             label: '打开',
-            onClick: () => onOpenFile(),
+            onClick: (e?: any) => {
+                e?.domEvent?.stopPropagation();
+                onOpenFile();
+            },
         },
         {
             key: 'rename',
             icon: <FolderPen size={16} />,
             label: '重命名',
-            onClick: () => setIsEditing(true),
+            onClick: (e?: any) => {
+                e?.domEvent?.stopPropagation();
+                setIsEditing(true);
+            },
         },
         {
             type: 'divider' as const,
@@ -196,7 +202,10 @@ function CodeEditorItem(editor: CodeEditor) {
             icon: <Trash2 size={16} />,
             label: '删除',
             danger: true,
-            onClick: () => setShowDelete(true),
+            onClick: (e?: any) => {
+                e?.domEvent?.stopPropagation();
+                setShowDelete(true);
+            },
         },
     ];
 
