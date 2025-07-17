@@ -85,6 +85,7 @@
         .ant-tree-node-content-wrapper {
             padding-inline: 0;
             padding-right: 8px;
+            height: 32px;
             .ant-tree-iconEle {
                 padding: 1px 6px 0 4px;
                 width: 28px;
@@ -103,7 +104,10 @@
             }
             .ant-tree-title {
                 display: inline-block;
-                width: calc(100% - 32px);
+                width: calc(100% - 28px);
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
         }
     }
