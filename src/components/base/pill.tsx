@@ -1,13 +1,12 @@
-import { Badge } from "@/components/base/ui/badge";
+import { Tag } from "antd";
 import { cn } from "@/lib/utils";
 
 export default function Pill(props: { children: React.ReactNode }) {
     return (
-        <Badge
-            variant="outline"
+        <Tag
             className={cn("rounded-full px-1 py-0.5 text-xs font-normal")}
         >
             {props.children}
-        </Badge>
+        </Tag>
     );
 }

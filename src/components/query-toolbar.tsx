@@ -10,6 +10,8 @@ import { toast } from "sonner";
 
 import { useSpinDelay } from "spin-delay";
 
+import { useLocation } from "@umijs/max";
+
 import { useEditor } from "@/context/editor/useEditor";
 
 import { useQuery } from "@/context/query/useQuery";
@@ -26,11 +28,16 @@ export default function Toolbar() {
     
     const { editors } = useSession();
     
+    const location = useLocation();
+    
     const [, setTab] = useLocalStorage<"table" | "chart" | "json" | "history" | "log">(`results-viewer-tab`, `table`);
 
     // 检查当前是否有正在编辑的文件
     const currentEditor = editors.find((editor) => editor.isFocused);
     const hasActiveEditor = !!currentEditor;
+
+    // 检查当前是否在 /home 路由下
+    const isHomeRoute = location.pathname === "/home";
 
     const onRun = useCallback(async () => {
         const controller = new AbortController();
@@ -107,8 +114,8 @@ export default function Toolbar() {
         );
     }
 
-    // 只有当有正在编辑的文件时才显示执行查询按钮
-    if (!hasActiveEditor) {
+    // 只有当在 /home 路由下且有正在编辑的文件时才显示执行查询按钮
+    if (!isHomeRoute || !hasActiveEditor) {
         return null;
     }
 

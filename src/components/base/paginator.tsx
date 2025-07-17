@@ -4,18 +4,44 @@ import {
     ChevronsLeft,
     ChevronsRight,
 } from "lucide-react";
-import { Button } from "@/components/base/ui/button";
-import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectLabel,
-    SelectSeparator,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/base/ui/select";
+
+import { Button, Select } from "antd";
+
 import { usePagination } from "@/context/pagination/usePagination";
+
+function PageSize() {
+    const { limit, onLimitChange, count } = usePagination();
+
+    const onValueChange = (value: string) => {
+        const size = Number(value);
+        if (isNaN(size) || size < 0) return;
+        onLimitChange(size);
+    };
+
+    const options = [
+        { value: "10", label: "10" },
+        { value: "15", label: "15" },
+        { value: "25", label: "25" },
+        { value: "50", label: "50" },
+        { value: "100", label: "100" },
+        { value: `${count ?? 100}`, label: "All" },
+    ];
+
+    // 过滤掉重复的选项
+    const uniqueOptions = options.filter((option, index, self) => 
+        index === self.findIndex(o => o.value === option.value)
+    );
+
+    return (
+        <Select
+            value={`${limit}`}
+            onChange={onValueChange}
+            options={uniqueOptions}
+            style={{ width: 80 }}
+            size="small"
+        />
+    );
+}
 
 /**
  * Pagination toolbar.
@@ -48,75 +74,36 @@ export default function PaginationToolbar() {
             <PageSize />
             <div className="inline-flex items-center gap-1">
                 <Button
-                    size="icon"
-                    variant="secondary"
+                    size="small"
+                    type="default"
                     onClick={goToFirstPage}
                     disabled={!canGoPrev}
-                >
-                    <ChevronsLeft className="size-4" />
-                </Button>
+                    icon={<ChevronsLeft className="size-4" />}
+                />
                 <Button
-                    size="icon"
-                    variant="secondary"
+                    size="small"
+                    type="default"
                     onClick={onPrevPage}
                     disabled={!canGoPrev}
-                >
-                    <ChevronLeft className="size-4" />
-                </Button>
+                    icon={<ChevronLeft className="size-4" />}
+                />
 
                 <Button
-                    size="icon"
-                    variant="secondary"
+                    size="small"
+                    type="default"
                     onClick={onNextPage}
                     disabled={!canGoNext}
-                >
-                    <ChevronRight className="size-4" />
-                </Button>
+                    icon={<ChevronRight className="size-4" />}
+                />
 
                 <Button
-                    size="icon"
-                    variant="secondary"
+                    size="small"
+                    type="default"
                     onClick={goToLastPage}
                     disabled={!canGoNext}
-                >
-                    <ChevronsRight className="size-4" />
-                </Button>
+                    icon={<ChevronsRight className="size-4" />}
+                />
             </div>
         </div>
-    );
-}
-
-function PageSize() {
-    const { limit, onLimitChange, count } = usePagination();
-
-    const onValueChange = (value: string) => {
-        const size = Number(value);
-        if (isNaN(size) || size < 0) return;
-        onLimitChange(size);
-    };
-
-    return (
-        <Select
-            value={`${limit}`}
-            onValueChange={onValueChange}
-        >
-            <SelectTrigger className="h-8 w-20">
-                <SelectValue placeholder="Page size" />
-            </SelectTrigger>
-            <SelectContent>
-                <SelectGroup>
-                    <SelectLabel>Size</SelectLabel>
-                    <SelectItem value="10">10</SelectItem>
-                    <SelectItem value="15">15</SelectItem>
-                    <SelectItem value="25">25</SelectItem>
-                    <SelectItem value="50">50</SelectItem>
-                    <SelectItem value="100">100</SelectItem>
-                </SelectGroup>
-                <SelectSeparator />
-                <SelectGroup>
-                    <SelectItem value={`${count ?? 100}`}>All</SelectItem>
-                </SelectGroup>
-            </SelectContent>
-        </Select>
     );
 }

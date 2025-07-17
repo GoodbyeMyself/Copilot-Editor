@@ -1,26 +1,11 @@
 "use client";
 
 import type * as Plot from "@observablehq/plot";
-
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "@/components/base/ui/card";
-
-import { Label } from "@/components/base/ui/label";
-
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/base/ui/select";
+import { Card, Select, Space, Typography } from "antd";
 
 import { useChart } from "../context/useChart";
+
+const { Title, Text } = Typography;
 
 // Don't seem to have any effect on Plot.auto mark.
 const schemaOptions: {
@@ -74,44 +59,34 @@ export default function PlotSettings() {
 
     return (
         <div className="pr-10">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Chart Settings</CardTitle>
-                    <CardDescription>Adjust the settings for your chart.</CardDescription>
-                </CardHeader>
-                <CardContent className="grid gap-6">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="col-span-full">
-                            <Label htmlFor="scheme">Scheme</Label>
-                            <Select
-                                value={scheme}
-                                onValueChange={(v) => {
-                                    if (!v) return;
-                                    _dispatch({
-                                        type: "SET_SCHEME",
-                                        payload: {
-                                            scheme: v as Plot.ScaleOptions["scheme"],
-                                        },
-                                    });
-                                }}
-                            >
-                                <SelectTrigger id="schema">
-                                    <SelectValue placeholder="Select" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {schemaOptions.map((option) => (
-                                        <SelectItem
-                                            key={option.value}
-                                            value={option.value}
-                                        >
-                                            {option.label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
+            <Card
+                title={
+                    <Space direction="vertical" size={0}>
+                        <Title level={4} style={{ margin: 0 }}>Chart Settings</Title>
+                        <Text type="secondary">Adjust the settings for your chart.</Text>
+                    </Space>
+                }
+            >
+                <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                    <div>
+                        <Text strong>Scheme</Text>
+                        <Select
+                            value={scheme}
+                            onChange={(v) => {
+                                if (!v) return;
+                                _dispatch({
+                                    type: "SET_SCHEME",
+                                    payload: {
+                                        scheme: v as Plot.ScaleOptions["scheme"],
+                                    },
+                                });
+                            }}
+                            placeholder="Select"
+                            style={{ width: '100%', marginTop: 8 }}
+                            options={schemaOptions}
+                        />
                     </div>
-                </CardContent>
+                </Space>
             </Card>
         </div>
     );

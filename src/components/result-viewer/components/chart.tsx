@@ -2,6 +2,8 @@ import type { AutoOptions } from "@observablehq/plot";
 
 import { memo, useEffect } from "react";
 
+import { Select } from "antd";
+
 import Chart from "@/components/base/plot";
 
 import { ChartProvider } from "@/components/base/plot/context/provider";
@@ -9,16 +11,6 @@ import { ChartProvider } from "@/components/base/plot/context/provider";
 import { useChart } from "@/components/base/plot/context/useChart";
 
 import { ScrollArea } from "@/components/base/ui/scroll-area";
-
-import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectLabel,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/base/ui/select";
 
 import { useQuery } from "@/context/query/useQuery";
 
@@ -36,30 +28,22 @@ type OptionPickerProps = {
 function OptionPicker(props: OptionPickerProps) {
     const { onValueChange, current, options, title } = props;
 
+    const selectOptions = options.map(option => ({
+        value: option,
+        label: option
+    }));
+
     return (
         <div className="flex flex-col gap-2">
             <p className="text-xs text-gray-500">{title}</p>
             <Select
                 value={current}
-                onValueChange={onValueChange}
-            >
-                <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder={`Select ${title}`} />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectGroup>
-                        <SelectLabel>{`${title}`}</SelectLabel>
-                        {options.map((option) => (
-                            <SelectItem
-                                key={option}
-                                value={option}
-                            >
-                                {option}
-                            </SelectItem>
-                        ))}
-                    </SelectGroup>
-                </SelectContent>
-            </Select>
+                onChange={onValueChange}
+                options={selectOptions}
+                placeholder={`Select ${title}`}
+                style={{ width: 180 }}
+                size="small"
+            />
         </div>
     );
 }
@@ -115,30 +99,22 @@ function SelectAxis(props: SelectAxisProps) {
         });
     };
 
+    const selectOptions = options.map(option => ({
+        value: option,
+        label: option
+    }));
+
     return (
         <div className="flex flex-col gap-2">
             <p className="text-xs text-gray-500">{`${axis.toUpperCase()} Axis`}</p>
             <Select
                 value={current?.toString() || ""}
-                onValueChange={onValueChange}
-            >
-                <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder={`Select ${axis}`} />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectGroup>
-                        <SelectLabel>{`${axis} Axis`}</SelectLabel>
-                        {options.map((option) => (
-                            <SelectItem
-                                key={option}
-                                value={option}
-                            >
-                                {option}
-                            </SelectItem>
-                        ))}
-                    </SelectGroup>
-                </SelectContent>
-            </Select>
+                onChange={onValueChange}
+                options={selectOptions}
+                placeholder={`Select ${axis}`}
+                style={{ width: 180 }}
+                size="small"
+            />
         </div>
     );
 }

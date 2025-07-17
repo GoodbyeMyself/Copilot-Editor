@@ -1,13 +1,7 @@
 import { format } from "date-fns";
 import { useMemo } from "react";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/base/ui/table";
+import { Table } from "antd";
+import type { ColumnsType } from "antd/es/table";
 
 import { usePagination } from "@/context/pagination/usePagination";
 
@@ -16,53 +10,6 @@ import { type QueryResponse } from "@/types/query";
 import { getArrowTableSchema } from "@/utils/arrow/helpers";
 
 import { getColumnType } from "@/utils/duckdb/helpers/getColumnType";
-
-export default function DataGrid(props: QueryResponse) {
-    const { limit, offset } = usePagination();
-    
-    const { schema, rows } = useMemo(() => {
-        if (!props.table || props.table.numRows === 0)
-            return { schema: [], rows: [] };
-        const rows = props.table
-            .slice(offset, offset + limit)
-            .toArray()
-            .map((row) => row.toJSON());
-        const schema = getArrowTableSchema(props.table);
-        return { schema, rows };
-    }, [props, limit, offset]);
-
-    return (
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    {schema.map((column) => {
-                        return <TableHead key={column.name}>{column.name}</TableHead>;
-                    })}
-                </TableRow>
-            </TableHeader>
-
-            <TableBody>
-                {rows.map((row, i) => (
-                    <TableRow key={i}>
-                        {Object.entries(row).map(([column, value]) => {
-                            const type =
-                                schema.find((col) => col.name === column)?.type ?? "other";
-
-                            const coercedType = getColumnType(type);
-
-                            const Node = dynamicTypeViewer({
-                                type: coercedType,
-                                value,
-                            });
-
-                            return <TableCell key={column}>{Node}</TableCell>;
-                        })}
-                    </TableRow>
-                ))}
-            </TableBody>
-        </Table>
-    );
-}
 
 type DynamicTypeViewerProps = {
     type:
@@ -110,4 +57,51 @@ function dynamicTypeViewer(props: DynamicTypeViewerProps) {
         default:
             return "";
     }
+}
+
+export default function DataGrid(props: QueryResponse) {
+    const { limit, offset } = usePagination();
+    
+    const { schema, rows } = useMemo(() => {
+        if (!props.table || props.table.numRows === 0)
+            return { schema: [], rows: [] };
+        const rows = props.table
+            .slice(offset, offset + limit)
+            .toArray()
+            .map((row, index) => ({
+                ...row.toJSON(),
+                key: `row-${offset + index}`, // 添加唯一的 key
+            }));
+        const schema = getArrowTableSchema(props.table);
+        return { schema, rows };
+    }, [props, limit, offset]);
+
+    const columns: ColumnsType<any> = useMemo(() => {
+        return schema.map((column) => {
+            const type = column.type ?? "other";
+            const coercedType = getColumnType(type);
+            
+            return {
+                title: column.name,
+                dataIndex: column.name,
+                key: column.name,
+                render: (value: unknown) => {
+                    return dynamicTypeViewer({
+                        type: coercedType,
+                        value,
+                    });
+                },
+            };
+        });
+    }, [schema]);
+
+    return (
+        <Table
+            columns={columns}
+            dataSource={rows}
+            pagination={false}
+            size="small"
+            scroll={{ x: true }}
+        />
+    );
 }

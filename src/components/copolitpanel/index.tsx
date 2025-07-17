@@ -5,7 +5,7 @@ import {
     PanelResizeHandle,
 } from "react-resizable-panels";
 
-import { Button } from "@/components/base/ui/button";
+import { Button } from "antd";
 
 import { cn } from "@/lib/utils";
 
@@ -35,48 +35,44 @@ export default function Sidepanel(props: CopolitpanelProps) {
                 </span>
                 <div className="flex items-center space-x-2">
                     <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-5 w-5"
+                        type="text"
+                        size="small"
+                        className="h-5 w-5 flex items-center justify-center"
                         onClick={() => {
                             console.log(0, '<- 新建会话');
                         }}
                         title="新建会话"
-                    >
-                        <PlusOutlined size={16} />
-                    </Button>
+                        icon={<PlusOutlined size={16} />}
+                    />
                     <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-5 w-5"
+                        type="text"
+                        size="small"
+                        className="h-5 w-5 flex items-center justify-center"
                         onClick={() => {
                             console.log(1, "<- 会话列表");
                         }}
                         title="会话列表"
-                    >
-                        <ClockCircleOutlined size={16} />
-                    </Button>
+                        icon={<ClockCircleOutlined size={16} />}
+                    />
                     <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-5 w-5"
+                        type="text"
+                        size="small"
+                        className="h-5 w-5 flex items-center justify-center"
                         onClick={() => {
                             console.log(2, "<- 更多操作");
                         }}
                         title="更多操作"
-                    >
-                        <EllipsisOutlined size={16}/>
-                    </Button>
+                        icon={<EllipsisOutlined size={16}/>}
+                    />
                     <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-5 w-5"
+                        type="text"
+                        size="small"
+                        className="h-5 w-5 flex items-center justify-center"
                         onClick={() => {
                             copolitRef?.current?.collapse();
                         }}
-                    >
-                        <CloseOutlined size={16}/>
-                    </Button>
+                        icon={<CloseOutlined size={16}/>}
+                    />
                 </div>
             </div>
             <PanelGroup
