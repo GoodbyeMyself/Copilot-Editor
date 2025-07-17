@@ -22,7 +22,7 @@ function SidebarTabBar({ activePanel, onPanelChange }: {
     onPanelChange: (panel: ActivePanel) => void;
 }) {
     return (
-        <div className="flex w-full bg-white border-b border-gray-200 px-2 py-2 justify-center">
+        <div className="flex w-full bg-white border-b border-gray-200 px-2 justify-center slider-tab-bar">
             <div className="flex gap-1">
                 <Button
                     type="text"

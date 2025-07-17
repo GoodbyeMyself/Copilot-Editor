@@ -216,7 +216,7 @@ function CodeEditorItem(editor: CodeEditor) {
             <div
                 className={cn(
                     "group flex h-8 w-full items-center justify-between gap-2 overflow-hidden px-2 py-1 rounded hover:bg-gray-50 cursor-pointer transition-colors",
-                    isFocused && "bg-blue-50 border border-blue-200",
+                    isFocused && "bg-blue-50",
                 )}
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}

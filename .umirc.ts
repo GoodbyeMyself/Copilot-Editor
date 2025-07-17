@@ -17,7 +17,7 @@ export default defineConfig({
         {
             name: "SQL Editor",
             path: "/home",
-            icon: "Dashboard",
+            icon: "icon-htmlbianjiqi",
             component: "./Home",
         },
         // 数据源管理
