@@ -1,6 +1,5 @@
 import { TreeDataNode } from "antd";
 import { TreeDataSource, DataSourceTable, DataSourceField } from "@/types/files/dataset";
-import { Table, Type } from "lucide-react";
 import React from "react";
 import SvgIcon from "@/components/common/SvgIcon";
 
@@ -49,7 +48,10 @@ function convertFieldsToAntdTree(
             nodeKey: field.key,
         }, field.title) : field.title,
         key: field.key,
-        icon: React.createElement(Type, { size: 14 }),
+        icon: React.createElement(SvgIcon, { 
+            type: 'icon-ziduanpeizhi', 
+            style: { fontSize: '14px' }
+        }),
         isLeaf: true,
     }));
 }
@@ -66,7 +68,10 @@ function convertTablesToAntdTree(
             nodeKey: table.key,
         }, table.title) : table.title,
         key: table.key,
-        icon: React.createElement(Table, { size: 16 }),
+        icon: React.createElement(SvgIcon, { 
+            type: 'icon-shujubiao', 
+            style: { fontSize: '16px' }
+        }),
         children: convertFieldsToAntdTree(table.fields, CustomTitleComponent),
     }));
 }

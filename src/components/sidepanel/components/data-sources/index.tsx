@@ -56,8 +56,6 @@ function getNodeType(nodeKey: string, sources: any[]): NodeType {
     };
     
     const node = findNodeByKey(nodeKey);
-
-
     if (node) {
         switch (node.type) {
             case 'database':
@@ -70,6 +68,9 @@ function getNodeType(nodeKey: string, sources: any[]): NodeType {
                 return NodeType.FIELD;
         }
     }
+    
+    // 默认返回字段类型
+    return NodeType.FIELD;
 }
 
 // 更多操作按钮组件

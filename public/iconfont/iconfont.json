@@ -6,6 +6,20 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "10339505",
+      "name": "数据表",
+      "font_class": "shujubiao",
+      "unicode": "e60b",
+      "unicode_decimal": 58891
+    },
+    {
+      "icon_id": "34694659",
+      "name": "字段配置",
+      "font_class": "ziduanpeizhi",
+      "unicode": "e967",
+      "unicode_decimal": 59751
+    },
+    {
       "icon_id": "19202629",
       "name": "mysql ",
       "font_class": "mysql",
