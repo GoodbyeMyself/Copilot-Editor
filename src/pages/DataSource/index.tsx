@@ -146,22 +146,97 @@ const AccessPage: React.FC = () => {
         setIsModalVisible(true);
     };
 
+    // 生成随机字段
+    const generateRandomFields = (dataSourceKey: string, tableKey: string): any[] => {
+        const fieldTypes = ['INTEGER', 'VARCHAR(255)', 'TEXT', 'DECIMAL(10,2)', 'TIMESTAMP', 'BOOLEAN', 'JSON', 'BLOB', 'DATE', 'DATETIME'];
+        const fieldNames = ['id', 'name', 'title', 'description', 'status', 'created_at', 'updated_at', 'user_id', 'category_id', 'price', 'quantity', 'type', 'content', 'url', 'email', 'phone', 'address', 'code', 'version', 'remark', 'amount', 'count', 'total', 'value', 'key', 'data', 'info', 'note', 'tag', 'label', 'group', 'level', 'score', 'rate', 'percent', 'ratio', 'size', 'length', 'width', 'height', 'weight', 'color', 'style', 'format', 'pattern', 'rule', 'config', 'setting', 'option', 'choice', 'select', 'input', 'output', 'result', 'response', 'request', 'query', 'search', 'filter', 'sort', 'order', 'rank', 'index', 'position', 'location', 'place', 'area', 'region', 'zone', 'district', 'city', 'state', 'country', 'continent', 'world', 'universe', 'space', 'time', 'date', 'year', 'month', 'day', 'hour', 'minute', 'second', 'millisecond', 'microsecond', 'nanosecond'];
+        
+        const fields = [];
+        const usedFieldNames = new Set(); // 用于跟踪已使用的字段名
+        
+        for (let i = 0; i < 10; i++) {
+            let fieldName;
+            let attempts = 0;
+            
+            // 确保字段名唯一
+            do {
+                fieldName = fieldNames[Math.floor(Math.random() * fieldNames.length)];
+                attempts++;
+                // 如果尝试次数过多，添加数字后缀确保唯一性
+                if (attempts > 10) {
+                    fieldName = `${fieldName}_${i}`;
+                    break;
+                }
+            } while (usedFieldNames.has(fieldName));
+            
+            usedFieldNames.add(fieldName);
+            const fieldType = fieldTypes[Math.floor(Math.random() * fieldTypes.length)];
+            
+            fields.push({
+                key: `${dataSourceKey}-${tableKey}-${fieldName}`,
+                title: fieldName,
+                type: 'field',
+                dataType: fieldType,
+            });
+        }
+        return fields;
+    };
+
+    // 生成随机表
+    const generateRandomTables = (dataSourceKey: string): any[] => {
+        const tables = [];
+        const usedTableNames = new Set(); // 用于跟踪已使用的表名
+        
+        for (let i = 0; i < 5; i++) {
+            let tableName;
+            let attempts = 0;
+            
+            // 确保表名唯一
+            do {
+                const tablePrefixes = ['user', 'order', 'product', 'category', 'payment', 'log', 'config', 'file', 'message', 'notification'];
+                const tableSuffixes = ['info', 'data', 'record', 'list', 'detail', 'summary', 'stats', 'history', 'backup', 'temp'];
+                const prefix = tablePrefixes[Math.floor(Math.random() * tablePrefixes.length)];
+                const suffix = tableSuffixes[Math.floor(Math.random() * tableSuffixes.length)];
+                tableName = `${prefix}_${suffix}`;
+                attempts++;
+                // 如果尝试次数过多，添加数字后缀确保唯一性
+                if (attempts > 10) {
+                    tableName = `${tableName}_${i}`;
+                    break;
+                }
+            } while (usedTableNames.has(tableName));
+            
+            usedTableNames.add(tableName);
+            const tableKey = `${dataSourceKey}-${tableName}`;
+            
+            tables.push({
+                key: tableKey,
+                title: `${tableName}表`,
+                type: 'table',
+                fields: generateRandomFields(dataSourceKey, tableName)
+            });
+        }
+        return tables;
+    };
+
     const handleModalOk = async () => {
         try {
             const values = await form.validateFields();
             
+            const dataSourceKey = `new-${Date.now()}`;
+            
             // 创建新的数据源
             const newDataSource: TreeDataSource = {
                 kind: "TREE_DATASET",
-                id: `new-${Date.now()}`,
-                path: `new-${Date.now()}`,
+                id: dataSourceKey,
+                path: dataSourceKey,
                 database: {
-                    key: `new-${Date.now()}`,
+                    key: dataSourceKey,
                     title: values.name,
                     type: 'database',
                     dataSourceType: values.type,
                     connectionString: values.url,
-                    tables: [], // 新数据源暂时没有表
+                    tables: generateRandomTables(dataSourceKey), // 生成随机表
                 },
             };
 
