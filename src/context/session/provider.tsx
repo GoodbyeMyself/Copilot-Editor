@@ -93,6 +93,19 @@ const LocalStorageManager = {
         
         return editors;
     },
+
+    // 从localStorage恢复数据源数据
+    restoreDataSources: (sessionId: string) => {
+        const storageKey = `session_${sessionId}_datasources`;
+        const data = LocalStorageManager.getItem(storageKey);
+        return data || null;
+    },
+
+    // 保存数据源数据到localStorage
+    saveDataSources: (sessionId: string, dataSources: any[]) => {
+        const storageKey = `session_${sessionId}_datasources`;
+        return LocalStorageManager.setItem(storageKey, dataSources);
+    },
     
     // 清除会话数据
     clearSession: (sessionId: string) => {
@@ -356,20 +369,23 @@ function SessionProvider({ children }: SessionProviderProps) {
             try {
                 const editors = LocalStorageManager.restoreEditors(sessionId);
                 
+                // 尝试从本地缓存恢复数据源
+                let dataSources = LocalStorageManager.restoreDataSources(sessionId);
+                
+                // 如果没有缓存数据，使用模拟数据并保存到缓存
+                if (!dataSources) {
+                    dataSources = mockTreeDataSources;
+                    LocalStorageManager.saveDataSources(sessionId, dataSources);
+                }
+                
                 dispatch({
                     type: "OPEN_SESSION",
                     payload: {
                         sessionId,
                         directoryHandle: null,
-                        sources: [], // 初始为空，稍后会加载模拟数据
+                        sources: dataSources, // 使用恢复的数据源
                         editors,
                     },
-                });
-
-                // 加载模拟数据源
-                dispatch({
-                    type: "ADD_SOURCES",
-                    payload: mockTreeDataSources,
                 });
             } catch (e) {
                 console.error("Error restoring from localStorage:", e);
@@ -388,6 +404,13 @@ function SessionProvider({ children }: SessionProviderProps) {
 
         initSession("DataWorksCopilot");
     }, []);
+
+    // 监听sources变化，自动保存到本地缓存
+    useEffect(() => {
+        if (session.sources.length > 0 && session.sessionId) {
+            LocalStorageManager.saveDataSources(session.sessionId, session.sources);
+        }
+    }, [session.sources, session.sessionId]);
 
     /**
      * Update your session (i.e. open a new project).
@@ -663,6 +686,28 @@ function SessionProvider({ children }: SessionProviderProps) {
     );
 
     /**
+     * 添加单个数据源
+     */
+    const onAddDataSource: SessionMethods["onAddDataSource"] = useCallback(
+        async (dataSource: Dataset) => {
+            try {
+                dispatch({
+                    type: "ADD_SINGLE_SOURCE",
+                    payload: dataSource,
+                });
+
+                toast.success("数据源已添加");
+            } catch (e) {
+                console.error("Failed to add data source: ", e);
+                toast.error("添加数据源失败", {
+                    description: e instanceof Error ? e.message : undefined,
+                });
+            }
+        },
+        [],
+    );
+
+    /**
      * 删除数据源
      */
     const onRemoveDataSource: SessionMethods["onRemoveDataSource"] = useCallback(
@@ -672,6 +717,7 @@ function SessionProvider({ children }: SessionProviderProps) {
                     type: "REMOVE_SOURCE",
                     payload: { path },
                 });
+
                 toast.success("数据源已删除");
             } catch (e) {
                 console.error("Failed to remove data source: ", e);
@@ -692,27 +738,6 @@ function SessionProvider({ children }: SessionProviderProps) {
             payload: mockTreeDataSources,
         });
     }, []);
-
-    /**
-     * 添加单个数据源
-     */
-    const onAddDataSource: SessionMethods["onAddDataSource"] = useCallback(
-        async (dataSource: Dataset) => {
-            try {
-                dispatch({
-                    type: "ADD_SINGLE_SOURCE",
-                    payload: dataSource,
-                });
-                toast.success("数据源已添加");
-            } catch (e) {
-                console.error("Failed to add data source: ", e);
-                toast.error("添加数据源失败", {
-                    description: e instanceof Error ? e.message : undefined,
-                });
-            }
-        },
-        [],
-    );
 
     const value = useMemo(
         () => ({
