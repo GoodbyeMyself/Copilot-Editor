@@ -371,7 +371,7 @@ const AccessPage: React.FC = () => {
                 </Row>
 
                 {/* 分页 */}
-                <div style={{ marginTop: 24, textAlign: 'center' }}>
+                <div style={{ marginTop: 24}}>
                     <Pagination
                         current={currentPage}
                         total={filteredDataSources.length}
@@ -380,6 +380,7 @@ const AccessPage: React.FC = () => {
                         showSizeChanger={false}
                         showQuickJumper
                         showTotal={(total, range) => `第 ${range[0]}-${range[1]} 条，共 ${total} 条`}
+                        style={{ float: 'right' }}
                     />
                 </div>
 
