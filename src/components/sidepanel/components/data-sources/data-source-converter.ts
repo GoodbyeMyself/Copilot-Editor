@@ -31,7 +31,9 @@ function getDataSourceIcon(dataSourceType?: string): React.ReactElement {
     const iconType = dataSourceType ? dataSourceTypeIconMap[dataSourceType] || dataSourceTypeIconMap['default'] : dataSourceTypeIconMap['default'];
     return React.createElement(SvgIcon, { 
         type: iconType, 
-        style: { fontSize: '16px' }
+        style: {
+            fontSize: '16px'
+        }
     });
 }
 
@@ -90,17 +92,3 @@ export function convertTreeDataSourcesToAntdTree(
         };
     });
 }
-
-/**
- * 根据节点 key 判断节点类型
- */
-export function getNodeTypeFromKey(nodeKey: string): 'database' | 'table' | 'field' {
-    const parts = nodeKey.split('-');
-    if (parts.length === 1) {
-        return 'database';
-    } else if (parts.length === 2) {
-        return 'table';
-    } else {
-        return 'field';
-    }
-} 

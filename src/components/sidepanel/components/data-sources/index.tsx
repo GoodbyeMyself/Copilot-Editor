@@ -15,7 +15,7 @@ import { useSession } from "@/context/session/useSession";
 
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 
-import { convertTreeDataSourcesToAntdTree, getNodeTypeFromKey } from "./data-source-converter";
+import { convertTreeDataSourcesToAntdTree } from "./data-source-converter";
 
 import { TreeDataSource } from "@/types/files/dataset";
 
@@ -31,17 +31,44 @@ enum NodeType {
 }
 
 // 获取节点类型
-function getNodeType(nodeKey: string): NodeType {
-    const nodeType = getNodeTypeFromKey(nodeKey);
-    switch (nodeType) {
-        case 'database':
-            return NodeType.DATABASE;
-        case 'table':
-            return NodeType.TABLE;
-        case 'field':
-            return NodeType.FIELD;
-        default:
-            return NodeType.FIELD;
+function getNodeType(nodeKey: string, sources: any[]): NodeType {
+    // 从数据源中获取节点类型
+    const findNodeByKey = (key: string): any => {
+        for (const source of sources) {
+            if (source.kind === "TREE_DATASET") {
+                const treeSource = source as TreeDataSource;
+                if (treeSource.database.key === key) {
+                    return treeSource.database;
+                }
+                for (const table of treeSource.database.tables) {
+                    if (table.key === key) {
+                        return table;
+                    }
+                    for (const field of table.fields) {
+                        if (field.key === key) {
+                            return field;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    };
+    
+    const node = findNodeByKey(nodeKey);
+
+
+    if (node) {
+        switch (node.type) {
+            case 'database':
+                return NodeType.DATABASE;
+            case 'table':
+                return NodeType.TABLE;
+            case 'field':
+                return NodeType.FIELD;
+            default:
+                return NodeType.FIELD;
+        }
     }
 }
 
@@ -57,9 +84,10 @@ function NodeMoreActions({
 }) {
     const { copyToClipboard } = useCopyToClipboard();
     const { editorRef } = useEditor();
-    const { editors } = useSession();
+    const { editors, sources } = useSession();
     const { message } = App.useApp();
-    const nodeType = getNodeType(nodeKey);
+
+    const nodeType = getNodeType(nodeKey, sources);
 
     // 检查是否有SQL文件打开
     const checkSQLEditorOpen = () => {
@@ -141,7 +169,6 @@ function NodeMoreActions({
                     }
                 } catch (error) {
                     console.error('删除数据源失败:', error);
-                    message.error('删除数据源失败，请重试');
                 }
             },
             onCancel() {
@@ -219,11 +246,11 @@ function CustomTreeTitle({
 
     const { editorRef } = useEditor();
 
-    const { editors } = useSession();
+    const { editors, sources } = useSession();
 
     const { message } = App.useApp();
     
-    const nodeType = getNodeType(nodeKey);
+    const nodeType = getNodeType(nodeKey, sources);
 
     // 检查是否有SQL文件打开
     const checkSQLEditorOpen = () => {
