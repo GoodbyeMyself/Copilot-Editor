@@ -9,6 +9,7 @@ import type {
     SessionMethods,
     SessionState,
 } from "./types";
+import type { Dataset } from "@/types/files/dataset";
 
 // Split up the context files to appease react-refresh.
 
@@ -178,6 +179,13 @@ function reducer(state: SessionState, action: Action): SessionState {
             return {
                 ...state,
                 sources: [...state.sources, ...action.payload],
+            };
+        }
+
+        case "ADD_SINGLE_SOURCE": {
+            return {
+                ...state,
+                sources: [...state.sources, action.payload],
             };
         }
 
@@ -685,6 +693,27 @@ function SessionProvider({ children }: SessionProviderProps) {
         });
     }, []);
 
+    /**
+     * 添加单个数据源
+     */
+    const onAddDataSource: SessionMethods["onAddDataSource"] = useCallback(
+        async (dataSource: Dataset) => {
+            try {
+                dispatch({
+                    type: "ADD_SINGLE_SOURCE",
+                    payload: dataSource,
+                });
+                toast.success("数据源已添加");
+            } catch (e) {
+                console.error("Failed to add data source: ", e);
+                toast.error("添加数据源失败", {
+                    description: e instanceof Error ? e.message : undefined,
+                });
+            }
+        },
+        [],
+    );
+
     const value = useMemo(
         () => ({
             ...session,
@@ -698,6 +727,7 @@ function SessionProvider({ children }: SessionProviderProps) {
             onRenameEditor,
             onRemoveDataSource,
             onInitializeMockDataSources,
+            onAddDataSource,
         }),
         [
             onSessionChange,
@@ -710,6 +740,7 @@ function SessionProvider({ children }: SessionProviderProps) {
             onRenameEditor,
             onRemoveDataSource,
             onInitializeMockDataSources,
+            onAddDataSource,
         ],
     );
 

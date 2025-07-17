@@ -1,109 +1,106 @@
-import { PageContainer } from '@ant-design/pro-components';
-
-
-
+import React, { useState, useMemo } from 'react';
 import {
-    Button,
     Card,
-    Input,
-    Space,
     Row,
     Col,
-    Pagination,
-    Badge,
-    Avatar,
+    Button,
+    Space,
+    Input,
     Typography,
-    Divider
+    Avatar,
+    Badge,
+    Divider,
+    Pagination,
+    Modal,
+    Form,
+    Select,
+    App,
 } from 'antd';
-
 import {
     PlusOutlined,
-    DeleteOutlined,
     SearchOutlined,
-    DatabaseOutlined,
     LinkOutlined,
+    DatabaseOutlined,
+    DeleteOutlined,
     CheckCircleOutlined,
     CloseCircleOutlined,
-    ExclamationCircleOutlined
+    ExclamationCircleOutlined,
 } from '@ant-design/icons';
-
-// 自定义 svg 组件
 import SvgIcon from '@/components/common/SvgIcon';
 
-import { useState } from 'react';
+import { useSession } from "@/context/session/useSession";
+import { TreeDataSource } from "@/types/files/dataset";
 
 const { Search } = Input;
 const { Text, Title } = Typography;
+const { Option } = Select;
 
-
-// 模拟数据源数据
-const mockDataSources = [
-    {
-        id: 1,
-        name: 'MySQL 生产数据库',
-        type: 'MySQL',
-        icon: 'icon-mysql',
-        status: 'connected',
-        url: 'mysql://prod-server:3306/database',
-        version: '8.0.32',
-        description: '生产环境主数据库'
-    },
-    {
-        id: 2,
-        name: 'PostgreSQL 用户库',
-        type: 'PostgreSQL',
-        icon: 'icon-pgsql',
-        status: 'disconnected',
-        url: 'postgresql://user-db:5432/users',
-        version: '14.8',
-        description: '用户数据存储库'
-    },
-    {
-        id: 3,
-        name: 'Redis 缓存集群',
-        type: 'Redis',
-        icon: 'icon-redis',
-        status: 'warning',
-        url: 'redis://cache-cluster:6379',
-        version: '7.0.11',
-        description: '缓存数据库集群'
-    },
-    {
-        id: 4,
-        name: 'MongoDB 文档库',
-        type: 'MongoDB',
-        icon: 'icon-MongoDB',
-        status: 'connected',
-        url: 'mongodb://doc-server:27017/documents',
-        version: '6.0.5',
-        description: '文档存储数据库'
-    },
-    {
-        id: 5,
-        name: 'Oracle 企业库',
-        type: 'Oracle',
-        icon: 'icon-oracle',
-        status: 'connected',
-        url: 'oracle://enterprise:1521/ORCL',
-        version: '19c',
-        description: '企业级数据库'
-    },
-    {
-        id: 6,
-        name: 'Alipay支付数据源',
-        type: 'Alipay',
-        icon: 'icon-zhifubao',
-        status: 'connected',
-        url: 'https://openapi.alipay.com/gateway.do',
-        version: 'v3.0',
-        description: '支付宝接口数据源'
-    }
-];
+// 数据源管理页面使用的数据结构
+interface DataSourceItem {
+    id: string;
+    name: string;
+    type: string;
+    icon: string;
+    status: 'connected' | 'disconnected' | 'warning';
+    url: string;
+    version: string;
+    description: string;
+    key: string;
+    dataSourceType: string;
+    connectionString: string;
+    tables: any[];
+}
 
 const AccessPage: React.FC = () => {
     const [searchValue, setSearchValue] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize] = useState(6);
+    const [pageSize] = useState(8);
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [form] = Form.useForm();
+    const { sources, onAddDataSource, onRemoveDataSource } = useSession();
+    const { message } = App.useApp();
+
+    // 根据数据库类型获取图标
+    const getIconByType = (type: string): string => {
+        const iconMap: Record<string, string> = {
+            'MySQL': 'icon-mysql',
+            'PostgreSQL': 'icon-pgsql',
+            'Redis': 'icon-redis',
+            'MongoDB': 'icon-MongoDB',
+            'Oracle': 'icon-oracle',
+            'Alipay': 'icon-zhifubao',
+        };
+        return iconMap[type] || 'icon-database';
+    };
+
+    // 获取随机状态（实际应用中应该从数据库连接状态获取）
+    const getRandomStatus = (): 'connected' | 'disconnected' | 'warning' => {
+        const statuses: ('connected' | 'disconnected' | 'warning')[] = ['connected', 'disconnected', 'warning'];
+        return statuses[Math.floor(Math.random() * statuses.length)];
+    };
+
+    // 将全局状态中的 TreeDataSource 转换为管理页面需要的 DataSourceItem 格式
+    const dataSourceItems: DataSourceItem[] = useMemo(() => {
+        return sources
+            .filter(source => source.kind === "TREE_DATASET")
+            .map((source: TreeDataSource) => {
+                const database = source.database;
+                return {
+                    id: source.id,
+                    name: database.title,
+                    type: database.dataSourceType || 'Unknown',
+                    icon: getIconByType(database.dataSourceType || 'Unknown'),
+                    status: getRandomStatus(), // 这里可以根据实际情况设置状态
+                    url: database.connectionString || '',
+                    version: '1.0.0', // 可以从数据库获取或设置默认值
+                    description: `${database.dataSourceType || 'Unknown'} 数据源`,
+                    key: database.key,
+                    dataSourceType: database.dataSourceType || 'Unknown',
+                    connectionString: database.connectionString || '',
+                    tables: database.tables || [],
+                };
+            });
+    }, [sources]);
 
     // 状态图标和颜色映射
     const getStatusConfig = (status: string) => {
@@ -136,7 +133,7 @@ const AccessPage: React.FC = () => {
     };
 
     // 过滤数据源
-    const filteredDataSources = mockDataSources.filter(item =>
+    const filteredDataSources = dataSourceItems.filter(item =>
         item.name.toLowerCase().includes(searchValue.toLowerCase()) ||
         item.type.toLowerCase().includes(searchValue.toLowerCase())
     );
@@ -148,12 +145,57 @@ const AccessPage: React.FC = () => {
     );
 
     const handleAddDataSource = () => {
-        console.log('新增数据源');
+        setIsModalVisible(true);
+    };
+
+    const handleModalOk = async () => {
+        try {
+            const values = await form.validateFields();
+            
+            // 创建新的数据源
+            const newDataSource: TreeDataSource = {
+                kind: "TREE_DATASET",
+                id: `new-${Date.now()}`,
+                path: `new-${Date.now()}`,
+                database: {
+                    key: `new-${Date.now()}`,
+                    title: values.name,
+                    type: 'database',
+                    dataSourceType: values.type,
+                    connectionString: values.url,
+                    tables: [], // 新数据源暂时没有表
+                },
+            };
+
+            // 添加到全局状态
+            await onAddDataSource(newDataSource);
+            
+            setIsModalVisible(false);
+            form.resetFields();
+            message.success('数据源添加成功');
+        } catch (error) {
+            console.error('添加数据源失败:', error);
+        }
+    };
+
+    const handleModalCancel = () => {
+        setIsModalVisible(false);
+        form.resetFields();
     };
 
     const handleSearch = (value: string) => {
         setSearchValue(value);
         setCurrentPage(1);
+    };
+
+    const handleDeleteDataSource = async (dataSourceId: string) => {
+        try {
+            await onRemoveDataSource(dataSourceId);
+            message.success('数据源删除成功');
+        } catch (error) {
+            console.error('删除数据源失败:', error);
+            message.error('删除数据源失败');
+        }
     };
 
     return (
@@ -197,7 +239,10 @@ const AccessPage: React.FC = () => {
                                     actions={[
                                         <LinkOutlined key="connect" />,
                                         <DatabaseOutlined key="test" />,
-                                        <DeleteOutlined key="delete" />
+                                        <DeleteOutlined 
+                                            key="delete" 
+                                            onClick={() => handleDeleteDataSource(dataSource.id)}
+                                        />
                                     ]}
                                 >
                                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
@@ -232,20 +277,27 @@ const AccessPage: React.FC = () => {
 
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                             <Text strong style={{ fontSize: '12px' }}>
-                                                数据库版本 :
+                                                数据库类型 :
                                             </Text>
-                                            <Text style={{ fontSize: '11px' }}>{dataSource.version}</Text>
+                                            <Text style={{ fontSize: '11px' }}>
+                                                {dataSource.type}
+                                            </Text>
                                         </div>
 
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                             <Text strong style={{ fontSize: '12px' }}>
-                                                连接URL :
+                                                版本 :
                                             </Text>
-                                            <Text
-                                                ellipsis={{ tooltip: dataSource.url }}
-                                                style={{ maxWidth: 200, textAlign: 'right', fontSize: '11px' }}
-                                                type="secondary"
-                                            >
+                                            <Text style={{ fontSize: '11px' }}>
+                                                {dataSource.version}
+                                            </Text>
+                                        </div>
+
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <Text strong style={{ fontSize: '12px' }}>
+                                                连接地址 :
+                                            </Text>
+                                            <Text style={{ fontSize: '11px' }} ellipsis={{ tooltip: dataSource.url }}>
                                                 {dataSource.url}
                                             </Text>
                                         </div>
@@ -256,22 +308,93 @@ const AccessPage: React.FC = () => {
                     })}
                 </Row>
 
-                {/* 分页区域 */}
-                {filteredDataSources.length > pageSize && (
-                    <div style={{ textAlign: 'center', marginTop: 24 }}>
-                        <Pagination
-                            current={currentPage}
-                            total={filteredDataSources.length}
-                            pageSize={pageSize}
-                            onChange={(page) => setCurrentPage(page)}
-                            showSizeChanger={false}
-                            showQuickJumper
-                            showTotal={(total, range) =>
-                                `第 ${range[0]}-${range[1]} 条，共 ${total} 条数据源`
-                            }
-                        />
-                    </div>
-                )}
+                {/* 分页 */}
+                <div style={{ marginTop: 24, textAlign: 'center' }}>
+                    <Pagination
+                        current={currentPage}
+                        total={filteredDataSources.length}
+                        pageSize={pageSize}
+                        onChange={(page) => setCurrentPage(page)}
+                        showSizeChanger={false}
+                        showQuickJumper
+                        showTotal={(total, range) => `第 ${range[0]}-${range[1]} 条，共 ${total} 条`}
+                    />
+                </div>
+
+                {/* 添加数据源模态框 */}
+                <Modal
+                    title="添加数据源"
+                    open={isModalVisible}
+                    onOk={handleModalOk}
+                    onCancel={handleModalCancel}
+                    okText="添加"
+                    cancelText="取消"
+                >
+                    <Form
+                        form={form}
+                        layout="vertical"
+                        initialValues={{
+                            status: 'connected',
+                            version: '1.0.0',
+                        }}
+                    >
+                        <Form.Item
+                            name="name"
+                            label="数据源名称"
+                            rules={[{ required: true, message: '请输入数据源名称' }]}
+                        >
+                            <Input placeholder="请输入数据源名称" />
+                        </Form.Item>
+
+                        <Form.Item
+                            name="type"
+                            label="数据库类型"
+                            rules={[{ required: true, message: '请选择数据库类型' }]}
+                        >
+                            <Select placeholder="请选择数据库类型">
+                                <Option value="MySQL">MySQL</Option>
+                                <Option value="PostgreSQL">PostgreSQL</Option>
+                                <Option value="Redis">Redis</Option>
+                                <Option value="MongoDB">MongoDB</Option>
+                                <Option value="Oracle">Oracle</Option>
+                                <Option value="Alipay">Alipay</Option>
+                            </Select>
+                        </Form.Item>
+
+                        <Form.Item
+                            name="url"
+                            label="连接地址"
+                            rules={[{ required: true, message: '请输入连接地址' }]}
+                        >
+                            <Input placeholder="请输入连接地址" />
+                        </Form.Item>
+
+                        <Form.Item
+                            name="description"
+                            label="描述"
+                        >
+                            <Input.TextArea placeholder="请输入数据源描述" rows={3} />
+                        </Form.Item>
+
+                        <Form.Item
+                            name="version"
+                            label="版本"
+                        >
+                            <Input placeholder="请输入版本号" />
+                        </Form.Item>
+
+                        <Form.Item
+                            name="status"
+                            label="连接状态"
+                        >
+                            <Select>
+                                <Option value="connected">已连接</Option>
+                                <Option value="disconnected">连接失败</Option>
+                                <Option value="warning">连接异常</Option>
+                            </Select>
+                        </Form.Item>
+                    </Form>
+                </Modal>
             </div>
         </div>
     );

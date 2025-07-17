@@ -1,11 +1,34 @@
 import { type TreeDataSource, type DataSourceDatabase } from "@/types/files/dataset";
 
-// 模拟数据源数据
-const mockDatabases: DataSourceDatabase[] = [
+// 数据源管理页面使用的数据结构
+export interface DataSourceItem {
+    id: number;
+    name: string;
+    type: string;
+    icon: string;
+    status: 'connected' | 'disconnected' | 'warning';
+    url: string;
+    version: string;
+    description: string;
+    // 树形数据源相关字段
+    key: string;
+    dataSourceType: string;
+    connectionString: string;
+    tables: any[];
+}
+
+// 模拟数据源数据 - 融合版本
+export const mockDataSources: DataSourceItem[] = [
     {
+        id: 1,
+        name: 'MySQL 生产数据库',
+        type: 'MySQL',
+        icon: 'icon-mysql',
+        status: 'connected',
+        url: 'mysql://prod-server:3306/database',
+        version: '8.0.32',
+        description: '生产环境主数据库',
         key: 'mysql-prod',
-        title: 'MySQL 生产数据库',
-        type: 'database',
         dataSourceType: 'MySQL',
         connectionString: 'mysql://prod-server:3306/database',
         tables: [
@@ -74,9 +97,15 @@ const mockDatabases: DataSourceDatabase[] = [
         ],
     },
     {
+        id: 2,
+        name: 'PostgreSQL 用户库',
+        type: 'PostgreSQL',
+        icon: 'icon-pgsql',
+        status: 'disconnected',
+        url: 'postgresql://user-db:5432/users',
+        version: '14.8',
+        description: '用户数据存储库',
         key: 'postgresql-userdb',
-        title: 'PostgreSQL 用户库',
-        type: 'database',
         dataSourceType: 'PostgreSQL',
         connectionString: 'postgresql://user-db:5432/users',
         tables: [
@@ -139,9 +168,15 @@ const mockDatabases: DataSourceDatabase[] = [
         ],
     },
     {
+        id: 3,
+        name: 'Redis 缓存集群',
+        type: 'Redis',
+        icon: 'icon-redis',
+        status: 'warning',
+        url: 'redis://cache-cluster:6379',
+        version: '7.0.11',
+        description: '缓存数据库集群',
         key: 'redis-cache',
-        title: 'Redis 缓存集群',
-        type: 'database',
         dataSourceType: 'Redis',
         connectionString: 'redis://cache-cluster:6379',
         tables: [
@@ -173,9 +208,15 @@ const mockDatabases: DataSourceDatabase[] = [
         ],
     },
     {
+        id: 4,
+        name: 'MongoDB 文档库',
+        type: 'MongoDB',
+        icon: 'icon-MongoDB',
+        status: 'connected',
+        url: 'mongodb://doc-server:27017/documents',
+        version: '6.0.5',
+        description: '文档存储数据库',
         key: 'mongodb-documents',
-        title: 'MongoDB 文档库',
-        type: 'database',
         dataSourceType: 'MongoDB',
         connectionString: 'mongodb://doc-server:27017/documents',
         tables: [
@@ -213,9 +254,15 @@ const mockDatabases: DataSourceDatabase[] = [
         ],
     },
     {
+        id: 5,
+        name: 'Oracle 企业库',
+        type: 'Oracle',
+        icon: 'icon-oracle',
+        status: 'connected',
+        url: 'oracle://enterprise:1521/ORCL',
+        version: '19c',
+        description: '企业级数据库',
         key: 'oracle-enterprise',
-        title: 'Oracle 企业库',
-        type: 'database',
         dataSourceType: 'Oracle',
         connectionString: 'oracle://enterprise:1521/ORCL',
         tables: [
@@ -253,9 +300,15 @@ const mockDatabases: DataSourceDatabase[] = [
         ],
     },
     {
+        id: 6,
+        name: 'Alipay支付数据源',
+        type: 'Alipay',
+        icon: 'icon-zhifubao',
+        status: 'connected',
+        url: 'https://openapi.alipay.com/gateway.do',
+        version: 'v3.0',
+        description: '支付宝接口数据源',
         key: 'alipay-api',
-        title: 'Alipay支付数据源',
-        type: 'database',
         dataSourceType: 'Alipay',
         connectionString: 'https://openapi.alipay.com/gateway.do',
         tables: [
@@ -288,10 +341,35 @@ const mockDatabases: DataSourceDatabase[] = [
     },
 ];
 
-// 将数据库转换为树形数据源格式
-export const mockTreeDataSources: TreeDataSource[] = mockDatabases.map((db) => ({
+// 将融合数据转换为树形数据源格式
+export const mockTreeDataSources: TreeDataSource[] = mockDataSources.map((dataSource) => ({
     kind: "TREE_DATASET",
-    id: db.key,
-    path: db.key,
-    database: db,
-})); 
+    id: dataSource.key,
+    path: dataSource.key,
+    database: {
+        key: dataSource.key,
+        title: dataSource.name,
+        type: 'database',
+        dataSourceType: dataSource.dataSourceType,
+        connectionString: dataSource.connectionString,
+        tables: dataSource.tables,
+    } as DataSourceDatabase,
+}));
+
+// 将融合数据转换为管理页面格式
+export const getDataSourceItems = (): DataSourceItem[] => {
+    return mockDataSources;
+};
+
+// 添加新数据源的函数
+export const addDataSource = (newDataSource: Omit<DataSourceItem, 'id'>): DataSourceItem => {
+    const id = Math.max(...mockDataSources.map(ds => ds.id)) + 1;
+    const dataSourceWithId: DataSourceItem = {
+        ...newDataSource,
+        id,
+    };
+    
+    // 这里应该更新全局状态，而不是直接修改 mockDataSources
+    // 实际实现中，这个函数会被集成到 SessionProvider 中
+    return dataSourceWithId;
+}; 

@@ -35,6 +35,7 @@ export type SessionMethods = {
     onRenameEditor: (path: string, newPath: string) => Promise<void>;
     onRemoveDataSource: (path: string) => Promise<void>;
     onInitializeMockDataSources: () => void;
+    onAddDataSource: (dataSource: Dataset) => Promise<void>;
 };
 
 export type SessionContextValue = SessionState & SessionMethods;
@@ -146,6 +147,11 @@ type REMOVE_SOURCE = {
     };
 };
 
+type ADD_SINGLE_SOURCE = {
+    type: "ADD_SINGLE_SOURCE";
+    payload: Dataset;
+};
+
 export type Action =
     | RENAME_EDITOR
     | OpenEditor
@@ -160,4 +166,5 @@ export type Action =
     | RefreshEditor
     | RESET_SESSION
     | ADD_SOURCES
-    | REMOVE_SOURCE;
+    | REMOVE_SOURCE
+    | ADD_SINGLE_SOURCE;
