@@ -4,15 +4,14 @@ import { type TreeDataSource, type DataSourceDatabase } from "@/types/files/data
 export interface DataSourceItem {
     id: number;
     name: string;
-    type: string;
-    icon: string;
+    type: string; // 当前层级节点类型，如 'database'
     status: 'connected' | 'disconnected' | 'warning';
     url: string;
     version: string;
     description: string;
     // 树形数据源相关字段
     key: string;
-    dataSourceType: string;
+    dataSourceType: string; // 数据源类型，如 'MySQL', 'PostgreSQL' 等
     connectionString: string;
     tables: any[];
 }
@@ -22,8 +21,7 @@ export const mockDataSources: DataSourceItem[] = [
     {
         id: 1,
         name: 'MySQL 生产数据库',
-        type: 'MySQL',
-        icon: 'icon-mysql',
+        type: 'database',
         status: 'connected',
         url: 'mysql://prod-server:3306/database',
         version: '8.0.32',
@@ -99,8 +97,7 @@ export const mockDataSources: DataSourceItem[] = [
     {
         id: 2,
         name: 'PostgreSQL 用户库',
-        type: 'PostgreSQL',
-        icon: 'icon-pgsql',
+        type: 'database',
         status: 'disconnected',
         url: 'postgresql://user-db:5432/users',
         version: '14.8',
@@ -170,8 +167,7 @@ export const mockDataSources: DataSourceItem[] = [
     {
         id: 3,
         name: 'Redis 缓存集群',
-        type: 'Redis',
-        icon: 'icon-redis',
+        type: 'database',
         status: 'warning',
         url: 'redis://cache-cluster:6379',
         version: '7.0.11',
@@ -210,8 +206,7 @@ export const mockDataSources: DataSourceItem[] = [
     {
         id: 4,
         name: 'MongoDB 文档库',
-        type: 'MongoDB',
-        icon: 'icon-MongoDB',
+        type: 'database',
         status: 'connected',
         url: 'mongodb://doc-server:27017/documents',
         version: '6.0.5',
@@ -256,8 +251,7 @@ export const mockDataSources: DataSourceItem[] = [
     {
         id: 5,
         name: 'Oracle 企业库',
-        type: 'Oracle',
-        icon: 'icon-oracle',
+        type: 'database',
         status: 'connected',
         url: 'oracle://enterprise:1521/ORCL',
         version: '19c',
@@ -302,8 +296,7 @@ export const mockDataSources: DataSourceItem[] = [
     {
         id: 6,
         name: 'Alipay支付数据源',
-        type: 'Alipay',
-        icon: 'icon-zhifubao',
+        type: 'database',
         status: 'connected',
         url: 'https://openapi.alipay.com/gateway.do',
         version: 'v3.0',

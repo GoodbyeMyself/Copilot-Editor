@@ -39,14 +39,13 @@ const { Option } = Select;
 interface DataSourceItem {
     id: string;
     name: string;
-    type: string;
-    icon: string;
+    type: string; // 当前层级节点类型，如 'database'
     status: 'connected' | 'disconnected' | 'warning';
     url: string;
     version: string;
     description: string;
     key: string;
-    dataSourceType: string;
+    dataSourceType: string; // 数据源类型，如 'MySQL', 'PostgreSQL' 等
     connectionString: string;
     tables: any[];
 }
@@ -60,8 +59,8 @@ const AccessPage: React.FC = () => {
     const { sources, onAddDataSource, onRemoveDataSource } = useSession();
     const { message } = App.useApp();
 
-    // 根据数据库类型获取图标
-    const getIconByType = (type: string): string => {
+    // 根据数据源类型获取图标
+    const getIconByDataSourceType = (dataSourceType: string): string => {
         const iconMap: Record<string, string> = {
             'MySQL': 'icon-mysql',
             'PostgreSQL': 'icon-pgsql',
@@ -70,7 +69,7 @@ const AccessPage: React.FC = () => {
             'Oracle': 'icon-oracle',
             'Alipay': 'icon-zhifubao',
         };
-        return iconMap[type] || 'icon-database';
+        return iconMap[dataSourceType] || 'icon-database';
     };
 
     // 获取随机状态（实际应用中应该从数据库连接状态获取）
@@ -88,8 +87,7 @@ const AccessPage: React.FC = () => {
                 return {
                     id: source.id,
                     name: database.title,
-                    type: database.dataSourceType || 'Unknown',
-                    icon: getIconByType(database.dataSourceType || 'Unknown'),
+                    type: 'database', // 当前层级节点类型
                     status: getRandomStatus(), // 这里可以根据实际情况设置状态
                     url: database.connectionString || '',
                     version: '1.0.0', // 可以从数据库获取或设置默认值
@@ -249,7 +247,7 @@ const AccessPage: React.FC = () => {
                                         <Avatar
                                             size={48}
                                             style={{ marginRight: 12, border: '1px solid #f0f0f0', backgroundColor: '#f8f8f8' }}
-                                            icon={<SvgIcon type={dataSource.icon} style={{ fontSize: '24px' }}/>}
+                                            icon={<SvgIcon type={getIconByDataSourceType(dataSource.dataSourceType)} style={{ fontSize: '24px' }}/>}
                                         >
                                         </Avatar>
                                         <div style={{ flex: 1 }}>
@@ -274,16 +272,6 @@ const AccessPage: React.FC = () => {
                                                 text={<span style={{ fontSize: '11px' }}>{statusConfig.text}</span>}
                                             />
                                         </div>
-
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <Text strong style={{ fontSize: '12px' }}>
-                                                数据库类型 :
-                                            </Text>
-                                            <Text style={{ fontSize: '11px' }}>
-                                                {dataSource.type}
-                                            </Text>
-                                        </div>
-
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                             <Text strong style={{ fontSize: '12px' }}>
                                                 版本 :
@@ -292,7 +280,6 @@ const AccessPage: React.FC = () => {
                                                 {dataSource.version}
                                             </Text>
                                         </div>
-
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                             <Text strong style={{ fontSize: '12px' }}>
                                                 连接地址 :
