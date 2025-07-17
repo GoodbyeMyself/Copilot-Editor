@@ -20,6 +20,13 @@ export default defineConfig({
             icon: "Dashboard",
             component: "./Home",
         },
+        // 数据源管理
+        {
+            name: "数据源管理",
+            path: "/DataSource",
+            icon: "Instagram",
+            component: "./DataSource",
+        },
         // 独立式 Copilot
         {
             name: "Copilot",
