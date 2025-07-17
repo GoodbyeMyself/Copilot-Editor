@@ -8,14 +8,6 @@ import {
 
 import PanelHandle from "@/components/base/panel-handle";
 
-import { FolderClosed, FolderOpen } from "lucide-react";
-
-import { Button } from "@/components/base/ui/button";
-
-import { useFileDrop } from "@/context/session/hooks/useAddFile.tsx";
-
-import { cn } from "@/lib/utils";
-
 import Copolitpanel from "./copolitpanel";
 import EditorPanel from "./editor-panel";
 import Sidepanel from "./sidepanel";
@@ -27,32 +19,12 @@ export default function Playground() {
     // copolit 区域
     const copolitRef = useRef<ImperativePanelHandle>(null);
 
-    const {
-        isDragActive,
-        ref,
-        onDragEnter,
-        onDragLeave,
-        onDragOver,
-        onFileDrop,
-    } = useFileDrop();
-
     const [explorerIsOpen, setExplorerIsOpen] = useState(false);
 
     const [copolitIsOpen, setCopolitIsOpen] = useState(false);
 
     return (
-        <div
-            onDrop={onFileDrop}
-            onDragOver={onDragOver}
-            onDragEnter={onDragEnter}
-            onDragLeave={onDragLeave}
-            ref={ref}
-            className={cn(
-                "flex size-full bg-inherit",
-                isDragActive &&
-                    "bg-gray-100 transition-colors duration-200 ease-in-out",
-            )}
-        >
+        <div className="flex size-full bg-inherit">
             <PanelGroup
                 className="h-[calc(100vh-64px)] rounded-none"
                 direction="horizontal"

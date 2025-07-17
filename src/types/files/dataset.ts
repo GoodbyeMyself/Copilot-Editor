@@ -51,10 +51,46 @@ export const datasetExtMap: Record<DatasetFileExt, DatasetMimeType> = {
   url: "text/x-uri", // remote sources
 };
 
+// 树形数据源节点类型
+export type DataSourceNodeType = "database" | "table" | "field";
+
+// 树形数据源字段定义
+export interface DataSourceField {
+  key: string;
+  title: string;
+  type: DataSourceNodeType;
+  dataType?: string; // 字段数据类型，如 VARCHAR, INT 等
+}
+
+// 树形数据源表定义
+export interface DataSourceTable {
+  key: string;
+  title: string;
+  type: DataSourceNodeType;
+  fields: DataSourceField[];
+}
+
+// 树形数据源数据库定义
+export interface DataSourceDatabase {
+  key: string;
+  title: string;
+  type: DataSourceNodeType;
+  connectionString?: string; // 数据库连接字符串
+  tables: DataSourceTable[];
+}
+
+// 扩展的数据源类型，支持树形结构
+export type TreeDataSource = {
+  kind: "TREE_DATASET";
+  id: string;
+  path: string;
+  database: DataSourceDatabase;
+};
+
 export type Dataset = {
   kind: "DATASET";
   mimeType: DatasetMimeType;
   ext: DatasetFileExt;
   handle: FileSystemFileHandle;
   path: string;
-};
+} | TreeDataSource;

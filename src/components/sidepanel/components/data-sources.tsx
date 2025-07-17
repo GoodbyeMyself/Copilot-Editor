@@ -1,17 +1,13 @@
 // icon
 import {
-    Database,
     Inbox,
-    Plus,
-    Table,
-    Type,
     MoreVertical,
     Trash2,
     ArrowDownToDot,
 } from "lucide-react";
 
 import { DownOutlined } from '@ant-design/icons';
-import { Tree, TreeDataNode, Button, Dropdown, MenuProps, Modal, App } from "antd";
+import { Tree, Button, Dropdown, MenuProps, Modal, App } from "antd";
 
 import { useEditor } from "@/context/editor/useEditor";
 
@@ -19,207 +15,13 @@ import { useSession } from "@/context/session/useSession";
 
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 
+import { convertTreeDataSourcesToAntdTree, getNodeTypeFromKey } from "@/utils/data-source-converter";
+
+import { TreeDataSource } from "@/types/files/dataset";
+
 import { useState } from "react";
 
 import './data-sources.module.less';
-
-/**
- * Manage datasets.
- *
- * @component
- */
-function SourcesToolbar() {
-    return (
-        <>
-            <Button
-                type="text"
-                size="small"
-                icon={<Plus size={16} />}
-                onClick={() => console.log(1)}
-            />
-        </>
-    );
-}
-
-// 模拟三级树形数据：数据源 -> 数据表 -> 字段
-const mockTreeData: TreeDataNode[] = [
-    {
-        title: '用户数据库',
-        key: 'db1',
-        icon: <Database size={16} />,
-        children: [
-            {
-                title: '用户表',
-                key: 'db1-users',
-                icon: <Table size={16} />,
-                children: [
-                    {
-                        title: 'id',
-                        key: 'db1-users-id',
-                        icon: <Type size={14} />,
-                        isLeaf: true,
-                    },
-                    {
-                        title: 'username',
-                        key: 'db1-users-username',
-                        icon: <Type size={14} />,
-                        isLeaf: true,
-                    },
-                    {
-                        title: 'email',
-                        key: 'db1-users-email',
-                        icon: <Type size={14} />,
-                        isLeaf: true,
-                    },
-                    {
-                        title: 'created_at',
-                        key: 'db1-users-created_at',
-                        icon: <Type size={14} />,
-                        isLeaf: true,
-                    },
-                ],
-            },
-            {
-                title: '订单表',
-                key: 'db1-orders',
-                icon: <Table size={16} />,
-                children: [
-                    {
-                        title: 'id',
-                        key: 'db1-orders-id',
-                        icon: <Type size={14} />,
-                        isLeaf: true,
-                    },
-                    {
-                        title: 'user_id',
-                        key: 'db1-orders-user_id',
-                        icon: <Type size={14} />,
-                        isLeaf: true,
-                    },
-                    {
-                        title: 'amount',
-                        key: 'db1-orders-amount',
-                        icon: <Type size={14} />,
-                        isLeaf: true,
-                    },
-                    {
-                        title: 'status',
-                        key: 'db1-orders-status',
-                        icon: <Type size={14} />,
-                        isLeaf: true,
-                    },
-                ],
-            },
-        ],
-    },
-    {
-        title: '产品数据库',
-        key: 'db2',
-        icon: <Database size={16} />,
-        children: [
-            {
-                title: '产品表',
-                key: 'db2-products',
-                icon: <Table size={16} />,
-                children: [
-                    {
-                        title: 'id',
-                        key: 'db2-products-id',
-                        icon: <Type size={14} />,
-                        isLeaf: true,
-                    },
-                    {
-                        title: 'name',
-                        key: 'db2-products-name',
-                        icon: <Type size={14} />,
-                        isLeaf: true,
-                    },
-                    {
-                        title: 'price',
-                        key: 'db2-products-price',
-                        icon: <Type size={14} />,
-                        isLeaf: true,
-                    },
-                    {
-                        title: 'description',
-                        key: 'db2-products-description',
-                        icon: <Type size={14} />,
-                        isLeaf: true,
-                    },
-                ],
-            },
-            {
-                title: '分类表',
-                key: 'db2-categories',
-                icon: <Table size={16} />,
-                children: [
-                    {
-                        title: 'id',
-                        key: 'db2-categories-id',
-                        icon: <Type size={14} />,
-                        isLeaf: true,
-                    },
-                    {
-                        title: 'name',
-                        key: 'db2-categories-name',
-                        icon: <Type size={14} />,
-                        isLeaf: true,
-                    },
-                    {
-                        title: 'parent_id',
-                        key: 'db2-categories-parent_id',
-                        icon: <Type size={14} />,
-                        isLeaf: true,
-                    },
-                ],
-            },
-        ],
-    },
-    {
-        title: '日志数据库',
-        key: 'db3',
-        icon: <Database size={16} />,
-        children: [
-            {
-                title: '访问日志表',
-                key: 'db3-access_logs',
-                icon: <Table size={16} />,
-                children: [
-                    {
-                        title: 'id',
-                        key: 'db3-access_logs-id',
-                        icon: <Type size={14} />,
-                        isLeaf: true,
-                    },
-                    {
-                        title: 'user_id',
-                        key: 'db3-access_logs-user_id',
-                        icon: <Type size={14} />,
-                        isLeaf: true,
-                    },
-                    {
-                        title: 'ip_address',
-                        key: 'db3-access_logs-ip_address',
-                        icon: <Type size={14} />,
-                        isLeaf: true,
-                    },
-                    {
-                        title: 'timestamp',
-                        key: 'db3-access_logs-timestamp',
-                        icon: <Type size={14} />,
-                        isLeaf: true,
-                    },
-                    {
-                        title: 'action',
-                        key: 'db3-access_logs-action',
-                        icon: <Type size={14} />,
-                        isLeaf: true,
-                    },
-                ],
-            },
-        ],
-    },
-];
 
 // 节点类型枚举
 enum NodeType {
@@ -230,13 +32,16 @@ enum NodeType {
 
 // 获取节点类型
 function getNodeType(nodeKey: string): NodeType {
-    const parts = nodeKey.split('-');
-    if (parts.length === 1) {
-        return NodeType.DATABASE;
-    } else if (parts.length === 2) {
-        return NodeType.TABLE;
-    } else {
-        return NodeType.FIELD;
+    const nodeType = getNodeTypeFromKey(nodeKey);
+    switch (nodeType) {
+        case 'database':
+            return NodeType.DATABASE;
+        case 'table':
+            return NodeType.TABLE;
+        case 'field':
+            return NodeType.FIELD;
+        default:
+            return NodeType.FIELD;
     }
 }
 
@@ -501,33 +306,31 @@ function CustomTreeTitle({
     );
 }
 
-// 处理树形数据，为每个节点添加自定义标题
-function processTreeData(data: TreeDataNode[], handleDeleteDataSource: (nodeKey: string) => void): TreeDataNode[] {
-    return data.map(node => ({
-        ...node,
-        title: (
-            <CustomTreeTitle 
-                nodeKey={node.key as string} 
-                onDeleteDataSource={handleDeleteDataSource}
-            >
-                {node.title as React.ReactNode}
-            </CustomTreeTitle>
-        ),
-        children: node.children ? processTreeData(node.children, handleDeleteDataSource) : undefined,
-    }));
-}
-
 function DataSourcesTree() {
-    const [treeData, setTreeData] = useState<TreeDataNode[]>(mockTreeData);
+    const { sources, onRemoveDataSource } = useSession();
 
-    // 删除数据源节点的函数
-    const handleDeleteDataSource = (nodeKey: string) => {
-        setTreeData(prevData => {
-            return prevData.filter(node => node.key !== nodeKey);
-        });
-    };
+    // 过滤出树形数据源
+    const treeDataSources = sources.filter(source => 
+        source.kind === "TREE_DATASET"
+    ) as TreeDataSource[];
 
-    const processedTreeData = processTreeData(treeData, handleDeleteDataSource);
+    // 转换为 Ant Design Tree 需要的格式，传递删除函数给自定义标题组件
+    const CustomTitleWithDelete = ({ nodeKey, children }: { 
+        nodeKey: string; 
+        children: React.ReactNode; 
+    }) => (
+        <CustomTreeTitle 
+            nodeKey={nodeKey} 
+            onDeleteDataSource={onRemoveDataSource}
+        >
+            {children}
+        </CustomTreeTitle>
+    );
+
+    const processedTreeData = convertTreeDataSourcesToAntdTree(
+        treeDataSources, 
+        CustomTitleWithDelete
+    );
 
     return (
         <>
@@ -551,18 +354,14 @@ export default function DataSources() {
                 <div className="flex grow">
                     <span className="text-sm font-semibold px-4 py-2">数据源</span>
                 </div>
-                <div className="flex items-center gap-1 px-2">
-                    <SourcesToolbar />
-                </div>
             </div>
             <div
                 className="flex h-full w-full flex-col space-y-1 overflow-y-auto py-1 pl-4 pr-2"
             >
-                {sources.length !== 0 ? (
+                {sources.length === 0 ? (
                     <div className="flex h-[200px] w-full flex-col items-center justify-center gap-2 text-muted-foreground">
                         <Inbox className="size-12" />
                         <p className="text-sm">暂无数据源</p>
-                        <p className="text-xs">点击上方的 + 按钮添加数据源</p>
                     </div>
                 ) : (
                     <DataSourcesTree />

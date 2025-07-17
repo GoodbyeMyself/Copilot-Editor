@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useReducer } from "react";
 import { toast } from "sonner";
 import { SessionContext } from "./context";
 import { newfileContents } from "./data/newfile-content";
+import { mockTreeDataSources } from "./data/mock-datasources";
 import type {
     Action,
     SaveEditorProps,
@@ -352,9 +353,15 @@ function SessionProvider({ children }: SessionProviderProps) {
                     payload: {
                         sessionId,
                         directoryHandle: null,
-                        sources: [],
+                        sources: [], // 初始为空，稍后会加载模拟数据
                         editors,
                     },
+                });
+
+                // 加载模拟数据源
+                dispatch({
+                    type: "ADD_SOURCES",
+                    payload: mockTreeDataSources,
                 });
             } catch (e) {
                 console.error("Error restoring from localStorage:", e);
@@ -647,6 +654,36 @@ function SessionProvider({ children }: SessionProviderProps) {
         [session.sessionId],
     );
 
+    /**
+     * 删除数据源
+     */
+    const onRemoveDataSource: SessionMethods["onRemoveDataSource"] = useCallback(
+        async (path: string) => {
+            try {
+                dispatch({
+                    type: "REMOVE_SOURCE",
+                    payload: { path },
+                });
+                toast.success("数据源已删除");
+            } catch (e) {
+                console.error("Failed to remove data source: ", e);
+                toast.error("删除数据源失败", {
+                    description: e instanceof Error ? e.message : undefined,
+                });
+            }
+        },
+        [],
+    );
+
+    /**
+     * 初始化模拟数据源
+     */
+    const onInitializeMockDataSources: SessionMethods["onInitializeMockDataSources"] = useCallback(() => {
+        dispatch({
+            type: "ADD_SOURCES",
+            payload: mockTreeDataSources,
+        });
+    }, []);
 
     const value = useMemo(
         () => ({
@@ -658,7 +695,9 @@ function SessionProvider({ children }: SessionProviderProps) {
             onSaveEditor,
             onCloseEditor,
             onBurstCache,
-            onRenameEditor
+            onRenameEditor,
+            onRemoveDataSource,
+            onInitializeMockDataSources,
         }),
         [
             onSessionChange,
@@ -668,7 +707,9 @@ function SessionProvider({ children }: SessionProviderProps) {
             onSaveEditor,
             onCloseEditor,
             onBurstCache,
-            onRenameEditor
+            onRenameEditor,
+            onRemoveDataSource,
+            onInitializeMockDataSources,
         ],
     );
 
