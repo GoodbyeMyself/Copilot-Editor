@@ -68,7 +68,7 @@ export const JSONViewer = memo(function JSONViewer() {
                     </div>
                 </Suspense>
             </ScrollArea>
-            <div className="flex w-full justify-end">
+            <div className="flex w-full flex-wrap-reverse items-center justify-end sm:h-12">
                 <PaginationToolbar />
             </div>
         </div>
