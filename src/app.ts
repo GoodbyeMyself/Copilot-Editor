@@ -93,7 +93,7 @@ export const layout = ({
          * @author: M.yunlong
          * @date: 2024-03-24 23:26:22
          */
-        iconfontUrl: '//at.alicdn.com/t/c/font_4962060_lpiyqtk89mn.js'
+        iconfontUrl: '//at.alicdn.com/t/c/font_4962060_6l860ue8qak.js'
     };
 };
 

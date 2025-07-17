@@ -1,0 +1,121 @@
+{
+  "id": "4962060",
+  "name": "SQL-Copilot",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "17777073",
+      "name": "redis",
+      "font_class": "redis",
+      "unicode": "e668",
+      "unicode_decimal": 58984
+    },
+    {
+      "icon_id": "9848176",
+      "name": "ibm",
+      "font_class": "ibm",
+      "unicode": "e620",
+      "unicode_decimal": 58912
+    },
+    {
+      "icon_id": "11896327",
+      "name": "mongodb",
+      "font_class": "MongoDB",
+      "unicode": "e60e",
+      "unicode_decimal": 58894
+    },
+    {
+      "icon_id": "13592636",
+      "name": "Kafka",
+      "font_class": "alikafkaxiaoxiduilieKafka",
+      "unicode": "e6e2",
+      "unicode_decimal": 59106
+    },
+    {
+      "icon_id": "15465727",
+      "name": "mssql",
+      "font_class": "state-mssql",
+      "unicode": "e757",
+      "unicode_decimal": 59223
+    },
+    {
+      "icon_id": "15771236",
+      "name": "sqlserver",
+      "font_class": "db_sqlserver",
+      "unicode": "e623",
+      "unicode_decimal": 58915
+    },
+    {
+      "icon_id": "16322308",
+      "name": "es",
+      "font_class": "es",
+      "unicode": "e720",
+      "unicode_decimal": 59168
+    },
+    {
+      "icon_id": "16731241",
+      "name": "http",
+      "font_class": "http",
+      "unicode": "e709",
+      "unicode_decimal": 59145
+    },
+    {
+      "icon_id": "19824504",
+      "name": "oracle",
+      "font_class": "oracle",
+      "unicode": "e600",
+      "unicode_decimal": 58880
+    },
+    {
+      "icon_id": "22275271",
+      "name": "mysql",
+      "font_class": "-paas-mysql",
+      "unicode": "e601",
+      "unicode_decimal": 58881
+    },
+    {
+      "icon_id": "24781717",
+      "name": "etl",
+      "font_class": "shujukuleixingETL",
+      "unicode": "e6d2",
+      "unicode_decimal": 59090
+    },
+    {
+      "icon_id": "29188674",
+      "name": "kingbase",
+      "font_class": "kingbase",
+      "unicode": "e6a6",
+      "unicode_decimal": 59046
+    },
+    {
+      "icon_id": "35562650",
+      "name": "pgsql",
+      "font_class": "pgsql",
+      "unicode": "e63c",
+      "unicode_decimal": 58940
+    },
+    {
+      "icon_id": "44942008",
+      "name": "达梦",
+      "font_class": "dameng1-copy",
+      "unicode": "e758",
+      "unicode_decimal": 59224
+    },
+    {
+      "icon_id": "20974979",
+      "name": "数据源",
+      "font_class": "shujuyuan",
+      "unicode": "e69f",
+      "unicode_decimal": 59039
+    },
+    {
+      "icon_id": "40820150",
+      "name": "代码生成",
+      "font_class": "daimashengcheng",
+      "unicode": "e64e",
+      "unicode_decimal": 58958
+    }
+  ]
+}
