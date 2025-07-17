@@ -80,7 +80,7 @@ export const layout = ({
         },
         // 自定义 页面 title
         pageTitleRender: () => {
-            return 'DataWorks Copilot';
+            return 'SQL Copilot';
         },
         // 头部右上角内容渲染
         rightContentRender: () => {

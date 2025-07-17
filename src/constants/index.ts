@@ -5,6 +5,6 @@ export const DEFAULT_NAME = 'Umi Max';
  */
 export const metaDetails = {
     themeColor: "#0a0a0a",
-    description: "DataWorks Copilot: SQL editor.",
+    description: "SQL Copilot: SQL editor.",
     msapplicationTileColor: "#00aba9",
 };

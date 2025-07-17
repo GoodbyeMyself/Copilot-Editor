@@ -1,4 +1,4 @@
-# DataWorks Copilot 编辑器
+# SQL Copilot 编辑器
 
 一个基于大模型对话的智能 SQL 编辑器，集成了现代化的代码编辑体验和 AI 助手功能，帮助开发者更高效地编写和优化 SQL 查询语句。
 

@@ -7,7 +7,7 @@ export default function NavBar(props: { children: React.ReactNode }) {
             <div className="flex h-full items-center justify-evenly gap-3">
                 <HomeIcon />
                 <h1 className="ml-1 w-[200px] text-xl font-semibold">
-                    DataWorks Copilot
+                    SQL Copilot
                 </h1>
                 <Terminal
                     name="terminal"

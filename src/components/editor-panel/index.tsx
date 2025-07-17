@@ -183,7 +183,7 @@ function CurrentEditor({ copolitRef }: EditorPanelProps) {
             <div className="flex h-full flex-col items-start justify-start gap-12 bg-gradient-to-b from-background to-muted/20 px-16 pt-12">
                 <div className="max-w-2xl text-left">
                     <h1 className="mb-2 text-4xl font-bold text-foreground">
-                        DataWorks Copilot
+                        SQL Copilot
                     </h1>
                     <p className="text-lg text-muted-foreground">
                         您的智能数据开发助手
@@ -233,7 +233,7 @@ function CurrentEditor({ copolitRef }: EditorPanelProps) {
                                 }}
                             >
                                 <FileJson className="mr-2 h-4 w-4 text-blue-500" />
-                                DataWorks Copilot 智能助手
+                                SQL Copilot 智能助手
                             </button>
                         </div>
                     </div>
