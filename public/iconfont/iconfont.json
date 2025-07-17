@@ -6,6 +6,34 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "19202629",
+      "name": "mysql ",
+      "font_class": "mysql",
+      "unicode": "e627",
+      "unicode_decimal": 58919
+    },
+    {
+      "icon_id": "586827",
+      "name": "data-full",
+      "font_class": "datafull",
+      "unicode": "e6ed",
+      "unicode_decimal": 59117
+    },
+    {
+      "icon_id": "8875680",
+      "name": "支付宝",
+      "font_class": "zhifubao",
+      "unicode": "e663",
+      "unicode_decimal": 58979
+    },
+    {
+      "icon_id": "11121426",
+      "name": "html编辑器",
+      "font_class": "htmlbianjiqi",
+      "unicode": "e634",
+      "unicode_decimal": 58932
+    },
+    {
       "icon_id": "17777073",
       "name": "redis",
       "font_class": "redis",
@@ -67,13 +95,6 @@
       "font_class": "oracle",
       "unicode": "e600",
       "unicode_decimal": 58880
-    },
-    {
-      "icon_id": "22275271",
-      "name": "mysql",
-      "font_class": "-paas-mysql",
-      "unicode": "e601",
-      "unicode_decimal": 58881
     },
     {
       "icon_id": "24781717",

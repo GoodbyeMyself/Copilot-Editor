@@ -24,7 +24,7 @@ export default defineConfig({
         {
             name: "数据源管理",
             path: "/DataSource",
-            icon: "icon-shujuyuan",
+            icon: "icon-datafull",
             component: "./DataSource",
         },
         // 独立式 Copilot

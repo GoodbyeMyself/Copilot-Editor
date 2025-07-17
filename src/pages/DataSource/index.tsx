@@ -13,8 +13,7 @@ import {
     Badge,
     Avatar,
     Typography,
-    Divider,
-    Layout
+    Divider
 } from 'antd';
 
 import {
@@ -33,8 +32,6 @@ import SvgIcon from '@/components/common/SvgIcon';
 
 import { useState } from 'react';
 
-const { Content } = Layout;
-
 const { Search } = Input;
 const { Text, Title } = Typography;
 
@@ -45,7 +42,7 @@ const mockDataSources = [
         id: 1,
         name: 'MySQL 生产数据库',
         type: 'MySQL',
-        icon: 'icon--paas-mysql',
+        icon: 'icon-mysql',
         status: 'connected',
         url: 'mysql://prod-server:3306/database',
         version: '8.0.32',
@@ -95,7 +92,7 @@ const mockDataSources = [
         id: 6,
         name: 'Alipay支付数据源',
         type: 'Alipay',
-        icon: 'icon-shujuyuan',
+        icon: 'icon-zhifubao',
         status: 'connected',
         url: 'https://openapi.alipay.com/gateway.do',
         version: 'v3.0',

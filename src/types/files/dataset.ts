@@ -75,6 +75,7 @@ export interface DataSourceDatabase {
   key: string;
   title: string;
   type: DataSourceNodeType;
+  dataSourceType?: string; // 数据源类型，如 'MySQL', 'PostgreSQL' 等
   connectionString?: string; // 数据库连接字符串
   tables: DataSourceTable[];
 }

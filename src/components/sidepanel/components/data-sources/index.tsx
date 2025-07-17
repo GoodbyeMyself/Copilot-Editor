@@ -15,13 +15,13 @@ import { useSession } from "@/context/session/useSession";
 
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 
-import { convertTreeDataSourcesToAntdTree, getNodeTypeFromKey } from "@/utils/data-source-converter";
+import { convertTreeDataSourcesToAntdTree, getNodeTypeFromKey } from "./data-source-converter";
 
 import { TreeDataSource } from "@/types/files/dataset";
 
 import { useState } from "react";
 
-import './data-sources.module.less';
+import styles from './data-sources.module.less';
 
 // 节点类型枚举
 enum NodeType {
@@ -88,7 +88,8 @@ function NodeMoreActions({
                 break;
             case NodeType.FIELD: {
                 const parts = nodeKey.split('-');
-                const tableName = parts[1];
+                // 新的键格式：mysql-prod-users-id，表名是第三部分
+                const tableName = parts.length >= 3 ? parts[2] : parts[1];
                 snippet = `SELECT ${nodeTitle} FROM ${tableName};`;
                 break;
             }
@@ -171,8 +172,8 @@ function NodeMoreActions({
             baseItems.push({
                 key: 'delete',
                 label: (
-                    <span className='deleteMenuItem'>
-                        <Trash2 size={16} className='deleteMenuIcon' />
+                    <span className={styles.deleteMenuItem}>
+                        <Trash2 size={16} className={styles.deleteMenuIcon} />
                         删除数据源
                     </span>
                 ),
@@ -193,7 +194,7 @@ function NodeMoreActions({
                 type="text"
                 size="small"
                 icon={<MoreVertical size={12} />}
-                className='moreButton'
+                className={styles.moreButton}
                 onClick={(e) => {
                     e.stopPropagation();
                 }}
@@ -285,15 +286,15 @@ function CustomTreeTitle({
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             onClick={handleFieldClick}
-            className={`${'customTreeTitle'} ${nodeType === NodeType.FIELD ? 'customTreeTitleField' : ''}`}
+            className={`${styles.customTreeTitle} ${nodeType === NodeType.FIELD ? styles.customTreeTitleField : ''}`}
         >
-            <span className='titleText'>
+            <span className={styles.titleText}>
                 {children}
             </span>
             {/* 只有非字段节点才显示操作按钮 */}
             {nodeType !== NodeType.FIELD && (
                 <div
-                    className={`antd-tree-button-wamper ${'buttonWrapper'} ${isHovered ? 'buttonWrapperVisible' : 'buttonWrapperHidden'}`}
+                    className={`${styles.buttonWrapper} ${isHovered ? styles.buttonWrapperVisible : styles.buttonWrapperHidden}`}
                 >
                     <NodeMoreActions 
                         nodeKey={nodeKey} 
@@ -332,13 +333,16 @@ function DataSourcesTree() {
         CustomTitleWithDelete
     );
 
+    // 只展开第一个数据源
+    const defaultExpandedKeys = treeDataSources.length > 0 ? [treeDataSources[0].database.key] : [];
+
     return (
         <>
             <Tree
                 showIcon
                 showLine
                 switcherIcon={<DownOutlined />}
-                defaultExpandedKeys={['db1']}
+                defaultExpandedKeys={defaultExpandedKeys}
                 treeData={processedTreeData}
             />
         </>
