@@ -87,7 +87,13 @@ export const layout = ({
             return React.createElement(Toolbar);
         },
         // 全局
-        ...initialState?.settings
+        ...initialState?.settings,
+        /**
+         * @description: 设置 iconfont: 线上的配置方式
+         * @author: M.yunlong
+         * @date: 2024-03-24 23:26:22
+         */
+        iconfontUrl: '//at.alicdn.com/t/c/font_4962060_lpiyqtk89mn.js'
     };
 };
 
