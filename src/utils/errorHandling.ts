@@ -49,6 +49,9 @@ const IGNORED_WARNING_MESSAGES = [
     "AbortError: BodyStreamBuffer was aborted",
     "AbortError: The operation was aborted",
     "AbortError: Aborted",
+    // 忽略 ResizeObserver 相关的错误消息
+    "ResizeObserver loop completed with undelivered notifications",
+    "ResizeObserver loop limit exceeded",
 ] as const;
 
 // 默认配置
@@ -68,6 +71,10 @@ class WarningFilter {
             }
             // 检查是否是 DOMException AbortError
             if (message instanceof DOMException && message.name === "AbortError") {
+                return true;
+            }
+            // 检查是否是 ResizeObserver 相关错误
+            if (message instanceof Error && message.message.includes("ResizeObserver")) {
                 return true;
             }
             return false;
@@ -203,5 +210,28 @@ export const setupGlobalErrorHandling = (
     return {
         ExtendedError,
         handleError: errorHandler.handle.bind(errorHandler),
+    };
+};
+
+/**
+ * 专门处理 ResizeObserver 错误的工具函数
+ * ResizeObserver 错误通常是由于元素大小变化时的循环通知导致的
+ * 这个函数可以帮助抑制这些错误
+ */
+export const setupResizeObserverErrorHandling = () => {
+    // 添加全局错误监听器来捕获 ResizeObserver 错误
+    const originalOnError = window.onerror;
+    window.onerror = (message, source, lineno, colno, error) => {
+        // 检查是否是 ResizeObserver 相关错误
+        if (typeof message === "string" && message.includes("ResizeObserver")) {
+            return true; // 阻止错误传播
+        }
+        
+        // 对于其他错误，调用原始的错误处理器
+        if (originalOnError) {
+            return originalOnError(message, source, lineno, colno, error);
+        }
+        
+        return false;
     };
 };

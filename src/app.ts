@@ -1,5 +1,5 @@
 import React from 'react';
-import { setupGlobalErrorHandling } from '@/utils/errorHandling';
+import { setupGlobalErrorHandling, setupResizeObserverErrorHandling } from '@/utils/errorHandling';
 import { App } from 'antd';
 
 // 引入全局样式文件
@@ -29,6 +29,8 @@ import { EditorSettingsProvider } from '@/context/editor-settings/provider';
 
 // TS 方法实现过滤 React 和 Antd 常见控制台警告
 setupGlobalErrorHandling();
+// 设置 ResizeObserver 错误处理
+setupResizeObserverErrorHandling();
 
 // 运行时配置
 
