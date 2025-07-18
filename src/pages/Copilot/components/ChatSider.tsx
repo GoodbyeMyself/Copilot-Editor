@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Avatar, Button, message, Modal, Input } from 'antd';
+import { Avatar, Button, Modal, Input, App } from 'antd';
 import { Conversations } from '@ant-design/x';
 import { EditOutlined, DeleteOutlined, PlusOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 
 interface ChatSiderProps {
     conversations: any[];
-    curConversation: string;
+    curConversation: string | null;
     messageHistory: Record<string, any>;
     isRequesting: boolean;
     abortController: React.MutableRefObject<AbortController | null>;
@@ -29,6 +29,9 @@ const ChatSider: React.FC<ChatSiderProps> = ({
     onMessageHistoryChange,
     isInitialLoad = false,
 }) => {
+    // 使用 App.useApp() 获取 message 方法
+    const { message } = App.useApp();
+    
     // 重命名相关状态
     const [renameModalVisible, setRenameModalVisible] = useState(false);
     const [renameConversationKey, setRenameConversationKey] = useState<string>('');
@@ -72,25 +75,17 @@ const ChatSider: React.FC<ChatSiderProps> = ({
             onOk() {
                 const newConversations = conversations.filter(conversation => conversation.key !== conversationKey);
                 
-                // 如果删除后没有会话了，创建一个新的默认会话
-                if (newConversations.length === 0) {
-                    const timeNow = dayjs().valueOf().toString();
-                    const defaultConversation = { 
-                        key: timeNow, 
-                        label: '新会话 1', 
-                        group: 'Today' 
-                    };
-                    onConversationsChange([defaultConversation]);
-                    onCurConversationChange(timeNow);
-                    onMessagesChange([]);
-                } else {
-                    onConversationsChange(newConversations);
-                    // 如果删除的是当前会话，切换到第一个会话
-                    if (conversationKey === curConversation) {
-                        const newKey = newConversations[0].key;
-                        onCurConversationChange(newKey);
-                        onMessagesChange(messageHistory?.[newKey] || []);
-                    }
+                // 删除会话，如果删除后没有会话了，则清空会话列表
+                onConversationsChange(newConversations);
+                
+                // 如果删除的是当前会话，且还有其他会话，切换到第一个会话
+                if (conversationKey === curConversation && newConversations.length > 0) {
+                    const newKey = newConversations[0].key;
+                    onCurConversationChange(newKey);
+                    onMessagesChange(messageHistory?.[newKey] || []);
+                } else if (conversationKey === curConversation && newConversations.length === 0) {
+                    // 如果删除的是当前会话，且没有其他会话了，设置为null
+                    onCurConversationChange('');
                 }
                 
                 // 删除对应的消息历史
@@ -150,45 +145,64 @@ const ChatSider: React.FC<ChatSiderProps> = ({
             </Button>
 
             {/* 🌟 会话管理 */}
-            <Conversations
-                items={conversations}
-                className="copilot-conversations"
-                activeKey={isInitialLoad ? undefined : curConversation}
-                onActiveChange={async (val) => {
-                    // 安全地中止当前请求
-                    if (abortController.current) {
-                        try {
-                            abortController.current.abort('切换会话');
-                        } catch (error) {
-                            console.warn('中止请求时出错:', error);
+            {conversations.length === 0 ? (
+                <div className="copilot-empty-state">
+                    <div className="copilot-empty-content">
+                        <div className="copilot-empty-icon">
+                            <img
+                                src="https://mdn.alipayobjects.com/huamei_iwk9zp/afts/img/A*eco6RrQhxbMAAAAAAAAAAAAADgCCAQ/original"
+                                alt="logo"
+                                width={48}
+                                height={48}
+                            />
+                        </div>
+                        <div className="copilot-empty-text">
+                            <h3>欢迎使用 SQL Copilot</h3>
+                            <p>点击上方&ldquo;新建会话&rdquo;开始您的第一次对话</p>
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                <Conversations
+                    items={conversations}
+                    className="copilot-conversations"
+                    activeKey={isInitialLoad ? undefined : (curConversation || undefined)}
+                    onActiveChange={async (val) => {
+                        // 安全地中止当前请求
+                        if (abortController.current) {
+                            try {
+                                abortController.current.abort('切换会话');
+                            } catch (error) {
+                                console.warn('中止请求时出错:', error);
+                            }
                         }
-                    }
-                    // 等待中止操作完成，避免时序问题
-                    setTimeout(() => {
-                        onCurConversationChange(val);
-                        onMessagesChange(messageHistory?.[val] || []);
-                    }, 100);
-                }}
-                groupable
-                styles={{ item: { padding: '0 8px' } }}
-                menu={(conversation) => ({
-                    items: [
-                        {
-                            label: '重命名',
-                            key: 'rename',
-                            icon: <EditOutlined />,
-                            onClick: () => handleRename(conversation.key, String(conversation.label || '')),
-                        },
-                        {
-                            label: '删除',
-                            key: 'delete',
-                            icon: <DeleteOutlined />,
-                            danger: true,
-                            onClick: () => handleDelete(conversation.key),
-                        },
-                    ],
-                })}
-            />
+                        // 等待中止操作完成，避免时序问题
+                        setTimeout(() => {
+                            onCurConversationChange(val);
+                            onMessagesChange(messageHistory?.[val] || []);
+                        }, 100);
+                    }}
+                    groupable
+                    styles={{ item: { padding: '0 8px' } }}
+                    menu={(conversation) => ({
+                        items: [
+                            {
+                                label: '重命名',
+                                key: 'rename',
+                                icon: <EditOutlined />,
+                                onClick: () => handleRename(conversation.key, String(conversation.label || '')),
+                            },
+                            {
+                                label: '删除',
+                                key: 'delete',
+                                icon: <DeleteOutlined />,
+                                danger: true,
+                                onClick: () => handleDelete(conversation.key),
+                            },
+                        ],
+                    })}
+                />
+            )}
 
             {/* 🌟 底部 */}
             <div className="copilot-sider-footer">

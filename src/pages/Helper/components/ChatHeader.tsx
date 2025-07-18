@@ -12,7 +12,7 @@ import {
 
 import type { Conversation } from '@ant-design/x/es/conversations';
 
-import { Button, Popover, Space, message, Modal, Input } from 'antd';
+import { Button, Popover, Space, Modal, Input, App } from 'antd';
 
 import dayjs from 'dayjs';
 
@@ -43,6 +43,9 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
     onAbort,
     onDeleteSession,
 }) => {
+    // 使用 App.useApp() 获取 message 方法
+    const { message } = App.useApp();
+    
     const [renameModalVisible, setRenameModalVisible] = useState(false);
     const [renameSessionId, setRenameSessionId] = useState<string>('');
     const [newSessionName, setNewSessionName] = useState<string>('');
@@ -85,9 +88,17 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
                 // 如果删除后没有会话了，创建一个新的默认会话
                 if (newSessionList.length === 0) {
                     const timeNow = dayjs().valueOf().toString();
-                    const defaultSession = { key: timeNow, label: 'New session', group: 'Today' };
+
+                    const defaultSession = {
+                        key: timeNow,
+                        label: 'New session',
+                        group: 'Today'
+                    };
+
                     onSetSessionList([defaultSession]);
+
                     onSetCurSession(timeNow);
+
                     onSetMessages([]);
                 } else {
                     onSetSessionList(newSessionList);
@@ -98,6 +109,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
                 }
                 
                 onDeleteSession(sessionId);
+
                 message.success('会话已删除');
             },
         });
@@ -125,7 +137,11 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
                             // In future versions, the sessionId capability will be added to resolve this problem.
                             setTimeout(() => {
                                 onSetSessionList([
-                                    { key: timeNow, label: 'New session', group: 'Today' },
+                                    {
+                                        key: timeNow,
+                                        label: 'New session',
+                                        group: 'Today'
+                                    },
                                     ...sessionList,
                                 ]);
                                 onSetCurSession(timeNow);

@@ -2,7 +2,7 @@ import React from 'react';
 
 import { PageContainer } from '@ant-design/pro-components';
 
-import { type GetProp, message } from 'antd';
+import { type GetProp, App } from 'antd';
 
 import {
     Attachments,
@@ -14,7 +14,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import './styles.less';
 // 定义常量
-import { DEFAULT_CONVERSATIONS_ITEMS, DESIGN_GUIDE, SENDER_PROMPTS, getHotTopics } from './constant';
+import { DESIGN_GUIDE, SENDER_PROMPTS, getHotTopics } from './constant';
 // 导入子组件
 import { ChatSider, ChatList, SenderHeader, ChatSender } from './components';
 
@@ -51,6 +51,9 @@ const saveToStorage = (key: string, value: any) => {
 };
 
 const AccessPage: React.FC = () => {
+    // 使用 App.useApp() 获取 message 方法
+    const { message } = App.useApp();
+    
     const abortController = useRef<AbortController | null>(null);
 
     // 使用 CSS 类名获取 HOT_TOPICS 配置
@@ -68,24 +71,36 @@ const AccessPage: React.FC = () => {
         loadFromStorage(STORAGE_KEYS.MESSAGE_HISTORY, {})
     );
 
-    // 从localStorage加载会话列表，如果没有则使用默认值
+    // 从localStorage加载会话列表，如果没有则使用空数组
     const [conversations, setConversations] = useState(() => 
-        loadFromStorage(STORAGE_KEYS.CONVERSATIONS, DEFAULT_CONVERSATIONS_ITEMS)
+        loadFromStorage(STORAGE_KEYS.CONVERSATIONS, [])
     );
 
     // 从localStorage加载当前会话，如果没有则使用默认值
     const [curConversation, setCurConversation] = useState(() => {
         const stored = loadFromStorage(STORAGE_KEYS.CURRENT_CONVERSATION, null);
-        const loadedConversations = loadFromStorage(STORAGE_KEYS.CONVERSATIONS, DEFAULT_CONVERSATIONS_ITEMS);
-        // 确保当前会话在会话列表中存在
+        const loadedConversations = loadFromStorage(STORAGE_KEYS.CONVERSATIONS, []);
+        
+        // 如果会话列表为空，返回null表示显示欢迎页
+        if (loadedConversations.length === 0) {
+            return null;
+        }
+        
+        // 如果有存储的会话ID，且该会话在列表中存在，则使用它
         if (stored && loadedConversations.some((conv: any) => conv.key === stored)) {
             return stored;
         }
-        return loadedConversations[0]?.key || DEFAULT_CONVERSATIONS_ITEMS[0].key;
+        
+        // 否则使用第一个会话
+        return loadedConversations[0]?.key || null;
     });
 
     // 添加一个状态来标记是否是首次加载（用于控制是否显示欢迎页面）
-    const [isInitialLoad, setIsInitialLoad] = useState(true);
+    const [isInitialLoad, setIsInitialLoad] = useState(() => {
+        const loadedConversations = loadFromStorage(STORAGE_KEYS.CONVERSATIONS, []);
+        // 如果会话列表为空，显示欢迎页
+        return loadedConversations.length === 0;
+    });
 
     const [attachmentsOpen, setAttachmentsOpen] = useState(false);
     const [attachedFiles, setAttachedFiles] = useState<GetProp<typeof Attachments, 'items'>>([]);
@@ -198,22 +213,31 @@ const AccessPage: React.FC = () => {
         
         // 手动点击会话时，结束首次加载状态并加载对话内容
         setIsInitialLoad(false);
-        setCurConversation(conversationKey);
-        const conversationMessages = messageHistory[conversationKey] || [];
         
-        // 只有当消息实际不同时才更新
-        if (JSON.stringify(conversationMessages) !== JSON.stringify(messages)) {
-            setMessages(conversationMessages);
+        // 如果传入的是空字符串，设置为null
+        const newConversationKey = conversationKey || null;
+        setCurConversation(newConversationKey);
+        
+        if (newConversationKey) {
+            const conversationMessages = messageHistory[newConversationKey] || [];
+            
+            // 只有当消息实际不同时才更新
+            if (JSON.stringify(conversationMessages) !== JSON.stringify(messages)) {
+                setMessages(conversationMessages);
+            }
+        } else {
+            // 如果没有当前会话，清空消息
+            setMessages([]);
         }
     };
 
     // ==================== localStorage 持久化 ====================
-    // 保存会话列表到localStorage
+    // 保存会话列表到 localStorage
     useEffect(() => {
         saveToStorage(STORAGE_KEYS.CONVERSATIONS, conversations);
     }, [conversations]);
 
-    // 保存当前会话到localStorage
+    // 保存当前会话到 localStorage
     useEffect(() => {
         saveToStorage(STORAGE_KEYS.CURRENT_CONVERSATION, curConversation);
     }, [curConversation]);
