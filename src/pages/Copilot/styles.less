@@ -7,12 +7,13 @@
     display: flex;
     background: #ffffff;
     font-family: AlibabaPuHuiTi, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    border: 1px solid #eee;
 }
 
 /* Sider 样式 */
 .copilot-sider {
     background: #f1f1f1;
-    width: 280px;
+    width: 280px !important;
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -127,7 +128,7 @@
 /* Sender 样式 */
 .copilot-sender {
     width: 100%;
-    max-width: 700px;
+    max-width: 800px;
     margin: 0 auto;
 }
 
@@ -138,7 +139,7 @@
 
 .copilot-sender-prompt {
     width: 100%;
-    max-width: 700px;
+    max-width: 800px;
     margin: 0 auto;
     color: var(--ant-color-text);
 }
@@ -183,4 +184,41 @@
 .copilot-hot-topic-icon-5 {
     color: rgba(0, 0, 0, 0.25);
     font-weight: 700;
-} 
+}
+
+.ant-conversations .ant-conversations-list .ant-conversations-item {
+    width: 256px;
+}
+
+/* 空状态样式 */
+.copilot-empty-state {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.copilot-empty-content {
+    text-align: center;
+    max-width: 200px;
+}
+
+.copilot-empty-icon {
+    margin-bottom: 16px;
+    opacity: 0.6;
+}
+
+.copilot-empty-text h3 {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ant-color-text);
+}
+
+.copilot-empty-text p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--ant-color-text-secondary);
+    line-height: 1.5;
+}

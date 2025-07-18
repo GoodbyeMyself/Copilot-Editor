@@ -25,7 +25,7 @@ export const MOCK_SESSION_LIST: Conversation[] = [
     },
     {
         key: '1',
-        label: 'What is Ant Design X?',
+        label: '什么是 Ant Design X ?',
         group: 'Yesterday',
     },
 ];

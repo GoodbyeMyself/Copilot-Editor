@@ -94,8 +94,8 @@ const ChatList: React.FC<ChatListProps> = ({
                             borderStartStartRadius: 4,
                         }}
                         icon="https://mdn.alipayobjects.com/huamei_iwk9zp/afts/img/A*s5sNRo5LjfQAAAAAAAAAAAAADgCCAQ/fmt.webp"
-                        title="Hi! I'm SQL Copilot 智能助手"
-                        description="Base on Ant Design, AGI product interface solution, create a better intelligent vision~"
+                        title="Hi! I'm Copilot 智能助手"
+                        description="基于 AI，提供SQL查询产品接口解决方案，打造更智能的数据查询与分析体验 ~"
                     />
                     <Prompts
                         vertical
