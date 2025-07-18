@@ -91,7 +91,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
 
                     const defaultSession = {
                         key: timeNow,
-                        label: 'New session',
+                        label: '新会话',
                         group: 'Today'
                     };
 
@@ -139,7 +139,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
                                 onSetSessionList([
                                     {
                                         key: timeNow,
-                                        label: 'New session',
+                                        label: '新会话',
                                         group: 'Today'
                                     },
                                     ...sessionList,
@@ -148,7 +148,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
                                 onSetMessages([]);
                             }, 100);
                         } else {
-                            message.error('It is now a new conversation.');
+                            message.error('已经是一个新的会话窗口了.');
                         }
                     }}
                     className="helper-header-button"

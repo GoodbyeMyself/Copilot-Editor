@@ -95,7 +95,7 @@ const ChatList: React.FC<ChatListProps> = ({
                         }}
                         icon="https://mdn.alipayobjects.com/huamei_iwk9zp/afts/img/A*s5sNRo5LjfQAAAAAAAAAAAAADgCCAQ/fmt.webp"
                         title="Hi! I'm Copilot 智能助手"
-                        description="基于 AI，提供SQL查询产品接口解决方案，打造更智能的数据查询与分析体验 ~"
+                        description="基于 AI，提供 SQL 查询产品接口解决方案，打造更智能的数据查询与分析体验 ~"
                     />
                     <Prompts
                         vertical

@@ -45,17 +45,19 @@ const ChatSender: React.FC<ChatSenderProps> = ({
             <div className="helper-send-action">
                 <Button
                     icon={<ScheduleOutlined />}
-                    onClick={() => onUserSubmit('What has Ant Design X upgraded?')}
+                    onClick={() => onUserSubmit('Ant Design X 升级了什么 ?')}
                 >
-                    Upgrades
+                    升级
                 </Button>
                 <Button
                     icon={<ProductOutlined />}
-                    onClick={() => onUserSubmit('What component assets are available in Ant Design X?')}
+                    onClick={() => onUserSubmit('Ant Design X 中有哪些组件资产可用 ?')}
                 >
-                    Components
+                    组件
                 </Button>
-                <Button icon={<AppstoreAddOutlined />}>More</Button>
+                <Button icon={<AppstoreAddOutlined />}>
+                    更多
+                </Button>
             </div>
 
             {/** 输入框 */}
