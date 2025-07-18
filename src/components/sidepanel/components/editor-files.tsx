@@ -21,7 +21,7 @@ import {
     Space,
     Empty,
     Typography,
-    message,
+    App,
 } from "antd";
 
 import { MoreOutlined } from "@ant-design/icons";
@@ -86,6 +86,9 @@ function RenameModal(props: RenameModalProps) {
     const { filename, isOpen, onOpenChange } = props;
     const [isLoading, setIsLoading] = useState(false);
     const [form] = Form.useForm();
+
+    // 使用 App.useApp() 获取 message 方法
+    const { message } = App.useApp();
 
     const { onRenameEditor } = useSession();
 
@@ -159,6 +162,9 @@ function CodeEditorItem(editor: CodeEditor) {
     const [isEditing, setIsEditing] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
     const [showDelete, setShowDelete] = useState(false);
+
+    // 使用 App.useApp() 获取 message 方法
+    const { message } = App.useApp();
 
     const { dispatch } = useSession();
 

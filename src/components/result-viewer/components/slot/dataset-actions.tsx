@@ -5,7 +5,7 @@ import {
 
 import { MoreOutlined } from "@ant-design/icons";
 
-import { Dropdown, Modal, message } from "antd";
+import { Dropdown, Modal, App } from "antd";
 import type { MenuProps } from "antd";
 import { del } from "idb-keyval";
 import { IDB_KEYS } from "@/constants.client";
@@ -15,6 +15,9 @@ import { useState } from "react";
  * Actions for the dataset.
  */
 export default function DatasetActions() {
+    // 使用 App.useApp() 获取 message 方法
+    const { message } = App.useApp();
+    
     const [showClearConfirm, setShowClearConfirm] = useState(false);
 
     const onClearHistory = async () => {
