@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 
 import { z } from "zod";
 
-import { Button, Modal, Tag, message } from "antd";
+import { Button, Modal, Tag, App } from "antd";
 
 import { IDB_KEYS } from "@/constants.client";
 
@@ -47,6 +47,9 @@ const onGetStoredQueries = async (): Promise<QueryMeta[]> => {
 };
 
 function RunHoverCard(props: QueryMeta) {
+    // 使用 App.useApp() 获取 message 方法
+    const { message } = App.useApp();
+    
     const { isCopied, copyToClipboard } = useCopyToClipboard({
         timeout: 1500,
     });
