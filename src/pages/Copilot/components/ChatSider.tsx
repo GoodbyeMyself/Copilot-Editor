@@ -208,14 +208,22 @@ const ChatSider: React.FC<ChatSiderProps> = ({
                                 label: '重命名',
                                 key: 'rename',
                                 icon: <EditOutlined />,
-                                onClick: () => handleRename(conversation.key, String(conversation.label || '')),
+                                onClick: (event) => {
+                                    // 阻止事件冒泡，防止点击重命名时选中会话
+                                    event?.domEvent?.stopPropagation?.();
+                                    handleRename(conversation.key, String(conversation.label || ''));
+                                },
                             },
                             {
                                 label: '删除',
                                 key: 'delete',
                                 icon: <DeleteOutlined />,
                                 danger: true,
-                                onClick: () => handleDelete(conversation.key),
+                                onClick: (event) => {
+                                    // 阻止事件冒泡，防止点击删除时选中会话
+                                    event?.domEvent?.stopPropagation?.();
+                                    handleDelete(conversation.key);
+                                },
                             },
                         ],
                     })}

@@ -178,14 +178,20 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
                                         label: '重命名',
                                         key: 'rename',
                                         icon: <EditOutlined />,
-                                        onClick: () => handleRename(conversation.key, String(conversation.label || '')),
+                                        onClick: (event) => {
+                                            event?.domEvent?.stopPropagation?.();
+                                            handleRename(conversation.key, String(conversation.label || ''));
+                                        },
                                     },
                                     {
                                         label: '删除',
                                         key: 'delete',
                                         icon: <DeleteOutlined />,
                                         danger: true,
-                                        onClick: () => handleDelete(conversation.key),
+                                        onClick: (event) => {
+                                            event?.domEvent?.stopPropagation?.();
+                                            handleDelete(conversation.key);
+                                        },
                                     },
                                 ],
                             })}
