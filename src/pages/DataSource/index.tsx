@@ -15,6 +15,7 @@ import {
     Form,
     Select,
     App,
+    Tooltip,
 } from 'antd';
 import {
     PlusOutlined,
@@ -55,9 +56,10 @@ const AccessPage: React.FC = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize] = useState(8);
     const [isModalVisible, setIsModalVisible] = useState(false);
+    const [deletingDataSourceId, setDeletingDataSourceId] = useState<string | null>(null);
     const [form] = Form.useForm();
     const { sources, onAddDataSource, onRemoveDataSource } = useSession();
-    const { message } = App.useApp();
+    const { message, modal } = App.useApp();
 
     // 根据数据源类型获取图标
     const getIconByDataSourceType = (dataSourceType: string): string => {
@@ -261,14 +263,46 @@ const AccessPage: React.FC = () => {
         setCurrentPage(1);
     };
 
-    const handleDeleteDataSource = async (dataSourceId: string) => {
-        try {
-            await onRemoveDataSource(dataSourceId);
-            message.success('数据源删除成功');
-        } catch (error) {
-            console.error('删除数据源失败:', error);
-            message.error('删除数据源失败');
-        }
+    // 改进的删除数据源功能
+    const handleDeleteDataSource = async (dataSourceId: string, dataSourceName: string) => {
+        // 显示确认对话框
+        modal.confirm({
+            title: '确认删除数据源',
+            content: (
+                <div>
+                    <p>您确定要删除数据源 <strong>&quot;{dataSourceName}&quot;</strong> 吗 ？</p>
+                    <p style={{ color: '#ff4d4f', fontSize: '12px' }}>
+                        此操作不可撤销，删除后将无法恢复 !
+                    </p>
+                </div>
+            ),
+            okText: '确认删除',
+            cancelText: '取消',
+            okType: 'danger',
+            onOk: async () => {
+                try {
+                    setDeletingDataSourceId(dataSourceId);
+                    
+                    // 模拟删除延迟
+                    await new Promise<void>(resolve => {
+                        setTimeout(() => resolve(), 1000);
+                    });
+                    
+                    await onRemoveDataSource(dataSourceId);
+                    message.success(`数据源 " ${dataSourceName} " 删除成功`);
+                    
+                    // 如果当前页没有数据了，跳转到上一页
+                    if (paginatedData.length === 1 && currentPage > 1) {
+                        setCurrentPage(currentPage - 1);
+                    }
+                } catch (error) {
+                    console.error('删除数据源失败:', error);
+                    message.error(`删除数据源 &quot;${dataSourceName}&quot; 失败`);
+                } finally {
+                    setDeletingDataSourceId(null);
+                }
+            },
+        });
     };
 
     return (
@@ -304,18 +338,34 @@ const AccessPage: React.FC = () => {
                 <Row gutter={[16, 16]}>
                     {paginatedData.map((dataSource) => {
                         const statusConfig = getStatusConfig(dataSource.status);
+                        const isDeleting = deletingDataSourceId === dataSource.id;
+                        
                         return (
                             <Col xs={24} sm={12} md={8} lg={6} key={dataSource.id}>
                                 <Card
                                     hoverable
-                                    style={{ height: '100%' }}
+                                    style={{ 
+                                        height: '100%',
+                                        opacity: isDeleting ? 0.6 : 1,
+                                        transition: 'opacity 0.3s ease'
+                                    }}
                                     actions={[
-                                        <LinkOutlined key="connect" />,
-                                        <DatabaseOutlined key="test" />,
-                                        <DeleteOutlined 
-                                            key="delete" 
-                                            onClick={() => handleDeleteDataSource(dataSource.id)}
-                                        />
+                                        <Tooltip title="连接数据源" key="connect">
+                                            <LinkOutlined style={{ color: '#1890ff' }} />
+                                        </Tooltip>,
+                                        <Tooltip title="测试连接" key="test">
+                                            <DatabaseOutlined style={{ color: '#52c41a' }} />
+                                        </Tooltip>,
+                                        <Tooltip title="删除数据源" key="delete">
+                                            <DeleteOutlined 
+                                                style={{ 
+                                                    color: isDeleting ? '#d9d9d9' : '#ff4d4f',
+                                                    cursor: isDeleting ? 'not-allowed' : 'pointer'
+                                                }}
+                                                spin={isDeleting}
+                                                onClick={() => handleDeleteDataSource(dataSource.id, dataSource.name)}
+                                            />
+                                        </Tooltip>
                                     ]}
                                 >
                                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
