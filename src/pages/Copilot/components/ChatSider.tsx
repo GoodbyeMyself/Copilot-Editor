@@ -39,6 +39,12 @@ const ChatSider: React.FC<ChatSiderProps> = ({
 
     // 处理重命名
     const handleRename = (conversationKey: string, currentName: string) => {
+        // 检查是否正在请求中，如果是则阻止重命名并显示提示
+        if (isRequesting) {
+            message.error('请先等待会话输出完成，再进行会话重命名');
+            return;
+        }
+        
         setRenameConversationKey(conversationKey);
         setNewConversationName(currentName);
         setRenameModalVisible(true);
@@ -66,6 +72,12 @@ const ChatSider: React.FC<ChatSiderProps> = ({
 
     // 处理删除
     const handleDelete = (conversationKey: string) => {
+        // 检查是否正在请求中，如果是则阻止删除并显示提示
+        if (isRequesting) {
+            message.error('请先等待会话输出完成，再进行会话删除');
+            return;
+        }
+        
         modal.confirm({
             title: '删除会话',
             content: '确定要删除这个会话吗？此操作不可恢复。',
@@ -168,6 +180,12 @@ const ChatSider: React.FC<ChatSiderProps> = ({
                     className="copilot-conversations"
                     activeKey={isInitialLoad ? undefined : (curConversation || undefined)}
                     onActiveChange={async (val) => {
+                        // 检查是否正在请求中，如果是则阻止切换并显示提示
+                        if (isRequesting) {
+                            message.error('请先等待会话输出完成，再进行会话切换');
+                            return;
+                        }
+                        
                         // 安全地中止当前请求
                         if (abortController.current) {
                             try {
