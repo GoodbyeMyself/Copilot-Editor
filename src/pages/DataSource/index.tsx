@@ -80,8 +80,8 @@ const AccessPage: React.FC = () => {
 
     // 获取随机状态（实际应用中应该从数据库连接状态获取）
     const getRandomStatus = (): 'connected' | 'disconnected' | 'warning' => {
-        const statuses: ('connected' | 'disconnected' | 'warning')[] = ['connected', 'disconnected', 'warning'];
-        return statuses[Math.floor(Math.random() * statuses.length)];
+        // 修改为始终返回已连接状态
+        return 'connected';
     };
 
     // 将全局状态中的 TreeDataSource 转换为管理页面需要的 DataSourceItem 格式
