@@ -36,6 +36,7 @@ export type SessionMethods = {
     onRemoveDataSource: (path: string) => Promise<void>;
     onInitializeMockDataSources: () => void;
     onAddDataSource: (dataSource: Dataset) => Promise<void>;
+    onUpdateDataSource: (path: string, updatedDataSource: Dataset) => Promise<void>;
 };
 
 export type SessionContextValue = SessionState & SessionMethods;
@@ -152,6 +153,14 @@ type ADD_SINGLE_SOURCE = {
     payload: Dataset;
 };
 
+type UPDATE_SOURCE = {
+    type: "UPDATE_SOURCE";
+    payload: {
+        path: string;
+        updatedDataSource: Dataset;
+    };
+};
+
 export type Action =
     | RENAME_EDITOR
     | OpenEditor
@@ -167,4 +176,5 @@ export type Action =
     | RESET_SESSION
     | ADD_SOURCES
     | REMOVE_SOURCE
-    | ADD_SINGLE_SOURCE;
+    | ADD_SINGLE_SOURCE
+    | UPDATE_SOURCE;

@@ -210,6 +210,22 @@ function reducer(state: SessionState, action: Action): SessionState {
                 sources: state.sources.filter((source) => source.path !== path),
             };
         }
+
+        case "UPDATE_SOURCE": {
+            const { path, updatedDataSource } = action.payload;
+            const index = state.sources.findIndex((source) => source.path === path);
+            
+            if (index === -1) return { ...state };
+            
+            return {
+                ...state,
+                sources: [
+                    ...state.sources.slice(0, index),
+                    updatedDataSource,
+                    ...state.sources.slice(index + 1),
+                ],
+            };
+        }
         // close the editor view (not delete the editor from the state)
         case "CLOSE_EDITOR": {
             const { path } = action.payload;
@@ -730,6 +746,31 @@ function SessionProvider({ children }: SessionProviderProps) {
     );
 
     /**
+     * 更新数据源
+     */
+    const onUpdateDataSource: SessionMethods["onUpdateDataSource"] = useCallback(
+        async (path: string, updatedDataSource: Dataset) => {
+            try {
+                dispatch({
+                    type: "UPDATE_SOURCE",
+                    payload: {
+                        path,
+                        updatedDataSource,
+                    },
+                });
+
+                toast.success("数据源已更新");
+            } catch (e) {
+                console.error("Failed to update data source: ", e);
+                toast.error("更新数据源失败", {
+                    description: e instanceof Error ? e.message : undefined,
+                });
+            }
+        },
+        [],
+    );
+
+    /**
      * 初始化模拟数据源
      */
     const onInitializeMockDataSources: SessionMethods["onInitializeMockDataSources"] = useCallback(() => {
@@ -753,6 +794,7 @@ function SessionProvider({ children }: SessionProviderProps) {
             onRemoveDataSource,
             onInitializeMockDataSources,
             onAddDataSource,
+            onUpdateDataSource,
         }),
         [
             onSessionChange,
@@ -766,6 +808,7 @@ function SessionProvider({ children }: SessionProviderProps) {
             onRemoveDataSource,
             onInitializeMockDataSources,
             onAddDataSource,
+            onUpdateDataSource,
         ],
     );
 

@@ -21,11 +21,11 @@ import {
     PlusOutlined,
     SearchOutlined,
     LinkOutlined,
-    DatabaseOutlined,
     DeleteOutlined,
     CheckCircleOutlined,
     CloseCircleOutlined,
     ExclamationCircleOutlined,
+    EditOutlined,
 } from '@ant-design/icons';
 import SvgIcon from '@/components/common/SvgIcon';
 
@@ -56,9 +56,12 @@ const AccessPage: React.FC = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize] = useState(8);
     const [isModalVisible, setIsModalVisible] = useState(false);
+    const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+    const [editingDataSource, setEditingDataSource] = useState<DataSourceItem | null>(null);
     const [deletingDataSourceId, setDeletingDataSourceId] = useState<string | null>(null);
     const [form] = Form.useForm();
-    const { sources, onAddDataSource, onRemoveDataSource } = useSession();
+    const [editForm] = Form.useForm();
+    const { sources, onAddDataSource, onRemoveDataSource, onUpdateDataSource } = useSession();
     const { message, modal } = App.useApp();
 
     // 根据数据源类型获取图标
@@ -146,6 +149,68 @@ const AccessPage: React.FC = () => {
 
     const handleAddDataSource = () => {
         setIsModalVisible(true);
+    };
+
+    // 处理编辑数据源
+    const handleEditDataSource = (dataSource: DataSourceItem) => {
+        setEditingDataSource(dataSource);
+        editForm.setFieldsValue({
+            name: dataSource.name,
+            type: dataSource.dataSourceType,
+            url: dataSource.connectionString,
+            description: dataSource.description,
+            version: dataSource.version,
+            status: dataSource.status,
+        });
+        setIsEditModalVisible(true);
+    };
+
+    // 处理编辑模态框确认
+    const handleEditModalOk = async () => {
+        try {
+            const values = await editForm.validateFields();
+            
+            if (!editingDataSource) return;
+
+            // 找到对应的TreeDataSource并更新
+            const sourceToUpdate = sources.find(source => 
+                source.kind === "TREE_DATASET" && source.id === editingDataSource.id
+            ) as TreeDataSource | undefined;
+
+            if (!sourceToUpdate) {
+                message.error('未找到要更新的数据源');
+                return;
+            }
+
+            // 创建更新后的数据源
+            const updatedTreeDataSource: TreeDataSource = {
+                ...sourceToUpdate,
+                database: {
+                    ...sourceToUpdate.database,
+                    title: values.name,
+                    dataSourceType: values.type,
+                    connectionString: values.url,
+                },
+            };
+
+            // 更新本地缓存
+            await onUpdateDataSource(editingDataSource.id, updatedTreeDataSource);
+            
+            setIsEditModalVisible(false);
+            editForm.resetFields();
+            setEditingDataSource(null);
+            message.success(`数据源 "${values.name}" 更新成功`);
+        } catch (error) {
+            console.error('更新数据源失败:', error);
+            message.error('更新数据源失败');
+        }
+    };
+
+    // 处理编辑模态框取消
+    const handleEditModalCancel = () => {
+        setIsEditModalVisible(false);
+        editForm.resetFields();
+        setEditingDataSource(null);
     };
 
     // 生成随机字段
@@ -353,8 +418,11 @@ const AccessPage: React.FC = () => {
                                         <Tooltip title="连接数据源" key="connect">
                                             <LinkOutlined style={{ color: '#1890ff' }} />
                                         </Tooltip>,
-                                        <Tooltip title="测试连接" key="test">
-                                            <DatabaseOutlined style={{ color: '#52c41a' }} />
+                                        <Tooltip title="编辑数据源" key="edit">
+                                            <EditOutlined 
+                                                style={{ color: '#52c41a' }}
+                                                onClick={() => handleEditDataSource(dataSource)}
+                                            />
                                         </Tooltip>,
                                         <Tooltip title="删除数据源" key="delete">
                                             <DeleteOutlined 
@@ -450,6 +518,77 @@ const AccessPage: React.FC = () => {
                             status: 'connected',
                             version: '1.0.0',
                         }}
+                    >
+                        <Form.Item
+                            name="name"
+                            label="数据源名称"
+                            rules={[{ required: true, message: '请输入数据源名称' }]}
+                        >
+                            <Input placeholder="请输入数据源名称" />
+                        </Form.Item>
+
+                        <Form.Item
+                            name="type"
+                            label="数据库类型"
+                            rules={[{ required: true, message: '请选择数据库类型' }]}
+                        >
+                            <Select placeholder="请选择数据库类型">
+                                <Option value="MySQL">MySQL</Option>
+                                <Option value="PostgreSQL">PostgreSQL</Option>
+                                <Option value="Redis">Redis</Option>
+                                <Option value="MongoDB">MongoDB</Option>
+                                <Option value="Oracle">Oracle</Option>
+                                <Option value="Alipay">Alipay</Option>
+                            </Select>
+                        </Form.Item>
+
+                        <Form.Item
+                            name="url"
+                            label="连接地址"
+                            rules={[{ required: true, message: '请输入连接地址' }]}
+                        >
+                            <Input placeholder="请输入连接地址" />
+                        </Form.Item>
+
+                        <Form.Item
+                            name="description"
+                            label="描述"
+                        >
+                            <Input.TextArea placeholder="请输入数据源描述" rows={3} />
+                        </Form.Item>
+
+                        <Form.Item
+                            name="version"
+                            label="版本"
+                        >
+                            <Input placeholder="请输入版本号" />
+                        </Form.Item>
+
+                        <Form.Item
+                            name="status"
+                            label="连接状态"
+                        >
+                            <Select>
+                                <Option value="connected">已连接</Option>
+                                <Option value="disconnected">连接失败</Option>
+                                <Option value="warning">连接异常</Option>
+                            </Select>
+                        </Form.Item>
+                    </Form>
+                </Modal>
+
+                {/* 编辑数据源模态框 */}
+                <Modal
+                    title="编辑数据源"
+                    open={isEditModalVisible}
+                    onOk={handleEditModalOk}
+                    onCancel={handleEditModalCancel}
+                    okText="保存"
+                    cancelText="取消"
+                >
+                    <Form
+                        form={editForm}
+                        layout="vertical"
                     >
                         <Form.Item
                             name="name"
