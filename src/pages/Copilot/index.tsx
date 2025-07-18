@@ -184,6 +184,51 @@ const AccessPage: React.FC = () => {
         },
     });
 
+    // ==================== 页面刷新清理逻辑 ====================
+    useEffect(() => {
+        // 页面刷新或关闭时的清理函数
+        const handleBeforeUnload = () => {
+            // 如果有正在进行的请求，尝试中止它
+            if (abortController.current) {
+                try {
+                    abortController.current.abort('页面刷新');
+                } catch (error) {
+                    console.warn('页面刷新时中止请求失败:', error);
+                }
+            }
+        };
+
+        // 组件卸载时的清理函数
+        const handleUnload = () => {
+            if (abortController.current) {
+                try {
+                    abortController.current.abort('组件卸载');
+                } catch (error) {
+                    console.warn('组件卸载时中止请求失败:', error);
+                }
+            }
+        };
+
+        // 添加页面刷新/关闭事件监听器
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        window.addEventListener('unload', handleUnload);
+
+        // 清理函数
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+            window.removeEventListener('unload', handleUnload);
+            
+            // 组件卸载时也要中止请求
+            if (abortController.current) {
+                try {
+                    abortController.current.abort('组件卸载');
+                } catch (error) {
+                    console.warn('组件卸载时中止请求失败:', error);
+                }
+            }
+        };
+    }, []);
+
     // ==================== Event ====================
     const onSubmit = (val: string) => {
         if (!val) return;
