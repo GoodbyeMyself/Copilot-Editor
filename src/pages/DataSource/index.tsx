@@ -59,6 +59,7 @@ const AccessPage: React.FC = () => {
     const [isEditModalVisible, setIsEditModalVisible] = useState(false);
     const [editingDataSource, setEditingDataSource] = useState<DataSourceItem | null>(null);
     const [deletingDataSourceId, setDeletingDataSourceId] = useState<string | null>(null);
+    const [testingDataSourceId, setTestingDataSourceId] = useState<string | null>(null);
     const [form] = Form.useForm();
     const [editForm] = Form.useForm();
     const { sources, onAddDataSource, onRemoveDataSource, onUpdateDataSource } = useSession();
@@ -211,6 +212,33 @@ const AccessPage: React.FC = () => {
         setIsEditModalVisible(false);
         editForm.resetFields();
         setEditingDataSource(null);
+    };
+
+    // 测试连接功能
+    const handleTestConnection = async (dataSource: DataSourceItem) => {
+        setTestingDataSourceId(dataSource.id);
+        
+        try {
+            // 模拟测试连接过程
+            await new Promise<void>((resolve, reject) => {
+                setTimeout(() => {
+                    // 模拟连接测试结果 - 这里可以根据实际情况调用真实的连接测试API
+                    const isSuccess = Math.random() > 0.3; // 70% 成功率
+                    if (isSuccess) {
+                        resolve();
+                    } else {
+                        reject(new Error('连接失败'));
+                    }
+                }, 2000);
+            });
+            
+            message.success(`数据源 "${dataSource.name}" 连接测试成功！`);
+        } catch (error) {
+            console.error('连接测试失败:', error);
+            message.error(`数据源 "${dataSource.name}" 连接测试失败，请检查连接配置！`);
+        } finally {
+            setTestingDataSourceId(null);
+        }
     };
 
     // 生成随机字段
@@ -404,6 +432,7 @@ const AccessPage: React.FC = () => {
                     {paginatedData.map((dataSource) => {
                         const statusConfig = getStatusConfig(dataSource.status);
                         const isDeleting = deletingDataSourceId === dataSource.id;
+                        const isTesting = testingDataSourceId === dataSource.id;
                         
                         return (
                             <Col xs={24} sm={12} md={8} lg={6} key={dataSource.id}>
@@ -411,12 +440,19 @@ const AccessPage: React.FC = () => {
                                     hoverable
                                     style={{ 
                                         height: '100%',
-                                        opacity: isDeleting ? 0.6 : 1,
+                                        opacity: (isDeleting || isTesting) ? 0.6 : 1,
                                         transition: 'opacity 0.3s ease'
                                     }}
                                     actions={[
-                                        <Tooltip title="连接数据源" key="connect">
-                                            <LinkOutlined style={{ color: '#1890ff' }} />
+                                        <Tooltip title="测试连接" key="test">
+                                            <LinkOutlined 
+                                                style={{ 
+                                                    color: isTesting ? '#d9d9d9' : '#1890ff',
+                                                    cursor: isTesting ? 'not-allowed' : 'pointer'
+                                                }}
+                                                spin={isTesting}
+                                                onClick={() => handleTestConnection(dataSource)}
+                                            />
                                         </Tooltip>,
                                         <Tooltip title="编辑数据源" key="edit">
                                             <EditOutlined 
