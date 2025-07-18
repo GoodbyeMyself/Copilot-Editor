@@ -29,8 +29,8 @@ const ChatSider: React.FC<ChatSiderProps> = ({
     onMessageHistoryChange,
     isInitialLoad = false,
 }) => {
-    // 使用 App.useApp() 获取 message 方法
-    const { message } = App.useApp();
+    // 使用 App.useApp() 获取 message 和 modal 方法
+    const { message, modal } = App.useApp();
     
     // 重命名相关状态
     const [renameModalVisible, setRenameModalVisible] = useState(false);
@@ -66,7 +66,7 @@ const ChatSider: React.FC<ChatSiderProps> = ({
 
     // 处理删除
     const handleDelete = (conversationKey: string) => {
-        Modal.confirm({
+        modal.confirm({
             title: '删除会话',
             content: '确定要删除这个会话吗？此操作不可恢复。',
             okText: '确定',
