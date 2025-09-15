@@ -127,8 +127,9 @@ const ChatList: React.FC<ChatListProps> = ({
                             : `已深度思考（用时 ${durationSec} 秒）`;
 
                         // 将内容替换为 ThoughtChain + 可见答案
+                        const CANCEL_MARK = '--- [请求已取消] ---';
                         const contentNode = (
-                            <div>
+                            <>
                                 {isAssistant && hasThink ? (
                                     (() => {
                                         const nodeStatus: 'pending' | 'success' | 'error' = (
@@ -154,8 +155,22 @@ const ChatList: React.FC<ChatListProps> = ({
                                         );
                                     })()
                                 ) : null}
-                                {rest}
-                            </div>
+                                {(() => {
+                                    if (typeof rest === 'string' && rest.includes(CANCEL_MARK)) {
+                                        const parts = rest.split(CANCEL_MARK);
+                                        return (
+                                            <>
+                                                {parts[0]}
+                                                <div className="copilot-cancelled-label">
+                                                    {CANCEL_MARK}
+                                                </div>
+                                                {parts.slice(1).join(CANCEL_MARK)}
+                                            </>
+                                        );
+                                    }
+                                    return rest as any;
+                                })()}
+                            </>
                         );
 
                         return {
