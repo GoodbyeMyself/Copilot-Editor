@@ -10,6 +10,9 @@ import {
     RobotOutlined,
     ShareAltOutlined,
     UserOutlined,
+    CheckCircleOutlined,
+    InfoCircleOutlined,
+    LoadingOutlined,
 } from '@ant-design/icons';
 
 interface ChatListProps {
@@ -47,6 +50,19 @@ const ChatList: React.FC<ChatListProps> = ({
     // 记录思考开始时间与用时（秒），用于“思考中/已深度思考（用时 xxxx 秒）”显示
     const thinkStartRef = React.useRef<Map<string, number>>(new Map());
     const thinkDurationRef = React.useRef<Map<string, number>>(new Map());
+
+    const getStatusIcon = (status: 'pending' | 'success' | 'error') => {
+        switch (status) {
+            case 'success':
+                return <CheckCircleOutlined />;
+            case 'error':
+                return <InfoCircleOutlined />;
+            case 'pending':
+                return <LoadingOutlined />;
+            default:
+                return undefined;
+        }
+    };
 
     return (
         <div className="copilot-chat-list">
@@ -114,19 +130,29 @@ const ChatList: React.FC<ChatListProps> = ({
                         const contentNode = (
                             <div>
                                 {isAssistant && hasThink ? (
-                                    <ThoughtChain
-                                        key={`${msgKey}-${thinkClosed ? 'closed' : 'open'}`}
-                                        items={[
-                                            {
-                                                title: chainTitle,
-                                                content: think,
-                                            },
-                                        ]}
-                                        // 将请求/思考中的状态映射给 ThoughtChain
-                                        loading={!!showLoadingChain}
-                                        // 思考中禁用折叠（强制展开）；结束后允许折叠并默认收起
-                                        collapsible={showLoadingChain ? false : { open: false }}
-                                    />
+                                    (() => {
+                                        const nodeStatus: 'pending' | 'success' | 'error' = (
+                                            i?.status === 'error' ? 'error' : (showLoadingChain ? 'pending' : 'success')
+                                        );
+                                        const nodeIcon = getStatusIcon(nodeStatus);
+                                        return (
+                                            <ThoughtChain
+                                                key={`${msgKey}-${thinkClosed ? 'closed' : 'open'}`}
+                                                items={[
+                                                    {
+                                                        title: chainTitle,
+                                                        content: think,
+                                                        status: nodeStatus,
+                                                        icon: nodeIcon,
+                                                    },
+                                                ]}
+                                                // 将请求/思考中的状态映射给 ThoughtChain
+                                                loading={!!showLoadingChain}
+                                                // 思考中禁用折叠（强制展开）；结束后允许折叠并默认收起
+                                                collapsible={showLoadingChain ? false : { open: false }}
+                                            />
+                                        );
+                                    })()
                                 ) : null}
                                 {rest}
                             </div>
