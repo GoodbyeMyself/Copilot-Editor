@@ -109,6 +109,24 @@ const AccessPage: React.FC = () => {
 
     // 保存AI已经输出的内容
     const currentAIContent = useRef<string>('');
+    // 当前这轮 assistant 消息的稳定 id（贯穿流式与取消）
+    const currentAssistantId = useRef<string>('');
+    // 本轮 <think> 开始时间戳（毫秒）
+    const currentThinkStartAt = useRef<number | null>(null);
+    // 本轮思考用时（秒），在正常闭合或取消时计算
+    const currentThinkDurationSec = useRef<number | null>(null);
+
+    const generateStableId = () => {
+        try {
+            // 优先使用原生 uuid（若可用）
+            // @ts-ignore
+            if (typeof crypto !== 'undefined' && crypto?.randomUUID) {
+                // @ts-ignore
+                return crypto.randomUUID();
+            }
+        } catch {}
+        return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    };
 
     /**
      * 🔔 Please replace the BASE_URL, PATH, MODEL, API_KEY with your own values.
@@ -129,16 +147,28 @@ const AccessPage: React.FC = () => {
             if (error?.name === 'AbortError') {
                 // 获取AI已经输出的内容（originMessage的content）
                 const existingContent = currentAIContent.current || '';
-                const cancelledContent = existingContent 
-                    ? `${existingContent}\n\n --- [请求已取消] ---`
+                // 如果存在未闭合的 <think>，在取消时补齐闭合以触发用时结算
+                const hasOpenThink = existingContent.includes('<think>') && !existingContent.includes('</think>');
+                const normalized = hasOpenThink ? `${existingContent}</think>` : existingContent;
+                const cancelledContent = normalized
+                    ? `${normalized}\n\n --- [请求已取消] ---`
                     : '请求已取消';
+                const durationSec = currentThinkStartAt.current
+                    ? Math.max(0, Math.round((Date.now() - currentThinkStartAt.current) / 1000))
+                    : 0;
                 
                 return {
+                    id: currentAssistantId.current,
                     content: cancelledContent,
                     role: 'assistant',
+                    meta: {
+                        thinkStartAt: currentThinkStartAt.current ?? undefined,
+                        durationSec,
+                    },
                 };
             }
             return {
+                id: currentAssistantId.current,
                 content: '请求失败，请重试！',
                 role: 'assistant',
             };
@@ -165,18 +195,39 @@ const AccessPage: React.FC = () => {
 
             if (!originMessage?.content && currentThink) {
                 content = `<think>${currentThink}`;
+                if (!currentThinkStartAt.current) {
+                    currentThinkStartAt.current = Date.now();
+                }
             } else if (
                 originMessage?.content?.includes('<think>') &&
                 !originMessage?.content.includes('</think>') &&
                 currentContent
             ) {
                 content = `${originMessage?.content}</think>${currentContent}`;
+                // 正常闭合时结算一次用时（秒）
+                if (currentThinkStartAt.current && currentThinkDurationSec.current === null) {
+                    currentThinkDurationSec.current = Math.max(
+                        0,
+                        Math.round((Date.now() - currentThinkStartAt.current) / 1000),
+                    );
+                }
             } else {
                 content = `${originMessage?.content || ''}${currentThink}${currentContent}`;
             }
             return {
+                id: currentAssistantId.current,
                 content: content,
                 role: 'assistant',
+                meta:
+                    currentThinkStartAt.current || currentThinkDurationSec.current !== null
+                        ? {
+                              thinkStartAt: currentThinkStartAt.current ?? undefined,
+                              durationSec:
+                                  currentThinkDurationSec.current !== null
+                                      ? currentThinkDurationSec.current
+                                      : undefined,
+                          }
+                        : undefined,
             };
         },
         resolveAbortController: (controller) => {
@@ -242,6 +293,11 @@ const AccessPage: React.FC = () => {
         if (isInitialLoad) {
             setIsInitialLoad(false);
         }
+
+        // 为本轮 assistant 输出生成稳定 id，并重置思考开始时间/用时
+        currentAssistantId.current = generateStableId();
+        currentThinkStartAt.current = null;
+        currentThinkDurationSec.current = null;
 
         onRequest({
             stream: true,

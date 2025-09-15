@@ -61,8 +61,14 @@ const ChatList: React.FC<ChatListProps> = ({
                         const isLoading = i.status === 'loading';
                         const showLoadingChain = isAssistant && hasThink && (isLoading || !thinkClosed);
 
-                        // 计算 key：优先使用消息 id/key，否则使用索引
-                        const msgKey = (i?.id || i?.key || String(idx)) as string;
+                        // 计算 key：尽量使用稳定 id/key，避免退化为索引
+                        const msgKey = (
+                            i?.id ||
+                            i?.message?.id ||
+                            i?.key ||
+                            i?.message?.key ||
+                            String(idx)
+                        ) as string;
 
                         // 记录思考开始时间
                         if (isAssistant && hasThink && !thinkClosed && !thinkStartRef.current.has(msgKey)) {
@@ -78,7 +84,28 @@ const ChatList: React.FC<ChatListProps> = ({
                             }
                         }
 
-                        const durationSec = thinkDurationRef.current.get(msgKey) || 0;
+                        // 兜底：当请求已不在 loading，但 <think> 未闭合时，也进行一次用时结算
+                        if (
+                            isAssistant &&
+                            hasThink &&
+                            !thinkClosed &&
+                            !isLoading &&
+                            !thinkDurationRef.current.has(msgKey)
+                        ) {
+                            const startAt = thinkStartRef.current.get(msgKey);
+                            if (startAt) {
+                                const elapsedSec = Math.max(0, Math.round((Date.now() - startAt) / 1000));
+                                thinkDurationRef.current.set(msgKey, elapsedSec);
+                            }
+                        }
+
+                        const metaDuration = (i?.message as any)?.meta?.durationSec as number | undefined;
+                        const mapDuration = thinkDurationRef.current.get(msgKey);
+                        const durationSec = (
+                            typeof metaDuration === 'number'
+                                ? metaDuration
+                                : (typeof mapDuration === 'number' ? mapDuration : 0)
+                        );
                         const chainTitle = showLoadingChain
                             ? '思考中...'
                             : `已深度思考（用时 ${durationSec} 秒）`;
