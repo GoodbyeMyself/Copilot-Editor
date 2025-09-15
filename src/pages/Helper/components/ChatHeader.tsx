@@ -51,6 +51,11 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
     const [newSessionName, setNewSessionName] = useState<string>('');
 
     const handleRename = (sessionId: string, currentName: string) => {
+        // 正在请求时禁止重命名，保持与 Copilot 对齐
+        if (isRequesting) {
+            message.error('请先等待会话输出完成，再进行会话重命名');
+            return;
+        }
         setRenameSessionId(sessionId);
         setNewSessionName(currentName);
         setRenameModalVisible(true);
@@ -162,9 +167,19 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
                             activeKey={curSession}
                             groupable
                             onActiveChange={async (val) => {
-                                onAbort();
-                                // The abort execution will trigger an asynchronous requestFallback, which may lead to timing issues.
-                                // In future versions, the sessionId capability will be added to resolve this problem.
+                                // 正在请求时禁止切换，保持与 Copilot 对齐
+                                if (isRequesting) {
+                                    message.error('请先等待会话输出完成，再进行会话切换');
+                                    return;
+                                }
+
+                                // 安全中止当前请求
+                                try {
+                                    onAbort();
+                                } catch (error) {
+                                    // noop
+                                }
+                                // 避免时序问题
                                 setTimeout(() => {
                                     onSetCurSession(val);
                                     // 消息恢复逻辑已移至主组件的onSetCurSession回调中处理
