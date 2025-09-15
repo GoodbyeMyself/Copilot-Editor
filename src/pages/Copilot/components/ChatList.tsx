@@ -1,6 +1,6 @@
 import React from 'react';
 import { Avatar, Button, Flex, Space, Spin } from 'antd';
-import { Bubble, Prompts, Welcome } from '@ant-design/x';
+import { Bubble, Prompts, Welcome, ThoughtChain as AntThoughtChain } from '@ant-design/x';
 import {
     CopyOutlined,
     DislikeOutlined,
@@ -25,18 +25,95 @@ const ChatList: React.FC<ChatListProps> = ({
     designGuide,
     onSubmit,
 }) => {
+    // 解析包含 <think> 思考过程 的消息内容
+    const parseThinkContent = (content?: string) => {
+        if (!content) return { think: '', rest: '', hasThink: false, thinkClosed: true };
+        const start = content.indexOf('<think>');
+        if (start === -1) return { think: '', rest: content, hasThink: false, thinkClosed: true };
+        const end = content.indexOf('</think>');
+        if (end === -1) {
+            const think = content.slice(start + 7);
+            const rest = content.slice(0, start);
+            return { think, rest, hasThink: true, thinkClosed: false };
+        }
+        const think = content.slice(start + 7, end);
+        const rest = content.slice(0, start) + content.slice(end + 8);
+        return { think, rest, hasThink: true, thinkClosed: true };
+    };
+
+    // 为保证类型兼容，将 ThoughtChain 以 any 使用，便于自定义状态映射
+    const ThoughtChain: any = AntThoughtChain as any;
+
+    // 记录思考开始时间与用时（秒），用于“思考中/已深度思考（用时 xxxx 秒）”显示
+    const thinkStartRef = React.useRef<Map<string, number>>(new Map());
+    const thinkDurationRef = React.useRef<Map<string, number>>(new Map());
+
     return (
         <div className="copilot-chat-list">
             {messages?.length ? (
                 /* 🌟 消息列表 */
                 <Bubble.List
-                    items={messages?.map((i) => ({
-                        ...i.message,
-                        classNames: {
-                            content: i.status === 'loading' ? 'copilot-loading-message' : '',
-                        },
-                        typing: i.status === 'loading' ? { step: 5, interval: 20, suffix: <>💗</> } : false,
-                    }))}
+                    items={messages?.map((i, idx) => {
+                        const { content, role } = i?.message || {};
+                        const { think, rest, hasThink, thinkClosed } = parseThinkContent(content);
+
+                        const isAssistant = role === 'assistant';
+                        const isLoading = i.status === 'loading';
+                        const showLoadingChain = isAssistant && hasThink && (isLoading || !thinkClosed);
+
+                        // 计算 key：优先使用消息 id/key，否则使用索引
+                        const msgKey = (i?.id || i?.key || String(idx)) as string;
+
+                        // 记录思考开始时间
+                        if (isAssistant && hasThink && !thinkClosed && !thinkStartRef.current.has(msgKey)) {
+                            thinkStartRef.current.set(msgKey, Date.now());
+                        }
+
+                        // 思考闭合时计算用时
+                        if (isAssistant && hasThink && thinkClosed && !thinkDurationRef.current.has(msgKey)) {
+                            const startAt = thinkStartRef.current.get(msgKey);
+                            if (startAt) {
+                                const elapsedSec = Math.max(0, Math.round((Date.now() - startAt) / 1000));
+                                thinkDurationRef.current.set(msgKey, elapsedSec);
+                            }
+                        }
+
+                        const durationSec = thinkDurationRef.current.get(msgKey) || 0;
+                        const chainTitle = showLoadingChain
+                            ? '思考中...'
+                            : `已深度思考（用时 ${durationSec} 秒）`;
+
+                        // 将内容替换为 ThoughtChain + 可见答案
+                        const contentNode = (
+                            <div>
+                                {isAssistant && hasThink ? (
+                                    <ThoughtChain
+                                        key={`${msgKey}-${thinkClosed ? 'closed' : 'open'}`}
+                                        items={[
+                                            {
+                                                title: chainTitle,
+                                                content: think,
+                                            },
+                                        ]}
+                                        // 将请求/思考中的状态映射给 ThoughtChain
+                                        loading={!!showLoadingChain}
+                                        // 思考中禁用折叠（强制展开）；结束后允许折叠并默认收起
+                                        collapsible={showLoadingChain ? false : { open: false }}
+                                    />
+                                ) : null}
+                                {rest}
+                            </div>
+                        );
+
+                        return {
+                            ...i.message,
+                            content: contentNode,
+                            classNames: {
+                                content: isLoading ? 'copilot-loading-message' : '',
+                            },
+                            typing: isLoading ? { step: 5, interval: 20, suffix: <>💗</> } : false,
+                        };
+                    })}
                     style={{
                         height: '100%',
                         paddingInline: 'calc(10%)'
