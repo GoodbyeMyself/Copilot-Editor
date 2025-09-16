@@ -155,21 +155,23 @@ const ChatList: React.FC<ChatListProps> = ({
                                         );
                                     })()
                                 ) : null}
-                                {(() => {
-                                    if (typeof rest === 'string' && rest.includes(CANCEL_MARK)) {
-                                        const parts = rest.split(CANCEL_MARK);
-                                        return (
-                                            <>
-                                                {parts[0]}
-                                                <div className="copilot-cancelled-label">
-                                                    {CANCEL_MARK}
-                                                </div>
-                                                {parts.slice(1).join(CANCEL_MARK)}
-                                            </>
-                                        );
-                                    }
-                                    return rest as any;
-                                })()}
+                                <div className="copilot-message-content">
+                                    {(() => {
+                                        if (typeof rest === 'string' && rest.includes(CANCEL_MARK)) {
+                                            const parts = rest.split(CANCEL_MARK);
+                                            return (
+                                                <>
+                                                    {parts[0]}
+                                                    <div className="copilot-cancelled-label">
+                                                        {CANCEL_MARK}
+                                                    </div>
+                                                    {parts.slice(1).join(CANCEL_MARK)}
+                                                </>
+                                            );
+                                        }
+                                        return rest as any;
+                                    })()}
+                                </div>
                             </>
                         );
 

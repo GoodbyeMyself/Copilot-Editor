@@ -92,10 +92,12 @@
 }
 
 /* 修复 Bubble.List 中换行符显示问题 */
-.copilot-chat-list .ant-bubble-content {
-    white-space: break-spaces;
-    word-wrap: break-word;
-    word-break: break-word;
+.copilot-chat-list {
+    .copilot-message-content {
+        white-space: pre-line;
+        word-wrap: break-word;
+        word-break: break-word;
+    }
 }
 
 /* 确保 AI 助手的消息内容能正确显示换行符 */

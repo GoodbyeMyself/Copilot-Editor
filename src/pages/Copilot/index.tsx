@@ -151,7 +151,7 @@ const AccessPage: React.FC = () => {
                 const hasOpenThink = existingContent.includes('<think>') && !existingContent.includes('</think>');
                 const normalized = hasOpenThink ? `${existingContent}</think>` : existingContent;
                 const cancelledContent = normalized
-                    ? `${normalized}\n\n --- [请求已取消] ---`
+                    ? `${normalized} --- [请求已取消] ---`
                     : '请求已取消';
                 const durationSec = currentThinkStartAt.current
                     ? Math.max(0, Math.round((Date.now() - currentThinkStartAt.current) / 1000))
