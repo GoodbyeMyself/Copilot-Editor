@@ -25,7 +25,7 @@ const ChatList: React.FC<ChatListProps> = ({
             bubbleStyle={{ height: '100%' }}
             bubblePadding="16px"
             welcomeTitle="Hi! I'm Copilot 智能助手"
-            welcomeDescription="基于 AI，提供 SQL 查询产品接口解决方案，打造更智能的数据查询与分析体验 ~"
+            welcomeDescription="基于 AI 打造更智能的数据查询与分析体验 ~"
             promptsTitle="我可以帮助您："
             promptsItems={MOCK_QUESTIONS.map((i) => ({ key: i, description: i }))}
         />
