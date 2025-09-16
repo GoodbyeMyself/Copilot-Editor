@@ -50,7 +50,7 @@ const saveToStorage = (key: string, value: any) => {
     }
 };
 
-const AccessPage: React.FC = () => {
+const CopilotPage: React.FC = () => {
     // 使用 App.useApp() 获取 message 方法
     const { message } = App.useApp();
     
@@ -431,6 +431,9 @@ const AccessPage: React.FC = () => {
                         onSubmit={onSubmit}
                         onInputChange={setInputValue}
                         onAttachmentsToggle={() => setAttachmentsOpen(!attachmentsOpen)}
+                        attachmentsOpen={attachmentsOpen}
+                        attachedFiles={attachedFiles}
+                        onAttachedFilesChange={setAttachedFiles}
                     />
                 </div>
             </div>
@@ -438,4 +441,4 @@ const AccessPage: React.FC = () => {
     );
 };
 
-export default AccessPage;
+export default CopilotPage;
