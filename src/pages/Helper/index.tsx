@@ -12,6 +12,12 @@ import type { Conversation } from '@ant-design/x/es/conversations';
 import { GetProp, GetRef } from 'antd';
 
 import React, { useEffect, useRef, useState } from 'react';
+import {
+    Panel,
+    PanelGroup,
+    type ImperativePanelHandle,
+} from 'react-resizable-panels';
+import PanelHandle from '@/components/base/panel-handle';
 
 import './styles.less';
 import { MOCK_SESSION_LIST } from './constants';
@@ -31,12 +37,12 @@ type BubbleDataType = {
 };
 
 interface CopilotProps {
-    copilotOpen: boolean;
     setCopilotOpen: (open: boolean) => void;
+    onCollapsePanel?: () => void;
 }
 
 const Copilot = (props: CopilotProps) => {
-    const { copilotOpen, setCopilotOpen } = props;
+    const { setCopilotOpen, onCollapsePanel } = props;
     const attachmentsRef = useRef<GetRef<typeof Attachments>>(null);
     const abortController = useRef<AbortController | null>(null);
 
@@ -303,6 +309,7 @@ const Copilot = (props: CopilotProps) => {
             // 保存到localStorage
             saveMessageHistory(updatedHistory);
         },
+        onCollapsePanel,
     };
 
     const chatListProps = {
@@ -328,6 +335,8 @@ const Copilot = (props: CopilotProps) => {
         onAttachmentsOpenChange: setAttachmentsOpen,
         onAbort: () => abortController.current?.abort(),
         onPasteFile,
+        attachedFiles: files,
+        onAttachedFilesChange: setFiles,
     };
 
     // 组件初始化时加载历史数据
@@ -378,7 +387,7 @@ const Copilot = (props: CopilotProps) => {
     }, [curSession, isInitialized]);
 
     return (
-        <div className="helper-copilot-chat" style={{ width: copilotOpen ? 400 : 0 }}>
+        <div className="helper-copilot-chat">
             {/** 对话区 - header */}
             <ChatHeader {...chatHeaderProps} />
 
@@ -394,45 +403,70 @@ const Copilot = (props: CopilotProps) => {
 const AccessPage: React.FC = () => {
 
     // ==================== State =================
-    const [copilotOpen, setCopilotOpen] = useState(true);
+    const [copilotOpen, setCopilotOpen] = useState(false);
+    const copilotRef = useRef<ImperativePanelHandle>(null);
 
     return (
         <PageContainer
             ghost
         >
             <div className="helper-copilot-wrapper">
-                {/** 左侧工作区 */}
-                <div className="helper-workarea">
-                    <div className="helper-workarea-header">
-                        <div className="helper-workarea-header-title">
-                            <img
-                                src="https://mdn.alipayobjects.com/huamei_iwk9zp/afts/img/A*eco6RrQhxbMAAAAAAAAAAAAADgCCAQ/original"
-                                draggable={false}
-                                alt="logo"
-                                width={20}
-                                height={20}
-                            />
-                            助手式 Copilot
-                        </div>
-                        {!copilotOpen && (
-                            <div onClick={() => setCopilotOpen(true)} className="helper-workarea-header-button">
-                                ✨ AI Copilot
+                <PanelGroup direction="horizontal" className="helper-panel-group rounded-none">
+                    <Panel minSize={15} className="h-full max-h-full">
+                        {/** 左侧工作区 */}
+                        <div className="helper-workarea helper-panel">
+                            <div className="helper-workarea-header">
+                                <div className="helper-workarea-header-title">
+                                    <img
+                                        src="https://mdn.alipayobjects.com/huamei_iwk9zp/afts/img/A*eco6RrQhxbMAAAAAAAAAAAAADgCCAQ/original"
+                                        draggable={false}
+                                        alt="logo"
+                                        width={20}
+                                        height={20}
+                                    />
+                                    助手式 Copilot
+                                </div>
+                                {!copilotOpen && (
+                                    <div
+                                        onClick={() => {
+                                            copilotRef.current?.expand();
+                                            setCopilotOpen(true);
+                                        }}
+                                        className="helper-workarea-header-button"
+                                    >
+                                        ✨ AI Copilot
+                                    </div>
+                                )}
                             </div>
-                        )}
-                    </div>
-
-                    <div
-                        className="helper-workarea-body"
-                        style={{ margin: copilotOpen ? 16 : '16px 48px' }}
-                    >
-                        <div className="helper-body-content">
-                            业务区域
+                            <div
+                                className={`helper-workarea-body ${!copilotOpen ? 'helper-workarea-body--collapsed' : ''}`}
+                            >
+                                <div className="helper-body-content">
+                                    业务区域
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-
-                {/** 右侧对话区 */}
-                <Copilot copilotOpen={copilotOpen} setCopilotOpen={setCopilotOpen} />
+                    </Panel>
+                    {copilotOpen && <PanelHandle />}
+                    <Panel
+                        collapsedSize={0}
+                        collapsible
+                        defaultSize={0}
+                        minSize={30}
+                        className="h-full max-h-full"
+                        onCollapse={() => setCopilotOpen(false)}
+                        onExpand={() => setCopilotOpen(true)}
+                        ref={copilotRef}
+                    >
+                        {/** 右侧对话区 */}
+                        <div className="helper-panel">
+                            <Copilot 
+                                setCopilotOpen={setCopilotOpen} 
+                                onCollapsePanel={() => copilotRef.current?.collapse()}
+                            />
+                        </div>
+                    </Panel>
+                </PanelGroup>
             </div>
         </PageContainer>
     );

@@ -29,6 +29,7 @@ interface ChatHeaderProps {
     onSetMessages: (messages: any[]) => void;
     onAbort: () => void;
     onDeleteSession: (sessionId: string) => void;
+    onCollapsePanel?: () => void;
 }
 
 const ChatHeader: React.FC<ChatHeaderProps> = ({
@@ -42,6 +43,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
     onSetMessages,
     onAbort,
     onDeleteSession,
+    onCollapsePanel,
 }) => {
     // 使用 App.useApp() 获取 message 方法
     const { message } = App.useApp();
@@ -218,7 +220,10 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
                 <Button
                     type="text"
                     icon={<CloseOutlined />}
-                    onClick={() => onSetCopilotOpen(false)}
+                    onClick={() => {
+                        onSetCopilotOpen(false);
+                        onCollapsePanel?.();
+                    }}
                     className="helper-header-button"
                 />
             </Space>
