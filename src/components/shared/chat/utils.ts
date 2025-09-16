@@ -39,7 +39,14 @@ export const calculateThinkDuration = (startTime: number): number => {
  * @returns 唯一键
  */
 export const generateMessageKey = (message: any, index: number): string => {
-    return message?.id || message?.message?.id || message?.key || message?.message?.key || String(index);
+    // 优先使用嵌套的 message.id 作为稳定键，避免外层包装对象的 id 在状态切换时变化
+    return (
+        message?.message?.id ||
+        message?.message?.key ||
+        message?.id ||
+        message?.key ||
+        String(index)
+    );
 };
 
 /**
