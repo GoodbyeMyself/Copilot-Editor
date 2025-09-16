@@ -1,19 +1,14 @@
 import {
     AppstoreAddOutlined,
-    PaperClipOutlined,
     ProductOutlined,
     ScheduleOutlined,
 } from '@ant-design/icons';
-
-import {
-    Sender,
-    Suggestion,
-} from '@ant-design/x';
 
 import { Button } from 'antd';
 
 import React from 'react';
 
+import { BaseChatSender } from '../../../components/shared/chat';
 import { MOCK_SUGGESTIONS } from '../constants';
 import SendHeader from './SendHeader';
 
@@ -27,6 +22,8 @@ interface ChatSenderProps {
     onAttachmentsOpenChange: (open: boolean) => void;
     onAbort: () => void;
     onPasteFile: (file: File, files: FileList) => void;
+    attachedFiles: any[];
+    onAttachedFilesChange: (files: any[]) => void;
 }
 
 const ChatSender: React.FC<ChatSenderProps> = ({
@@ -39,6 +36,8 @@ const ChatSender: React.FC<ChatSenderProps> = ({
     onAttachmentsOpenChange,
     onAbort,
     onPasteFile,
+    attachedFiles,
+    onAttachedFilesChange,
 }) => {
     return (
         <div className="helper-chat-send">
@@ -61,46 +60,24 @@ const ChatSender: React.FC<ChatSenderProps> = ({
             </div>
 
             {/** 输入框 */}
-            <Suggestion items={MOCK_SUGGESTIONS} onSelect={(itemVal) => onInputValueChange(`[${itemVal}]:`)}>
-                {({ onTrigger, onKeyDown }) => (
-                    <Sender
-                        loading={loading}
-                        value={inputValue}
-                        onChange={(v) => {
-                            onTrigger(v === '/');
-                            onInputValueChange(v);
-                        }}
-                        onSubmit={() => {
-                            onUserSubmit(inputValue);
-                            onInputValueChange('');
-                        }}
-                        onCancel={() => {
-                            onAbort();
-                        }}
-                        allowSpeech
-                        placeholder="Ask or input / use skills"
-                        onKeyDown={onKeyDown}
-                        header={<SendHeader {...sendHeaderProps} />}
-                        prefix={
-                            <Button
-                                type="text"
-                                icon={<PaperClipOutlined style={{ fontSize: 18 }} />}
-                                onClick={() => onAttachmentsOpenChange(!attachmentsOpen)}
-                            />
-                        }
-                        onPasteFile={onPasteFile}
-                        actions={(_, info) => {
-                            const { SendButton, LoadingButton, SpeechButton } = info.components;
-                            return (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                    <SpeechButton className="helper-speech-button" />
-                                    {loading ? <LoadingButton type="default" /> : <SendButton type="primary" />}
-                                </div>
-                            );
-                        }}
-                    />
-                )}
-            </Suggestion>
+            <BaseChatSender
+                inputValue={inputValue}
+                loading={loading}
+                attachmentsOpen={attachmentsOpen}
+                attachedFiles={attachedFiles}
+                onInputValueChange={onInputValueChange}
+                onUserSubmit={onUserSubmit}
+                onAttachmentsOpenChange={onAttachmentsOpenChange}
+                onAttachedFilesChange={onAttachedFilesChange}
+                onAbort={onAbort}
+                onPasteFile={onPasteFile}
+                containerClassName="helper-chat-sender"
+                senderClassName="helper-sender"
+                speechButtonClassName="helper-speech-button"
+                suggestions={MOCK_SUGGESTIONS}
+                header={<SendHeader {...sendHeaderProps} />}
+                placeholder="Ask or input / use skills"
+            />
         </div>
     );
 };

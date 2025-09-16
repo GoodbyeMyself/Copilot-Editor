@@ -1,21 +1,11 @@
-import {
-    CloudUploadOutlined,
-} from '@ant-design/icons';
+import { GetProp } from 'antd';
+import { type AttachmentsProps } from '@ant-design/x';
 
-import {
-    Attachments,
-    type AttachmentsProps,
-    Sender,
-} from '@ant-design/x';
-
-import { GetProp, GetRef } from 'antd';
-
-import React from 'react';
+import { BaseSenderHeader } from '../../../components/shared/chat';
 
 interface SendHeaderProps {
     attachmentsOpen: boolean;
     onAttachmentsOpenChange: (open: boolean) => void;
-    attachmentsRef: React.RefObject<GetRef<typeof Attachments>>;
     files: GetProp<AttachmentsProps, 'items'>;
     onFilesChange: (files: GetProp<AttachmentsProps, 'items'>) => void;
 }
@@ -23,34 +13,18 @@ interface SendHeaderProps {
 const SendHeader: React.FC<SendHeaderProps> = ({
     attachmentsOpen,
     onAttachmentsOpenChange,
-    attachmentsRef,
     files,
     onFilesChange,
 }) => {
     return (
-        <Sender.Header
+        <BaseSenderHeader
+            attachmentsOpen={attachmentsOpen}
+            attachedFiles={files}
+            onAttachmentsOpenChange={onAttachmentsOpenChange}
+            onAttachedFilesChange={onFilesChange}
             title="Upload File"
             styles={{ content: { padding: 0 } }}
-            open={attachmentsOpen}
-            onOpenChange={onAttachmentsOpenChange}
-            forceRender
-        >
-            <Attachments
-                ref={attachmentsRef}
-                beforeUpload={() => false}
-                items={files}
-                onChange={({ fileList }) => onFilesChange(fileList)}
-                placeholder={(type) =>
-                    type === 'drop'
-                        ? { title: 'Drop file here' }
-                        : {
-                            icon: <CloudUploadOutlined />,
-                            title: 'Upload files',
-                            description: 'Click or drag files to this area to upload',
-                        }
-                }
-            />
-        </Sender.Header>
+        />
     );
 };
 

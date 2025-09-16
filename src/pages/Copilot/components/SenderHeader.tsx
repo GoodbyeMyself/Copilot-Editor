@@ -1,7 +1,8 @@
 import React from 'react';
 import { type GetProp } from 'antd';
-import { Attachments, Sender } from '@ant-design/x';
-import { CloudUploadOutlined } from '@ant-design/icons';
+import { Attachments } from '@ant-design/x';
+
+import { BaseSenderHeader } from '../../../components/shared/chat';
 
 interface SenderHeaderProps {
     attachmentsOpen: boolean;
@@ -17,27 +18,14 @@ const SenderHeader: React.FC<SenderHeaderProps> = ({
     onAttachedFilesChange,
 }) => {
     return (
-        <Sender.Header
+        <BaseSenderHeader
+            attachmentsOpen={attachmentsOpen}
+            attachedFiles={attachedFiles}
+            onAttachmentsOpenChange={onAttachmentsOpenChange}
+            onAttachedFilesChange={onAttachedFilesChange}
             title="Upload File"
-            open={attachmentsOpen}
-            onOpenChange={onAttachmentsOpenChange}
             styles={{ content: { padding: 0 } }}
-        >
-            <Attachments
-                beforeUpload={() => false}
-                items={attachedFiles}
-                onChange={(info) => onAttachedFilesChange(info.fileList)}
-                placeholder={(type) =>
-                    type === 'drop'
-                        ? { title: 'Drop file here' }
-                        : {
-                            icon: <CloudUploadOutlined />,
-                            title: 'Upload files',
-                            description: 'Click or drag files to this area to upload',
-                        }
-                }
-            />
-        </Sender.Header>
+        />
     );
 };
 
