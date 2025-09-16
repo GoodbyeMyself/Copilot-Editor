@@ -1,6 +1,6 @@
 import { PageContainer } from '@ant-design/pro-components';
 
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
     Panel,
     PanelGroup,
@@ -10,6 +10,10 @@ import PanelHandle from '@/components/base/panel-handle';
 
 import './styles.less';
 import { Copilot } from '@/pages/Helper/components';
+import Editor from '@/components/base/monaco';
+import { useEditor } from '@/context/editor/useEditor';
+import type { OnChange } from '@monaco-editor/react';
+import type { editor as MonacoEditor } from 'monaco-editor';
 
 
 const HelperPage: React.FC = () => {
@@ -17,6 +21,21 @@ const HelperPage: React.FC = () => {
     // ==================== State =================
     const [copilotOpen, setCopilotOpen] = useState(false);
     const copilotRef = useRef<ImperativePanelHandle>(null);
+    const { editorRef } = useEditor();
+
+    const [code, setCode] = useState<string>('# Python 编辑区\n# 在这里编写你的 Python 代码\n');
+
+    const onChangeHandler: OnChange = useCallback((value) => {
+        setCode(value ?? '');
+    }, []);
+
+    const onSave = useCallback(async (ed: MonacoEditor.ICodeEditor) => {
+        const content = ed.getValue();
+        // 这里可以对接保存逻辑，例如持久化到后端或本地
+        // 先简单打印作为占位
+        // eslint-disable-next-line no-console
+        console.log('Python code saved:', content);
+    }, []);
 
     return (
         <PageContainer
@@ -54,7 +73,17 @@ const HelperPage: React.FC = () => {
                                 className={`helper-workarea-body ${!copilotOpen ? 'helper-workarea-body--collapsed' : ''}`}
                             >
                                 <div className="helper-body-content">
-                                    xxxxx
+                                    <Editor
+                                        onSave={onSave}
+                                        value={code}
+                                        ref={editorRef}
+                                        onChange={onChangeHandler}
+                                        className="h-full border-t-0"
+                                        options={{
+                                            padding: { top: 10, bottom: 16 },
+                                        }}
+                                        copolitRef={copilotRef}
+                                    />
                                 </div>
                             </div>
                         </div>
