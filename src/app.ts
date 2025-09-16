@@ -32,6 +32,27 @@ setupGlobalErrorHandling();
 // 设置 ResizeObserver 错误处理
 setupResizeObserverErrorHandling();
 
+// --- 构建信息：仅在首次加载时输出一次，并暴露到 window ---
+(() => {
+    const buildInfo = {
+        time: process.env.__BUILD_TIME__ || '',
+        branch: process.env.__GIT_BRANCH__ || '',
+        commitHash: process.env.__GIT_COMMIT_HASH__ || '',
+        commitDate: process.env.__GIT_COMMIT_DATE__ || '',
+    } as const;
+
+    (window as any).__BUILD_INFO__ = buildInfo;
+
+    const printedFlag = '__BUILD_INFO_PRINTED__';
+
+    if (!(window as any)[printedFlag]) {
+        // 只打印一次
+        (window as any)[printedFlag] = true;
+        // eslint-disable-next-line no-console
+        console.table(buildInfo);
+    }
+})();
+
 // 运行时配置
 
 // 全局初始化数据配置，用于 Layout 用户信息和权限初始化
