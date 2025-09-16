@@ -1,6 +1,6 @@
 import { useModel } from '@umijs/max';
 
-import Playground from '@/components/playground';
+import Playground from './playground';
 
 import { cn } from "@/lib/utils";
 

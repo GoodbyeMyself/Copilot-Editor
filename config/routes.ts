@@ -42,6 +42,13 @@ export default [
         icon: "Slack",
         component: "./Helper",
     },
+    // 助手式 Copilot
+    {
+        name: "Python",
+        path: "/Python",
+        icon: "Python",
+        component: "./Python",
+    },
     {
         name: "权限演示",
         path: "/access",
