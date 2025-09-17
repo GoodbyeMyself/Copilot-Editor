@@ -23,7 +23,32 @@ const HelperPage: React.FC = () => {
     const copilotRef = useRef<ImperativePanelHandle>(null);
     const { editorRef } = useEditor();
 
-    const [code, setCode] = useState<string>('# Python 编辑区\n# 在这里编写你的 Python 代码\n');
+    const [code, setCode] = useState<string>(`# Python 编辑区
+# 在这里编写你的 Python 代码
+
+# 示例代码
+def hello_world():
+    print("Hello, World!")
+
+# 变量定义
+name = "Python"
+age = 30
+
+# 条件语句
+if age > 18:
+    print(f"{name} 是成年人")
+else:
+    print(f"{name} 是未成年人")
+
+# 循环
+for i in range(5):
+    print(f"数字: {i}")
+
+# 列表操作
+numbers = [1, 2, 3, 4, 5]
+squared = [x**2 for x in numbers]
+print(squared)
+`);
 
     const onChangeHandler: OnChange = useCallback((value) => {
         setCode(value ?? '');
@@ -79,6 +104,7 @@ const HelperPage: React.FC = () => {
                                         ref={editorRef}
                                         onChange={onChangeHandler}
                                         className="h-full border-t-0"
+                                        language="python"
                                         options={{
                                             padding: { top: 10, bottom: 16 },
                                         }}
@@ -101,8 +127,8 @@ const HelperPage: React.FC = () => {
                     >
                         {/** 右侧对话区 */}
                         <div className="helper-panel">
-                            <Copilot 
-                                setCopilotOpen={setCopilotOpen} 
+                            <Copilot
+                                setCopilotOpen={setCopilotOpen}
                                 onCollapsePanel={() => copilotRef.current?.collapse()}
                             />
                         </div>

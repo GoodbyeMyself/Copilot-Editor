@@ -27,6 +27,8 @@ export const sqlConf: languages.LanguageConfiguration = {
   ],
 };
 
+export { pythonConf, pythonDef } from "./python";
+
 // WIP
 // DuckDB keywords: select list(upper(keyword_name)) from duckdb_keywords();
 // DuckDB function: select list(distinct upper(function_name)) from duckdb_functions();

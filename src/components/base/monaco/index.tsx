@@ -18,6 +18,7 @@ import { type editor, type IDisposable, languages, Range } from "monaco-editor";
 import { registerEditorActions } from "../editor/utils/actions";
 
 import "monaco-editor/esm/vs/basic-languages/sql/sql.contribution";
+import "monaco-editor/esm/vs/basic-languages/python/python.contribution";
 
 import { useDB } from "@/context/db/useDB";
 import { useQuery } from "@/context/query/useQuery";
@@ -28,7 +29,8 @@ import { type ImperativePanelHandle } from "react-resizable-panels";
 import { formatSQL } from "@/utils/sql_fmt";
 
 import { SuggestionMaker } from "./suggestions";
-import { sqlConf, sqlDef } from "./syntax";
+import { PythonSuggestionMaker } from "./suggestions/python";
+import { sqlConf, sqlDef, pythonConf, pythonDef } from "./syntax";
 
 type EditorProps = Exclude<MonacoEditorProps, "value"> & {
     value: string;
@@ -56,6 +58,19 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
 
     // 主题 默认浅色
     const isDark = false;
+
+    // 根据语言选择配置
+    const getLanguageConfig = (lang: string) => {
+        switch (lang) {
+            case "python":
+                return { conf: pythonConf, def: pythonDef };
+            case "sql":
+            default:
+                return { conf: sqlConf, def: sqlDef };
+        }
+    };
+
+    const { conf: languageConf, def: languageDef } = getLanguageConfig(language);
 
     useEffect(() => {
         return () => {
@@ -136,19 +151,20 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
         // });
     };
 
-    // formatter
+    // formatter - 仅对SQL语言启用
     useEffect(() => {
         const disposables: IDisposable[] = [];
 
         if (!editorRef.current) return;
         if (!monacoRef.current) return;
         if (!isReady) return;
+        if (language !== "sql") return;
 
         disposables.push(
             monacoRef.current.languages.registerDocumentFormattingEditProvider(
                 "sql",
                 {
-                    async provideDocumentFormattingEdits(model, _options) {
+                    async provideDocumentFormattingEdits(model) {
                         const formatted = await formatSQL(model.getValue());
                         return [
                             {
@@ -171,7 +187,6 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
                     async provideDocumentRangeFormattingEdits(
                         model,
                         range,
-                        _options,
                     ) {
                         const formatted = await formatSQL(
                             model.getValueInRange(range),
@@ -191,7 +206,7 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
             // biome-ignore lint/complexity/noForEach: <explanation>
             disposables.forEach((disposable) => disposable.dispose());
         };
-    }, [isReady]);
+    }, [isReady, language]);
 
     useEffect(() => {
         const disposables: IDisposable[] = [];
@@ -217,14 +232,14 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
         disposables.push(
             monacoRef.current.languages.setLanguageConfiguration(
                 language,
-                sqlConf,
+                languageConf,
             ),
         );
         // register setMonarchTokens Provider
         disposables.push(
             monacoRef.current.languages.setMonarchTokensProvider(
                 language,
-                sqlDef,
+                languageDef,
             ),
         );
 
@@ -238,14 +253,14 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
         };
     }, [isReady, language, onRunQuery, props.copolitRef]);
 
-    // completions
-
+    // completions - 仅对SQL语言启用数据库补全
     useEffect(() => {
         const disposables: IDisposable[] = [];
 
         if (!monacoRef.current) return;
         if (!isReady) return;
         if (!db) return;
+        if (language !== "sql") return;
 
         const suggestor = new SuggestionMaker(db);
 
@@ -263,8 +278,6 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
                     async provideCompletionItems(
                         model,
                         position,
-                        _context,
-                        _token,
                     ) {
                         const query = model.getValue();
 
@@ -306,6 +319,39 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
         };
     }, [db, isReady, language]);
 
+    // Python completions
+    useEffect(() => {
+        const disposables: IDisposable[] = [];
+
+        if (!monacoRef.current) return;
+        if (!isReady) return;
+        if (language !== "python") return;
+
+        const pythonSuggestor = new PythonSuggestionMaker();
+
+        disposables.push(
+            monacoRef.current.languages.registerCompletionItemProvider(
+                "python",
+                {
+                    provideCompletionItems(model, position) {
+                        const { word } = model.getWordUntilPosition(position);
+                        const suggestions = pythonSuggestor.getSuggestions(word, position);
+                        
+                        return {
+                            suggestions,
+                            incomplete: false,
+                        };
+                    },
+                },
+            ),
+        );
+
+        return () => {
+            // biome-ignore lint/complexity/noForEach: <explanation>
+            disposables.forEach((disposable) => disposable.dispose());
+        };
+    }, [isReady, language]);
+
     /**
      * SQL type coercion completions (e.g. sales::int).
      *
@@ -318,6 +364,7 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
         if (!monacoRef.current) return;
         if (!isReady) return;
         if (!db) return;
+        if (language !== "sql") return;
 
         // register Monaco languages
         disposables.push(
@@ -505,7 +552,7 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
             // biome-ignore lint/complexity/noForEach: <explanation>
             disposables.forEach((disposable) => disposable.dispose());
         };
-    }, [db, isReady]);
+    }, [db, isReady, language]);
 
     useImperativeHandle(ref, () => {
         return {
