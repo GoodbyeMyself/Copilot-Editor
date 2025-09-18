@@ -32,7 +32,7 @@ export default defineConfig({
     initialState: {},
     request: {},
     layout: {
-        title: "SQL Copilot",
+        title: "Copilot Editor",
     },
     /**
      * @name 路由的配置，不在路由中引入的文件不会编译

@@ -169,7 +169,7 @@ const ChatSider: React.FC<ChatSiderProps> = ({
                             />
                         </div>
                         <div className="copilot-empty-text">
-                            <h3>欢迎使用 SQL Copilot</h3>
+                            <h3>欢迎使用 Copilot Editor</h3>
                             <p>点击上方&ldquo;新建会话&rdquo;开始您的第一次对话</p>
                         </div>
                     </div>
