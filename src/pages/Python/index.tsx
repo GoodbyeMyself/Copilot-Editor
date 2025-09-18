@@ -1,6 +1,6 @@
 import { PageContainer } from '@ant-design/pro-components';
 
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     Panel,
     PanelGroup,
@@ -10,56 +10,34 @@ import PanelHandle from '@/components/base/panel-handle';
 
 import './styles.less';
 import { Copilot } from '@/pages/Helper/components';
-import Editor from '@/components/base/monaco';
-import { useEditor } from '@/context/editor/useEditor';
-import type { OnChange } from '@monaco-editor/react';
-import type { editor as MonacoEditor } from 'monaco-editor';
 
+import * as monaco from 'monaco-editor';
+import { setupContextMenuFeature } from '@/components/base/editor/utils/setupContextMenuFeature';
 
 const HelperPage: React.FC = () => {
 
     // ==================== State =================
     const [copilotOpen, setCopilotOpen] = useState(false);
     const copilotRef = useRef<ImperativePanelHandle>(null);
-    const { editorRef } = useEditor();
+    const editorContainerRef = useRef<HTMLDivElement | null>(null);
+    const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
 
-    const [code, setCode] = useState<string>(`# Python 编辑区
-# 在这里编写你的 Python 代码
+    useEffect(() => {
+        const container = editorContainerRef.current;
+        if (!container) return;
 
-# 示例代码
-def hello_world():
-    print("Hello, World!")
+        const editor = monaco.editor.create(container, {
+            value: ['function x() {', '\tconsole.log("Hello world!");', '}'].join('\n'),
+            language: 'typescript'
+        });
+        editorRef.current = editor;
 
-# 变量定义
-name = "Python"
-age = 30
+        setupContextMenuFeature(editor);
 
-# 条件语句
-if age > 18:
-    print(f"{name} 是成年人")
-else:
-    print(f"{name} 是未成年人")
-
-# 循环
-for i in range(5):
-    print(f"数字: {i}")
-
-# 列表操作
-numbers = [1, 2, 3, 4, 5]
-squared = [x**2 for x in numbers]
-print(squared)
-`);
-
-    const onChangeHandler: OnChange = useCallback((value) => {
-        setCode(value ?? '');
-    }, []);
-
-    const onSave = useCallback(async (ed: MonacoEditor.ICodeEditor) => {
-        const content = ed.getValue();
-        // 这里可以对接保存逻辑，例如持久化到后端或本地
-        // 先简单打印作为占位
-        // eslint-disable-next-line no-console
-        console.log('Python code saved:', content);
+        return () => {
+            editorRef.current?.dispose();
+            editorRef.current = null;
+        };
     }, []);
 
     return (
@@ -98,18 +76,7 @@ print(squared)
                                 className={`helper-workarea-body ${!copilotOpen ? 'helper-workarea-body--collapsed' : ''}`}
                             >
                                 <div className="helper-body-content">
-                                    <Editor
-                                        onSave={onSave}
-                                        value={code}
-                                        ref={editorRef}
-                                        onChange={onChangeHandler}
-                                        className="h-full border-t-0"
-                                        language="python"
-                                        options={{
-                                            padding: { top: 10, bottom: 16 },
-                                        }}
-                                        copolitRef={copilotRef}
-                                    />
+                                    <div id="editor" ref={editorContainerRef}></div>
                                 </div>
                             </div>
                         </div>

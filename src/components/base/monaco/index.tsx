@@ -81,6 +81,7 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
     const handleEditorDidMount: OnMount = (editor, monaco) => {
         editorRef.current = editor;
         monacoRef.current = monaco;
+
         setIsReady(true);
 
         // ---------- save to local storage -------------- //

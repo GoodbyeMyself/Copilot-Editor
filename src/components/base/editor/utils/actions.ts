@@ -181,7 +181,7 @@ export function registerEditorActions(
             if (!selectedText) return;
 
             // 生成随机注释
-            const randomComment = generateRandomComment();
+            const randomComment = '随机注释';
 
             // 在选中文本前插入注释
             const commentText = `-- ${randomComment}\n${selectedText}`;
@@ -264,63 +264,4 @@ export function registerEditorActions(
 
     // 在函数结束时设置标志
     isRegistered = true;
-}
-
-// 添加生成随机注释的辅助函数
-function generateRandomComment(): string {
-    const commentTemplates = [
-        "查询用户信息",
-        "统计订单数据",
-        "计算销售总额",
-        "获取最近30天数据",
-        "更新用户状态",
-        "删除过期记录",
-        "插入新用户数据",
-        "修改商品价格",
-        "导出报表数据",
-        "备份重要信息",
-        "清理临时数据",
-        "同步用户信息",
-        "验证数据完整性",
-        "优化查询性能",
-        "修复数据异常",
-        "生成月度报表",
-        "检查数据一致性",
-        "更新系统配置",
-        "处理业务逻辑",
-        "执行数据迁移",
-    ];
-
-    const prefixes = [
-        "功能：",
-        "用途：",
-        "说明：",
-        "描述：",
-        "作用：",
-        "目标：",
-        "任务：",
-        "操作：",
-        "处理：",
-        "执行：",
-    ];
-
-    const suffixes = [
-        " - 自动生成",
-        " - 系统处理",
-        " - 定时任务",
-        " - 数据维护",
-        " - 业务处理",
-        " - 数据更新",
-        " - 系统操作",
-        " - 数据同步",
-        " - 信息处理",
-        " - 数据整理",
-    ];
-
-    const template =
-        commentTemplates[Math.floor(Math.random() * commentTemplates.length)];
-    const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
-    const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
-
-    return `${prefix}${template}${suffix}`;
 }
