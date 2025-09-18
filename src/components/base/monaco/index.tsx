@@ -706,7 +706,6 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
         <div
             ref={editorContainerRef}
             className={cn(props.className)}
-            style={{ height: props.height || "400px" }}
         />
     );
 });

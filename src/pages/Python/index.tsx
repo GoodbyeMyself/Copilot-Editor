@@ -12,13 +12,14 @@ import './styles.less';
 import { Copilot } from '@/pages/Helper/components';
 
 import Editor from '@/components/base/monaco';
+import PYTHON_EXCEL_SAMPLE from './sample-code';
 
 const HelperPage: React.FC = () => {
 
     // ==================== State =================
     const [copilotOpen, setCopilotOpen] = useState(false);
 
-    const [editorValue, setEditorValue] = useState(['def hello_world():', '    print("Hello, World!")', '    return "Python is awesome!"'].join('\n'));
+    const [editorValue, setEditorValue] = useState(PYTHON_EXCEL_SAMPLE);
     
     const copilotRef = useRef<ImperativePanelHandle>(null);
     
@@ -52,7 +53,7 @@ const HelperPage: React.FC = () => {
                                         width={20}
                                         height={20}
                                     />
-                                    助手式 Copilot
+                                    Python 编辑器
                                 </div>
                                 {!copilotOpen && (
                                     <div
