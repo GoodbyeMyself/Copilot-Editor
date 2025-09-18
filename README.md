@@ -37,7 +37,7 @@
 - **UI 组件库**：Ant Design 5.x + Radix UI
 - **编辑器**：Monaco Editor
 - **样式方案**：Tailwind CSS
-- **数据处理**：DuckDB WASM + Apache Arrow
+- **数据处理**：Apache Arrow（通用数据处理）
 - **状态管理**：React Context + useModel
 
 ## 🚀 快速开始

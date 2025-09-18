@@ -2,7 +2,6 @@
 //  *  Copyright (c) Microsoft Corporation. All rights reserved.
 //  *  Licensed under the MIT License. See License.txt in the project root for license information.
 //  *--------------------------------------------------------------------------------------------*/
-// // https://github.com/l1xnan/duckling/blob/main/src/languages/duckdb/duckdb.ts
 // import { TokenClassConsts } from "../common/constants";
 // import type { languages } from "../fillers/monaco-editor-core";
 

@@ -446,13 +446,13 @@ function SessionProvider({ children }: SessionProviderProps) {
             // 生成唯一的文件名
             const generateUniqueFilename = (editors: typeof session.editors) => {
                 let counter = 1;
-                let newPath = `query-${counter}.sql`;
+                let newPath = `sql-${counter}.sql`;
                 
                 // 检查是否已存在相同名称的文件
                 const existingPaths = new Set(editors.map(editor => editor.path));
                 while (existingPaths.has(newPath)) {
                     counter++;
-                    newPath = `query-${counter}.sql`;
+                    newPath = `sql-${counter}.sql`;
                 }
                 
                 return newPath;

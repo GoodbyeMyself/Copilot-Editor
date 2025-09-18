@@ -13,7 +13,6 @@
         "@ant-design/icons": "^5.0.1",
         "@ant-design/pro-components": "^2.4.4",
         "@ant-design/x": "^1.6.1",
-        "@duckdb/duckdb-wasm": "next",
         "@hookform/resolvers": "^3.4.2",
         "@monaco-editor/react": "^4.6.0",
         "@observablehq/plot": "^0.6.14",

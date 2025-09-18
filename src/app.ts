@@ -17,13 +17,9 @@ import type { RequestConfig } from '@umijs/max';
 // request 请求拦截
 import { errorConfig } from './server/requestErrorConfig';
 
-// 导入 query-toolbar 组件
-import Toolbar from '@/components/query-toolbar';
-
 // 导入必要的 Provider
 import { SessionProvider } from '@/context/session/provider';
-import { DbProvider } from '@/context/db/provider';
-import { QueryProvider } from '@/context/query/provider';
+// 移除查询提供者
 import { EditorProvider } from '@/context/editor/provider';
 import { EditorSettingsProvider } from '@/context/editor-settings/provider';
 
@@ -75,13 +71,9 @@ export function rootContainer(container: React.ReactElement) {
         App,
         {},
         React.createElement(SessionProvider, null,
-            React.createElement(DbProvider, null,
-                React.createElement(QueryProvider, null,
-                    React.createElement(EditorProvider, null,
-                        React.createElement(EditorSettingsProvider, null,
-                            container
-                        )
-                    )
+            React.createElement(EditorProvider, null,
+                React.createElement(EditorSettingsProvider, null,
+                    container
                 )
             )
         )
@@ -103,11 +95,11 @@ export const layout = ({
         },
         // 自定义 页面 title
         pageTitleRender: () => {
-            return 'SQL Copilot';
+            return 'Copilot Editor';
         },
         // 头部右上角内容渲染
         rightContentRender: () => {
-            return React.createElement(Toolbar);
+            return null;
         },
         // 全局
         ...initialState?.settings,

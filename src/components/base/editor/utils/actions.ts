@@ -70,44 +70,43 @@ let isRegistered = false;
 export function registerEditorActions(
     monaco: Monaco,
     options: {
-        onRunQuery?: (value: string) => Promise<void>;
         copolitRef?: React.RefObject<ImperativePanelHandle>;
     } = {},
 ) {
     // 如果已经注册过，直接返回
     if (isRegistered) return;
 
-    const { onRunQuery, copolitRef } = options;
+    const { copolitRef } = options;
 
     // 验证选择
-    if (onRunQuery) {
-        monaco.editor.addEditorAction({
-            ...editorActions.validateSelection,
-            run: async (editor) => {
-                const selection = editor.getSelection();
-                const value =
-                    selection?.isEmpty() || selection == null
-                        ? editor.getValue()
-                        : editor.getModel()?.getValueInRange(selection);
-                if (!value) return;
-                await onRunQuery(value);
-            },
-        });
+    monaco.editor.addEditorAction({
+        ...editorActions.validateSelection,
+        run: async (editor) => {
+            const selection = editor.getSelection();
+            const value =
+                selection?.isEmpty() || selection == null
+                    ? editor.getValue()
+                    : editor.getModel()?.getValueInRange(selection);
+            if (!value) return;
+            // --- 校验选择 ---
+            console.log(value, '<- 打印 校验选择');
+        },
+    });
 
-        // 运行选择
-        monaco.editor.addEditorAction({
-            ...editorActions.runSelection,
-            run: (editor) => {
-                const selection = editor.getSelection();
-                const value =
-                    selection?.isEmpty() || selection == null
-                        ? editor.getValue()
-                        : editor.getModel()?.getValueInRange(selection);
-                if (!value) return;
-                onRunQuery(value ?? "");
-            },
-        });
-    }
+    // 运行选择
+    monaco.editor.addEditorAction({
+        ...editorActions.runSelection,
+        run: (editor) => {
+            const selection = editor.getSelection();
+            const value =
+                selection?.isEmpty() || selection == null
+                    ? editor.getValue()
+                    : editor.getModel()?.getValueInRange(selection);
+            if (!value) return;
+            // --- 运行选择 ---
+            console.log(value, '<- 打印 运行选择');
+        },
+    });
 
     // 转换关键字为小写
     monaco.editor.addEditorAction({

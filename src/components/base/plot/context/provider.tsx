@@ -95,7 +95,7 @@ function getOptions(data: {
 }
 
 /**
- * Context for the query results;
+ * Context for the plot results;
  *
  */
 function ChartProvider(props: ChartProviderProps) {

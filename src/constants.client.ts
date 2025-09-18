@@ -2,21 +2,9 @@
 
 export const prodDomain = "www.quackdb.com";
 
-// ----------- Query ------------ //
+// ----------- App Constants ------------ //
 
-/**
- * IndexedDB cache (accessed through idb-keyval).
- */
-export const IDB_KEYS = {
-  QUERY_HISTORY: "query-history", // the actual SQL query runs
-};
-
-/**
- * Caches API keys.
- */
-export const CACHE_KEYS = {
-  QUERY_RESULTS: "query-result", // the result of the SQL query for caching in caches.
-};
+// 移除查询相关的常量
 
 export const LOCAL_STORAGE_KEYS = {};
 

@@ -29,9 +29,7 @@ export const sqlConf: languages.LanguageConfiguration = {
 
 export { pythonConf, pythonDef } from "./python";
 
-// WIP
-// DuckDB keywords: select list(upper(keyword_name)) from duckdb_keywords();
-// DuckDB function: select list(distinct upper(function_name)) from duckdb_functions();
+// 通用 SQL 语法定义
 export const sqlDef = <languages.IMonarchLanguage>{
   defaultToken: "",
   tokenPostfix: ".sql",
@@ -561,24 +559,6 @@ export const sqlDef = <languages.IMonarchLanguage>{
     "ARROW_SCAN",
     "ARROW_SCAN_DUMB",
     "CHECKPOINT",
-    "DUCKDB_COLUMNS",
-    "DUCKDB_CONSTRAINTS",
-    "DUCKDB_DATABASES",
-    "DUCKDB_DEPENDENCIES",
-    "DUCKDB_EXTENSIONS",
-    "DUCKDB_FUNCTIONS",
-    "DUCKDB_INDEXES",
-    "DUCKDB_KEYWORDS",
-    "DUCKDB_MEMORY",
-    "DUCKDB_OPTIMIZERS",
-    "DUCKDB_SCHEMAS",
-    "DUCKDB_SECRETS",
-    "DUCKDB_SEQUENCES",
-    "DUCKDB_SETTINGS",
-    "DUCKDB_TABLES",
-    "DUCKDB_TEMPORARY_FILES",
-    "DUCKDB_TYPES",
-    "DUCKDB_VIEWS",
     "FORCE_CHECKPOINT",
     "GENERATE_SERIES",
     "GLOB",

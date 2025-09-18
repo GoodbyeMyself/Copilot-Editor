@@ -20,9 +20,6 @@ import { registerEditorActions } from "../editor/utils/actions";
 import "monaco-editor/esm/vs/basic-languages/sql/sql.contribution";
 import "monaco-editor/esm/vs/basic-languages/python/python.contribution";
 
-import { useDB } from "@/context/db/useDB";
-import { useQuery } from "@/context/query/useQuery";
-
 import { cn } from "@/lib/utils";
 
 import { type ImperativePanelHandle } from "react-resizable-panels";
@@ -49,10 +46,6 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
     const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
 
     const [isReady, setIsReady] = useState(false);
-
-    const { onRunQuery } = useQuery();
-
-    const { db } = useDB();
 
     const language = props.language ?? "sql";
 
@@ -218,7 +211,6 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
 
         // 添加右键菜单 action
         registerEditorActions(monacoRef.current, {
-            onRunQuery,
             copolitRef: props.copolitRef,
         });
 
@@ -252,7 +244,7 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
             // biome-ignore lint/complexity/noForEach: <explanation>
             disposables.forEach((disposable) => disposable.dispose());
         };
-    }, [isReady, language, onRunQuery, props.copolitRef]);
+    }, [isReady, language, props.copolitRef]);
 
     // completions - 仅对SQL语言启用数据库补全
     useEffect(() => {
@@ -260,10 +252,9 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
 
         if (!monacoRef.current) return;
         if (!isReady) return;
-        if (!db) return;
         if (language !== "sql") return;
 
-        const suggestor = new SuggestionMaker(db);
+        const suggestor = new SuggestionMaker();
 
         // register Monaco languages
         monacoRef.current.languages.register({
@@ -280,7 +271,7 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
                         model,
                         position,
                     ) {
-                        const query = model.getValue();
+                        // 移除查询相关功能
 
                         const { word, endColumn, startColumn } =
                             model.getWordUntilPosition(position);
@@ -296,7 +287,7 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
                         const { signal } = controller;
 
                         const suggestions = await suggestor.getSuggestions({
-                            query,
+                            query: "",
                             word,
                             range,
                             signal,
@@ -318,7 +309,7 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
             // biome-ignore lint/complexity/noForEach: <explanation>
             disposables.forEach((disposable) => disposable.dispose());
         };
-    }, [db, isReady, language]);
+    }, [isReady, language]);
 
     // Python completions
     useEffect(() => {
@@ -364,7 +355,7 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
 
         if (!monacoRef.current) return;
         if (!isReady) return;
-        if (!db) return;
+        // 移除数据库检查
         if (language !== "sql") return;
 
         // register Monaco languages
@@ -387,7 +378,7 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
                             startColumn: word.startColumn,
                             endColumn: word.endColumn,
                         };
-                        // select list(UPPER(type_name)) from DUCKDB_TYPES();
+                        // 通用 SQL 数据类型
                         suggestions = [
                             "BIGINT",
                             "BINARY",
@@ -553,7 +544,7 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
             // biome-ignore lint/complexity/noForEach: <explanation>
             disposables.forEach((disposable) => disposable.dispose());
         };
-    }, [db, isReady, language]);
+    }, [isReady, language]);
 
     useImperativeHandle(ref, () => {
         return {

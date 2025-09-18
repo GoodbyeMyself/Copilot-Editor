@@ -4,7 +4,7 @@ import { EditorContext } from "./context";
 // Breakup everything into smaller files because of React Fast Refresh limitations.
 
 /**
- * Hook to access the query context.
+ * Hook to access the editor context.
  */
 export function useEditor() {
     const context = useContext(EditorContext);

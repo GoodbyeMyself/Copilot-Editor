@@ -1,11 +1,8 @@
 import { matchSorter } from "match-sorter";
 import { languages, type Range } from "monaco-editor";
-import type { DuckDBInstance } from "@/modules/duckdb-singleton";
 
 /**
  * Starting words for the suggestions (when query is empty).
- *
- * Everything in the [Overview](https://duckdb.org/docs/sql/statements/overview)
  */
 const startingStmts = [
   // most common
@@ -710,24 +707,6 @@ const functions = [
   "DISABLE_VERIFY_PARALLELISM",
   "DISABLE_VERIFY_SERIALIZER",
   "DIVIDE",
-  "DUCKDB_COLUMNS",
-  "DUCKDB_CONSTRAINTS",
-  "DUCKDB_DATABASES",
-  "DUCKDB_DEPENDENCIES",
-  "DUCKDB_EXTENSIONS",
-  "DUCKDB_FUNCTIONS",
-  "DUCKDB_INDEXES",
-  "DUCKDB_KEYWORDS",
-  "DUCKDB_MEMORY",
-  "DUCKDB_OPTIMIZERS",
-  "DUCKDB_SCHEMAS",
-  "DUCKDB_SECRETS",
-  "DUCKDB_SEQUENCES",
-  "DUCKDB_SETTINGS",
-  "DUCKDB_TABLES",
-  "DUCKDB_TEMPORARY_FILES",
-  "DUCKDB_TYPES",
-  "DUCKDB_VIEWS",
   "EDITDIST3",
   "ELEMENT_AT",
   "ENABLE_CHECKPOINT_ON_SHUTDOWN",
@@ -1224,95 +1203,22 @@ const getSuggestions = (word: string) => {
 };
 
 export class SuggestionMaker {
-  #db: DuckDBInstance | null = null;
-
-  constructor(db: DuckDBInstance) {
-    this.#db = db;
-  }
-
-  dispose() {
-    // Not sure if we need to do anything here.
-    this.#db = null;
-  }
-
-  async #useAutoComplete(query: string): Promise<string[]> {
-    const escaped = query.replace(/'/g, "''");
-
-    if (!this.#db) return [];
-
-    try {
-      const results = await this.#db.fetchResults({
-        query: `SELECT suggestion FROM SQL_AUTO_COMPLETE('${escaped}');`,
-      });
-
-      return results.table
-        .toArray()
-        .map((r) => r.toJSON())
-        .map((row) => `${row.suggestion}`.toUpperCase());
-    } catch (e) {
-      console.error("Error in useAutoComplete: ", e);
-      return [];
-    }
-  }
-
   #getStaticSuggestions(word: string) {
     return getSuggestions(word);
   }
 
-  async #getMetaSuggestions(word: string) {
-    if (!this.#db) return [];
-    const tableQuery = this.#db
-      .fetchResults({
-        query: `SELECT table_name FROM duckdb_tables() WHERE table_name ILIKE '%${word}%' limit 10;`,
-      })
-      .then((res) => res.table.toArray().map((r) => r.toJSON()));
-
-    const viewQuery = this.#db
-      .fetchResults({
-        query: `SELECT view_name FROM duckdb_views() WHERE view_name ILIKE '%${word}%' limit 10;`,
-      })
-      .then((res) => res.table.toArray().map((r) => r.toJSON()));
-
-    const columnNamesQuery = this.#db
-      .fetchResults({
-        query: `SELECT column_name FROM duckdb_columns() WHERE column_name ILIKE '%${word}%' limit 10;`,
-      })
-      .then((res) => res.table.toArray().map((r) => r.toJSON()));
-
-    const [tables, views, columns] = await Promise.all([
-      tableQuery,
-      viewQuery,
-      columnNamesQuery,
-    ]);
-
-    return [
-      ...tables.map((row) => `${row.table_name}`.toUpperCase()),
-      ...views.map((row) => `${row.view_name}`.toUpperCase()),
-      ...columns.map((row) => `${row.column_name}`.toUpperCase()),
-    ];
-  }
-
   async getSuggestions({
-    query,
     word,
     range,
     signal,
-  }: GetSuggestionsInput): Promise<languages.CompletionItem[]> {
+  }: Omit<GetSuggestionsInput, 'query'>): Promise<languages.CompletionItem[]> {
     const staticSuggestions = this.#getStaticSuggestions(word);
-    const [autoSugestions, metaSuggestions] = await Promise.all([
-      this.#useAutoComplete(query),
-      this.#getMetaSuggestions(word),
-    ]);
 
     if (signal.aborted) {
       return [];
     }
 
-    const combined = [
-      ...new Set([...autoSugestions, ...metaSuggestions, ...staticSuggestions]),
-    ];
-
-    const matches = matchSorter(combined, word, {
+    const matches = matchSorter(staticSuggestions, word, {
       threshold: matchSorter.rankings.CONTAINS,
     }) as string[];
 

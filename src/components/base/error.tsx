@@ -6,7 +6,7 @@ import { AlertOctagon, ChevronDown } from "lucide-react";
 
 import { useState } from "react";
 
-import { useQuery } from "@/context/query/useQuery";
+// 移除查询上下文依赖
 
 import { cn } from "@/lib/utils";
 
@@ -27,8 +27,6 @@ const prettify = (str: string) => {
 
 export default function ErrorNotification(props: { error: string }) {
     const [isOpen, setIsOpen] = useState(false);
-
-    const { meta } = useQuery();
 
     const error = prettify(props.error);
 
@@ -62,19 +60,9 @@ export default function ErrorNotification(props: { error: string }) {
 
                         {isOpen && (
                             <motion.div className="flex flex-col gap-2">
-                                {Object.entries(meta ?? {}).map(([key, value]) => (
-                                    <div
-                                        key={key}
-                                        className="flex flex-col gap-1"
-                                    >
-                                        <span className="text-xs font-semibold opacity-60">{key}</span>
-                                        <span className="whitespace-pre font-mono text-sm">
-                                            {typeof value === "string"
-                                                ? prettify(value)
-                                                : JSON.stringify(value, null, 2)}
-                                        </span>
-                                    </div>
-                                ))}
+                                <div className="text-xs text-muted-foreground">
+                                    详细信息已移除
+                                </div>
                             </motion.div>
                         )}
                     </ScrollArea>
