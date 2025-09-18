@@ -114,26 +114,194 @@ const addActionWithSubmenus = (
 
 /**
  * 初始化并增强传入编辑器实例的上下文菜单。
- * 当前示例：注入“Change color”子菜单，包含 Red / Green 两个 action。
+ * 集成所有编辑器功能到统一的右键菜单系统中。
  */
-export const setupContextMenuFeature = (editor: editor.IStandaloneCodeEditor) => {
+export const setupContextMenuFeature = (
+    editor: editor.IStandaloneCodeEditor,
+    options: {
+        copolitRef?: React.RefObject<any>;
+    } = {}
+) => {
+    const { copolitRef } = options;
+    
     // removeAllMenus(); // 若需彻底移除默认菜单，仅保留自定义菜单，可启用此行（谨慎使用）
 
+    // 基础编辑功能子菜单
     addActionWithSubmenus(editor, {
-        id: 'Copolit',
-        title: 'Copolit',
-        contextMenuGroupId: '0_Copolit',
+        id: 'EditorActions',
+        title: '编辑操作',
+        contextMenuGroupId: '0_EditorActions',
         contextMenuOrder: 0,
         actions: [
             {
-                id: 'red',
-                label: 'Red',
-                run: () => console.log('red'),
+                id: 'convert-to-lowercase',
+                label: '转换关键字为小写',
+                run: (editor) => {
+                    const selection = editor.getSelection();
+                    if (!selection || selection.isEmpty()) return;
+                    const value = editor.getModel()?.getValueInRange(selection);
+                    if (!value) return;
+                    editor.executeEdits("", [
+                        {
+                            range: selection,
+                            text: value.toLowerCase(),
+                            forceMoveMarkers: true,
+                        },
+                    ]);
+                },
             },
             {
-                id: 'green',
-                label: 'Green',
-                run: () => console.log('green'),
+                id: 'convert-to-uppercase',
+                label: '转换关键字为大写',
+                run: (editor) => {
+                    const selection = editor.getSelection();
+                    if (!selection || selection.isEmpty()) return;
+                    const value = editor.getModel()?.getValueInRange(selection);
+                    if (!value) return;
+                    editor.executeEdits("", [
+                        {
+                            range: selection,
+                            text: value.toUpperCase(),
+                            forceMoveMarkers: true,
+                        },
+                    ]);
+                },
+            },
+            {
+                id: 'Generate-annotations',
+                label: '生成注释',
+                run: (editor) => {
+                    const selection = editor.getSelection();
+                    if (!selection || selection.isEmpty()) return;
+
+                    const selectedText = editor.getModel()?.getValueInRange(selection);
+                    if (!selectedText) return;
+
+                    // 生成随机注释
+                    const randomComment = '随机注释';
+
+                    // 在选中文本前插入注释
+                    const commentText = `-- ${randomComment}\n${selectedText}`;
+
+                    editor.executeEdits("", [
+                        {
+                            range: selection,
+                            text: commentText,
+                            forceMoveMarkers: true,
+                        },
+                    ]);
+                },
+            },
+        ],
+    });
+
+    // SQL 执行功能子菜单
+    addActionWithSubmenus(editor, {
+        id: 'SQLExecution',
+        title: 'SQL 执行',
+        contextMenuGroupId: '1_SQLExecution',
+        contextMenuOrder: 1,
+        actions: [
+            {
+                id: 'validate-selection',
+                label: '校验选择',
+                run: async (editor) => {
+                    const selection = editor.getSelection();
+                    const value =
+                        selection?.isEmpty() || selection === null
+                            ? editor.getValue()
+                            : editor.getModel()?.getValueInRange(selection);
+                    if (!value) return;
+                    // --- 校验选择 ---
+                    console.log(value, '<- 打印 校验选择');
+                },
+            },
+            {
+                id: 'run-selection',
+                label: '运行选择',
+                run: (editor) => {
+                    const selection = editor.getSelection();
+                    const value =
+                        selection?.isEmpty() || selection === null
+                            ? editor.getValue()
+                            : editor.getModel()?.getValueInRange(selection);
+                    if (!value) return;
+                    // --- 运行选择 ---
+                    console.log(value, '<- 打印 运行选择');
+                },
+            },
+        ],
+    });
+
+    // Copilot AI 功能子菜单
+    addActionWithSubmenus(editor, {
+        id: 'Copolit',
+        title: 'Copolit AI',
+        contextMenuGroupId: '2_Copolit',
+        contextMenuOrder: 2,
+        actions: [
+            {
+                id: 'Generate-SQL',
+                label: 'SQL 生成',
+                run: (editor) => {
+                    const selection = editor.getSelection();
+                    const selectedText =
+                        selection?.isEmpty() || selection === null
+                            ? editor.getValue()
+                            : editor.getModel()?.getValueInRange(selection);
+
+                    if (copolitRef?.current?.isCollapsed()) {
+                        copolitRef.current?.expand();
+                        copolitRef.current?.resize(20);
+                    }
+
+                    const event = new CustomEvent("copolit-text-selected", {
+                        detail: { text: selectedText, action: "generate-sql" },
+                    });
+                    window.dispatchEvent(event);
+                },
+            },
+            {
+                id: 'SQL-Error-Correction',
+                label: 'SQL 纠错',
+                run: (editor) => {
+                    const selection = editor.getSelection();
+                    const selectedText =
+                        selection?.isEmpty() || selection === null
+                            ? editor.getValue()
+                            : editor.getModel()?.getValueInRange(selection);
+
+                    if (copolitRef?.current?.isCollapsed()) {
+                        copolitRef.current?.expand();
+                        copolitRef.current?.resize(20);
+                    }
+
+                    const event = new CustomEvent("copolit-text-selected", {
+                        detail: { text: selectedText, action: "sql-error-correction" },
+                    });
+                    window.dispatchEvent(event);
+                },
+            },
+            {
+                id: 'SQL-Rewriting',
+                label: 'SQL 改写',
+                run: (editor) => {
+                    const selection = editor.getSelection();
+                    const selectedText =
+                        selection?.isEmpty() || selection === null
+                            ? editor.getValue()
+                            : editor.getModel()?.getValueInRange(selection);
+
+                    if (copolitRef?.current?.isCollapsed()) {
+                        copolitRef.current?.expand();
+                        copolitRef.current?.resize(20);
+                    }
+
+                    const event = new CustomEvent("copolit-text-selected", {
+                        detail: { text: selectedText, action: "sql-rewriting" },
+                    });
+                    window.dispatchEvent(event);
+                },
             },
         ],
     });

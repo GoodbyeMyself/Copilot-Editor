@@ -32,7 +32,9 @@ const HelperPage: React.FC = () => {
         });
         editorRef.current = editor;
 
-        setupContextMenuFeature(editor);
+        setupContextMenuFeature(editor, {
+            copolitRef: copilotRef,
+        });
 
         return () => {
             editorRef.current?.dispose();

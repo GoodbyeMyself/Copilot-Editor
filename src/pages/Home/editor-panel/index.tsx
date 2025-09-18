@@ -1,4 +1,4 @@
-import type { OnChange } from "@monaco-editor/react";
+// 移除 @monaco-editor/react 的 OnChange 类型，使用自定义类型
 
 // 移除拖拽手柄图标导入
 
@@ -46,9 +46,9 @@ function CurrentEditor({ copolitRef }: EditorPanelProps) {
 
     const path = currentEditor?.path;
 
-    const onChangeHandler: OnChange = useCallback(
-        (value) => {
-            setSql(value ?? "");
+    const onChangeHandler = useCallback(
+        (value: string) => {
+            setSql(value);
 
             if (!dispatch || !path) return;
 
@@ -56,7 +56,7 @@ function CurrentEditor({ copolitRef }: EditorPanelProps) {
                 type: "UPDATE_EDITOR",
                 payload: {
                     path,
-                    content: value ?? "",
+                    content: value,
                 },
             });
         },
@@ -216,12 +216,6 @@ function CurrentEditor({ copolitRef }: EditorPanelProps) {
                 ref={editorRef}
                 onChange={onChangeHandler}
                 className="h-full border-t-0"
-                options={{
-                    padding: {
-                        top: 10,
-                        bottom: 16,
-                    },
-                }}
                 copolitRef={copolitRef}
             />
             {showLoader && (
