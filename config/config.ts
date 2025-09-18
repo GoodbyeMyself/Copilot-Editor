@@ -1,6 +1,6 @@
 import { defineConfig } from "@umijs/max";
+import MonacoWebpackPlugin from "monaco-editor-webpack-plugin";
 
-import path from "path";
 import { execSync } from "child_process";
 
 // 时间戳 标记当前版本更新时间
@@ -33,6 +33,53 @@ export default defineConfig({
     request: {},
     layout: {
         title: "Copilot Editor",
+    },
+    // 配置 webpack
+    chainWebpack(config: any) {
+        // 添加 Monaco Editor webpack 插件
+        config.plugin('monaco-editor').use(MonacoWebpackPlugin, [{
+            // 只包含需要的语言
+            languages: ['sql', 'python', 'javascript', 'typescript', 'json', 'css', 'html'],
+            // 只包含需要的功能
+            features: [
+                'coreCommands',
+                'find',
+                'format',
+                'suggest',
+                'wordHighlighter',
+                'folding',
+                'bracketMatching',
+                'wordOperations',
+                'indentation',
+                'contextmenu',
+                'clipboard',
+                'colorPicker',
+                'fontZoom',
+                'goToLine',
+                'multicursor',
+                'quickCommand',
+                'quickOutline',
+                'referenceSearch',
+                'toggleHighContrast',
+                'toggleTabFocusMode',
+                'transpose',
+                'wordHighlighter',
+                'codelens',
+                'colorDetector',
+                'lightbulb',
+                'links',
+                'parameterHints',
+                'rename',
+                'smartSelect',
+                'suggest',
+                'toggleHighContrast',
+                'toggleTabFocusMode',
+                'transpose',
+                'wordHighlighter',
+                'wordOperations',
+                'wordPartOperations'
+            ]
+        }]);
     },
     /**
      * @name 路由的配置，不在路由中引入的文件不会编译

@@ -24,6 +24,30 @@ import { setupContextMenuFeature } from '@/components/base/editor/utils/setupCon
 
 // 右键菜单功能已集成到 setupContextMenuFeature 中
 
+// 配置 Monaco Editor 的 web worker 环境
+// 使用 getWorkerUrl 方式配置 worker 文件路径
+if (typeof window !== 'undefined') {
+    // @ts-ignore
+    self.MonacoEnvironment = {
+        getWorkerUrl: function (moduleId: string, label: string) {
+            // 使用相对路径指向构建后的worker文件
+            if (label === 'json') {
+                return './json.worker.js';
+            }
+            if (label === 'css' || label === 'scss' || label === 'less') {
+                return './css.worker.js';
+            }
+            if (label === 'html' || label === 'handlebars' || label === 'razor') {
+                return './html.worker.js';
+            }
+            if (label === 'typescript' || label === 'javascript') {
+                return './ts.worker.js';
+            }
+            return './editor.worker.js';
+        }
+    };
+}
+
 // 导入 Monaco Editor 的语言支持
 import "monaco-editor/esm/vs/basic-languages/sql/sql.contribution";
 import "monaco-editor/esm/vs/basic-languages/python/python.contribution";
