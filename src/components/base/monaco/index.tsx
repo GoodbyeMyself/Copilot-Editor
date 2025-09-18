@@ -54,7 +54,9 @@ import "monaco-editor/esm/vs/basic-languages/python/python.contribution";
 
 import { cn } from "@/lib/utils";
 
-import { type ImperativePanelHandle } from "react-resizable-panels";
+import { Panel, PanelGroup, type ImperativePanelHandle } from "react-resizable-panels";
+import PanelHandle from "@/components/base/panel-handle";
+import DebugConsole from "./parts/debug-console";
 import { formatSQL } from "@/utils/sql_fmt";
 import { formatPython } from "@/utils/python_fmt";
 
@@ -98,6 +100,7 @@ export type EditorForwardedRef = {
 const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
     // 编辑器容器引用
     const editorContainerRef = useRef<HTMLDivElement | null>(null);
+    const consolePanelRef = useRef<ImperativePanelHandle | null>(null);
     
     // 编辑器实例引用
     const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
@@ -204,6 +207,13 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
         // 设置右键菜单功能
         setupContextMenuFeature(editor, {
             copolitRef: props.copolitRef,
+            onOpenConsole: () => {
+                // 展开并设置一个合适高度
+                try {
+                    consolePanelRef.current?.expand();
+                    consolePanelRef.current?.resize(25);
+                } catch {}
+            },
         });
 
         // 标记编辑器已准备就绪
@@ -759,10 +769,27 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
      * 渲染 Monaco Editor 组件
      */
     return (
-        <div
-            ref={editorContainerRef}
-            className={cn(props.className)}
-        />
+        <div className={cn(props.className, "flex h-full w-full flex-col")}>
+            <PanelGroup direction="vertical" className="h-full w-full" autoSaveId="_monaco-with-console">
+                <Panel minSize={20} className="h-full max-h-full">
+                    <div ref={editorContainerRef} className="h-full w-full" />
+                </Panel>
+                <PanelHandle />
+                <Panel
+                    ref={consolePanelRef}
+                    defaultSize={20}
+                    minSize={10}
+                    maxSize={60}
+                    collapsible
+                    collapsedSize={0}
+                    className="max-h-full"
+                >
+                    <DebugConsole onClose={() => {
+                        consolePanelRef.current?.collapse();
+                    }} />
+                </Panel>
+            </PanelGroup>
+        </div>
     );
 });
 

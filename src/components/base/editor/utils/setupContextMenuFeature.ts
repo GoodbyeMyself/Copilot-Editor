@@ -160,9 +160,10 @@ export const setupContextMenuFeature = (
     editor: editor.IStandaloneCodeEditor,
     options: {
         copolitRef?: React.RefObject<any>;
+        onOpenConsole?: () => void;
     } = {}
 ) => {
-    const { copolitRef } = options;
+    const { copolitRef, onOpenConsole } = options;
     
     // removeAllMenus(); // 若需彻底移除默认菜单，仅保留自定义菜单，可启用此行（谨慎使用）
 
@@ -243,8 +244,8 @@ export const setupContextMenuFeature = (
         contextMenuOrder: 1,
         actions: [
             {
-                id: 'Generate-SQL',
-                label: 'SQL 生成',
+                id: 'Generate-Code',
+                label: '代码生成',
                 run: (editor) => {
                     const selection = editor.getSelection();
                     const selectedText =
@@ -264,8 +265,8 @@ export const setupContextMenuFeature = (
                 },
             },
             {
-                id: 'SQL-Error-Correction',
-                label: 'SQL 纠错',
+                id: 'Code-Error-Correction',
+                label: '代码纠错',
                 run: (editor) => {
                     const selection = editor.getSelection();
                     const selectedText =
@@ -285,8 +286,8 @@ export const setupContextMenuFeature = (
                 },
             },
             {
-                id: 'SQL-Rewriting',
-                label: 'SQL 改写',
+                id: 'Code-Rewriting',
+                label: '代码改写',
                 run: (editor) => {
                     const selection = editor.getSelection();
                     const selectedText =
@@ -311,7 +312,7 @@ export const setupContextMenuFeature = (
     // SQL 执行功能子菜单
     addActionWithSubmenus(editor, {
         id: 'SQLExecution',
-        title: 'SQL 执行',
+        title: '代码执行',
         contextMenuGroupId: '3_SQLExecution',
         contextMenuOrder: 1,
         actions: [
@@ -353,6 +354,8 @@ export const setupContextMenuFeature = (
         contextMenuGroupId: '00_RunCode',
         contextMenuOrder: 0,
         run: (editor) => {
+            // 打开调试控制台
+            try { onOpenConsole?.(); } catch {}
             const selection = editor.getSelection();
             const value =
                 selection?.isEmpty() || selection === null
