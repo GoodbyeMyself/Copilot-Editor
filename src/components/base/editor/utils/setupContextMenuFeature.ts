@@ -170,8 +170,8 @@ export const setupContextMenuFeature = (
     addActionWithSubmenus(editor, {
         id: 'EditorActions',
         title: '编辑操作',
-        contextMenuGroupId: '0_EditorActions',
-        contextMenuOrder: 0,
+        contextMenuGroupId: '1_EditorActions',
+        contextMenuOrder: 1,
         actions: [
             {
                 id: 'convert-to-lowercase',
@@ -235,50 +235,12 @@ export const setupContextMenuFeature = (
         ],
     });
 
-    // SQL 执行功能子菜单
-    addActionWithSubmenus(editor, {
-        id: 'SQLExecution',
-        title: 'SQL 执行',
-        contextMenuGroupId: '1_SQLExecution',
-        contextMenuOrder: 1,
-        actions: [
-            {
-                id: 'validate-selection',
-                label: '校验选择',
-                run: async (editor) => {
-                    const selection = editor.getSelection();
-                    const value =
-                        selection?.isEmpty() || selection === null
-                            ? editor.getValue()
-                            : editor.getModel()?.getValueInRange(selection);
-                    if (!value) return;
-                    // --- 校验选择 ---
-                    console.log(value, '<- 打印 校验选择');
-                },
-            },
-            {
-                id: 'run-selection',
-                label: '运行选择',
-                run: (editor) => {
-                    const selection = editor.getSelection();
-                    const value =
-                        selection?.isEmpty() || selection === null
-                            ? editor.getValue()
-                            : editor.getModel()?.getValueInRange(selection);
-                    if (!value) return;
-                    // --- 运行选择 ---
-                    console.log(value, '<- 打印 运行选择');
-                },
-            },
-        ],
-    });
-
     // Copilot AI 功能子菜单
     addActionWithSubmenus(editor, {
         id: 'Copolit',
         title: 'Copolit AI',
-        contextMenuGroupId: '2_Copolit',
-        contextMenuOrder: 2,
+        contextMenuGroupId: '2_EditorActions',
+        contextMenuOrder: 1,
         actions: [
             {
                 id: 'Generate-SQL',
@@ -344,6 +306,79 @@ export const setupContextMenuFeature = (
                 },
             },
         ],
+    });
+
+    // SQL 执行功能子菜单
+    addActionWithSubmenus(editor, {
+        id: 'SQLExecution',
+        title: 'SQL 执行',
+        contextMenuGroupId: '3_SQLExecution',
+        contextMenuOrder: 1,
+        actions: [
+            {
+                id: 'validate-selection',
+                label: '校验选择',
+                run: async (editor) => {
+                    const selection = editor.getSelection();
+                    const value =
+                        selection?.isEmpty() || selection === null
+                            ? editor.getValue()
+                            : editor.getModel()?.getValueInRange(selection);
+                    if (!value) return;
+                    // --- 校验选择 ---
+                    console.log(value, '<- 打印 校验选择');
+                },
+            },
+            {
+                id: 'run-selection',
+                label: '运行选择',
+                run: (editor) => {
+                    const selection = editor.getSelection();
+                    const value =
+                        selection?.isEmpty() || selection === null
+                            ? editor.getValue()
+                            : editor.getModel()?.getValueInRange(selection);
+                    if (!value) return;
+                    // --- 运行选择 ---
+                    console.log(value, '<- 打印 运行选择');
+                },
+            },
+        ],
+    });
+
+    // 顶级菜单项：Run Code（若有选区则输出选中内容，否则输出全文）
+    editor.addAction({
+        id: 'run-code',
+        label: 'Run Code',
+        contextMenuGroupId: '00_RunCode',
+        contextMenuOrder: 0,
+        run: (editor) => {
+            const selection = editor.getSelection();
+            const value =
+                selection?.isEmpty() || selection === null
+                    ? editor.getValue()
+                    : editor.getModel()?.getValueInRange(selection);
+            if (!value) return;
+            console.log(value, '<- 打印 Run Code');
+        },
+    });
+
+    // 顶级菜单项：Add symbol to new Chat（打开右侧对话区域）
+    editor.addAction({
+        id: 'open-new-chat',
+        label: 'Add symbol to new Chat',
+        contextMenuGroupId: '00_RunCode',
+        contextMenuOrder: 1,
+        run: () => {
+            if (copolitRef?.current?.isCollapsed()) {
+                copolitRef.current?.expand();
+                copolitRef.current?.resize(20);
+            }
+            const event = new CustomEvent("copolit-text-selected", {
+                detail: { text: '', action: 'open-new-chat' },
+            });
+            window.dispatchEvent(event);
+        },
     });
 };
 
