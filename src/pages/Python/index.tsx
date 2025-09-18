@@ -1,6 +1,6 @@
 import { PageContainer } from '@ant-design/pro-components';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
     Panel,
     PanelGroup,
@@ -11,36 +11,28 @@ import PanelHandle from '@/components/base/panel-handle';
 import './styles.less';
 import { Copilot } from '@/pages/Helper/components';
 
-import * as monaco from 'monaco-editor';
-import { setupContextMenuFeature } from '@/components/base/editor/utils/setupContextMenuFeature';
+import Editor from '@/components/base/monaco';
 
 const HelperPage: React.FC = () => {
 
     // ==================== State =================
     const [copilotOpen, setCopilotOpen] = useState(false);
+
+    const [editorValue, setEditorValue] = useState(['def hello_world():', '    print("Hello, World!")', '    return "Python is awesome!"'].join('\n'));
+    
     const copilotRef = useRef<ImperativePanelHandle>(null);
-    const editorContainerRef = useRef<HTMLDivElement | null>(null);
-    const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
+    
+    const editorRef = useRef<any>(null);
 
-    useEffect(() => {
-        const container = editorContainerRef.current;
-        if (!container) return;
+    // 编辑器内容变化处理函数
+    const handleEditorChange = (value: string) => {
+        setEditorValue(value);
+    };
 
-        const editor = monaco.editor.create(container, {
-            value: ['function x() {', '\tconsole.log("Hello world!");', '}'].join('\n'),
-            language: 'typescript'
-        });
-        editorRef.current = editor;
-
-        setupContextMenuFeature(editor, {
-            copolitRef: copilotRef,
-        });
-
-        return () => {
-            editorRef.current?.dispose();
-            editorRef.current = null;
-        };
-    }, []);
+    // 编辑器保存处理函数
+    const handleEditorSave = async (editor: any) => {
+        console.log('保存编辑器内容:', editor.getValue());
+    };
 
     return (
         <PageContainer
@@ -78,7 +70,15 @@ const HelperPage: React.FC = () => {
                                 className={`helper-workarea-body ${!copilotOpen ? 'helper-workarea-body--collapsed' : ''}`}
                             >
                                 <div className="helper-body-content">
-                                    <div id="editor" ref={editorContainerRef}></div>
+                                    <Editor
+                                        value={editorValue}
+                                        onChange={handleEditorChange}
+                                        onSave={handleEditorSave}
+                                        language="python"
+                                        ref={editorRef}
+                                        copolitRef={copilotRef}
+                                        className="h-full"
+                                    />
                                 </div>
                             </div>
                         </div>
