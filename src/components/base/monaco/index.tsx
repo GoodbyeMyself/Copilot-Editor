@@ -56,6 +56,7 @@ import { cn } from "@/lib/utils";
 
 import { type ImperativePanelHandle } from "react-resizable-panels";
 import { formatSQL } from "@/utils/sql_fmt";
+import { formatPython } from "@/utils/python_fmt";
 
 // 导入代码补全相关模块
 import { SuggestionMaker } from "./suggestions";
@@ -284,6 +285,61 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
         return () => {
             // biome-ignore lint/complexity/noForEach: <explanation>
             disposables.forEach((disposable) => disposable.dispose());
+        };
+    }, [isReady, language]);
+
+    /**
+     * Python 代码格式化功能
+     * 提供全文档格式化和选中区域格式化（基础实现：规范换行与去除尾随空白）
+     */
+    useEffect(() => {
+        const disposables: IDisposable[] = [];
+
+        // 前置条件检查
+        if (!editorRef.current) return;
+        if (!isReady) return;
+        if (language !== "python") return;
+
+        // 注册全文档格式化提供者
+        disposables.push(
+            monaco.languages.registerDocumentFormattingEditProvider(
+                "python",
+                {
+                    async provideDocumentFormattingEdits(model) {
+                        const formatted = await formatPython(model.getValue());
+                        return [
+                            {
+                                range: model.getFullModelRange(),
+                                text: formatted,
+                            },
+                        ];
+                    },
+                },
+            ),
+        );
+
+        // 注册选中区域格式化提供者
+        disposables.push(
+            monaco.languages.registerDocumentRangeFormattingEditProvider(
+                "python",
+                {
+                    async provideDocumentRangeFormattingEdits(model, range) {
+                        const formatted = await formatPython(
+                            model.getValueInRange(range),
+                        );
+                        return [
+                            {
+                                range,
+                                text: formatted,
+                            },
+                        ];
+                    },
+                },
+            ),
+        );
+
+        return () => {
+            disposables.forEach((d) => d.dispose());
         };
     }, [isReady, language]);
 
