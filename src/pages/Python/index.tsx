@@ -1,11 +1,10 @@
-import { PageContainer } from '@ant-design/pro-components';
-
 import React, { useRef, useState } from 'react';
 import {
     Panel,
     PanelGroup,
     type ImperativePanelHandle,
 } from 'react-resizable-panels';
+
 import PanelHandle from '@/components/base/panel-handle';
 
 import './styles.less';
@@ -13,6 +12,8 @@ import { Copilot } from '@/pages/Helper/components';
 
 import Editor from '@/components/base/monaco';
 import PYTHON_EXCEL_SAMPLE from './sample-code';
+
+import { cn } from "@/lib/utils";
 
 const HelperPage: React.FC = () => {
 
@@ -36,37 +37,14 @@ const HelperPage: React.FC = () => {
     };
 
     return (
-        <PageContainer
-            ghost
-        >
+        <div className={cn(
+            "python-container"
+        )}>
             <div className="helper-copilot-wrapper">
                 <PanelGroup direction="horizontal" className="helper-panel-group rounded-none">
                     <Panel minSize={15} className="h-full max-h-full">
                         {/** 左侧工作区 */}
                         <div className="helper-workarea helper-panel">
-                            <div className="helper-workarea-header">
-                                <div className="helper-workarea-header-title">
-                                    <img
-                                        src="https://mdn.alipayobjects.com/huamei_iwk9zp/afts/img/A*eco6RrQhxbMAAAAAAAAAAAAADgCCAQ/original"
-                                        draggable={false}
-                                        alt="logo"
-                                        width={20}
-                                        height={20}
-                                    />
-                                    Python 编辑器
-                                </div>
-                                {!copilotOpen && (
-                                    <div
-                                        onClick={() => {
-                                            copilotRef.current?.expand();
-                                            setCopilotOpen(true);
-                                        }}
-                                        className="helper-workarea-header-button"
-                                    >
-                                        ✨ AI Copilot
-                                    </div>
-                                )}
-                            </div>
                             <div
                                 className={`helper-workarea-body ${!copilotOpen ? 'helper-workarea-body--collapsed' : ''}`}
                             >
@@ -105,7 +83,7 @@ const HelperPage: React.FC = () => {
                     </Panel>
                 </PanelGroup>
             </div>
-        </PageContainer>
+        </div>
     );
 };
 

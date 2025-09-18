@@ -110,7 +110,7 @@
 /* Workarea 样式 */
 .helper-copilot-wrapper {
     min-width: 1000px;
-    height: 80vh;
+    height: 100%;
     display: flex;
     overflow: hidden;
     border: 1px solid #eee;
@@ -187,7 +187,6 @@
 .helper-body-content {
     overflow: auto;
     height: 100%;
-    padding-right: 10px;
     background: #ffffff;
     #editor {
         height: 100%;
@@ -212,4 +211,9 @@
     white-space: pre-line;
     word-wrap: break-word;
     word-break: break-word;
+}
+
+.python-container {
+    height: calc(100vh - 58px);
+    padding: 12px;
 }
