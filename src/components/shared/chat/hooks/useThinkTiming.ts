@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { calculateThinkDuration } from '../utils';
+import { CloudFog } from 'lucide-react';
 
 /**
  * 思考时间管理 Hook
@@ -28,7 +29,11 @@ export const useThinkTiming = () => {
     const calculateAndRecordDuration = (messageKey: string, metaDuration?: number): number => {
         // 如果已经有记录的用时，直接返回
         if (thinkDurationRef.current.has(messageKey)) {
-            return thinkDurationRef.current.get(messageKey) || 0;
+            // 优先使用元数据中的用时
+            if (typeof metaDuration === 'number') {
+                thinkDurationRef.current.set(messageKey, metaDuration);
+                return metaDuration;
+            }
         }
 
         // 优先使用元数据中的用时

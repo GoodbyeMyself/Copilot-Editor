@@ -110,7 +110,9 @@ const BaseChatList: React.FC<BaseChatListComponentProps> = ({
 
         // 计算思考用时
         const metaDuration = (message?.message as any)?.meta?.durationSec as number | undefined;
+
         const durationSec = calculateAndRecordDuration(msgKey, metaDuration);
+
         const chainTitle = showLoadingChain ? '思考中...' : `已深度思考（用时 ${durationSec} 秒）`;
 
         const contentNode = (
