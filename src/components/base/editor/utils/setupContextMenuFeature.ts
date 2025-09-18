@@ -93,8 +93,6 @@ const addActionWithSubmenus = (
             .getSupportedActions()
             .find(a => a.label === action.label && a.id.endsWith(action.id))!.id;
 
-        console.log(actionId, '<- 打印 xxx');
-
         // 3) 从默认 EditorContext 菜单中弹出该 action 对应菜单项，塞到子菜单链表
         const items = MenuRegistry._menuItems.get(MenuId.EditorContext) as LinkedList;
         const item = popItem(items, actionId);
