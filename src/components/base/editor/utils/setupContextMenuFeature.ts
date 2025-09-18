@@ -18,6 +18,9 @@ import { LinkedList } from 'monaco-editor/esm/vs/base/common/linkedList';
 // @ts-ignore
 import { MenuId, MenuRegistry } from 'monaco-editor/esm/vs/platform/actions/common/actions';
 
+// 以模块级缓存复用相同标识的 MenuId，避免重复构造导致冲突
+const SUBMENU_MENU_ID_CACHE: Map<string, any> = new Map();
+
 /**
  * 从指定链表中移除并返回 command.id 匹配的菜单项。
  *
@@ -35,6 +38,24 @@ function popItem(items: LinkedList, id: string): any {
         }
         node = node.next;
     } while (node !== undefined);
+}
+
+/**
+ * 判断 EditorContext 是否已包含指定 submenu 的入口，避免重复添加
+ */
+function editorContextHasSubmenu(submenu: any): boolean {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore 内部 API：_menuItems
+    const contextMenuEntry: LinkedList = MenuRegistry._menuItems.get(MenuId.EditorContext);
+    if (!contextMenuEntry) return false;
+    let node: any = contextMenuEntry._first;
+    do {
+        if (node?.element?.submenu === submenu) {
+            return true;
+        }
+        node = node?.next;
+    } while (node !== undefined);
+    return false;
 }
 
 // function removeAllMenus() {
@@ -73,10 +94,21 @@ const addActionWithSubmenus = (
         actions: { run: (editor: editor.IStandaloneCodeEditor) => void; label: string; id: string }[];
     }
 ) => {
-    // 为子菜单创建唯一的 MenuId，并准备其承载项的链表结构
-    const submenu = new MenuId(descriptor.contextMenuGroupId);
-    const list = new LinkedList();
-    MenuRegistry._menuItems.set(submenu, list);
+    // 为子菜单获取（或创建）唯一的 MenuId，并准备其承载项的链表结构
+    let submenu = SUBMENU_MENU_ID_CACHE.get(descriptor.contextMenuGroupId);
+    if (!submenu) {
+        submenu = new MenuId(descriptor.contextMenuGroupId);
+        SUBMENU_MENU_ID_CACHE.set(descriptor.contextMenuGroupId, submenu);
+    }
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore 内部 API：_menuItems
+    let list = MenuRegistry._menuItems.get(submenu);
+    if (!list) {
+        list = new LinkedList();
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore 内部 API：_menuItems
+        MenuRegistry._menuItems.set(submenu, list);
+    }
 
     for (let i = 0; i < descriptor.actions.length; i++) {
         const action = descriptor.actions[i];
@@ -102,12 +134,22 @@ const addActionWithSubmenus = (
     }
 
     // 4) 将子菜单挂载到 EditorContext，使其以分组、排序的方式展示在右键菜单中
-    MenuRegistry._menuItems.get(MenuId.EditorContext).push({
-        group: descriptor.contextMenuGroupId,
-        order: descriptor.contextMenuOrder,
-        submenu: submenu,
-        title: descriptor.title,
-    });
+    //    若已存在同一 submenu，则避免重复插入
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore 内部 API：_menuItems
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore 类型不公开，按 any 处理
+    const editorContextList: LinkedList = MenuRegistry._menuItems.get(MenuId.EditorContext);
+    if (!editorContextHasSubmenu(submenu)) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore 内部结构：允许带 group/order/submenu/title 的元素
+        editorContextList.push({
+            group: descriptor.contextMenuGroupId,
+            order: descriptor.contextMenuOrder,
+            submenu: submenu,
+            title: descriptor.title,
+        } as any);
+    }
 };
 
 /**
