@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     Panel,
     PanelGroup,
@@ -11,6 +11,8 @@ import './styles.less';
 import { Copilot } from '@/pages/Helper/components';
 
 import Editor from '@/components/base/monaco';
+
+// --------- 样例代码 ---------
 import PYTHON_EXCEL_SAMPLE from './sample-code';
 
 import { cn } from "@/lib/utils";
@@ -20,7 +22,7 @@ const HelperPage: React.FC = () => {
     // ==================== State =================
     const [copilotOpen, setCopilotOpen] = useState(false);
 
-    const [editorValue, setEditorValue] = useState(PYTHON_EXCEL_SAMPLE);
+    const [editorValue, setEditorValue] = useState('');
     
     const copilotRef = useRef<ImperativePanelHandle>(null);
     
@@ -35,6 +37,10 @@ const HelperPage: React.FC = () => {
     const handleEditorSave = async (editor: any) => {
         console.log('保存编辑器内容:', editor.getValue());
     };
+
+    useEffect(() => {
+        setEditorValue(PYTHON_EXCEL_SAMPLE);
+    }, []);
 
     return (
         <div className={cn(
