@@ -17,8 +17,7 @@ import { BaseChatListProps, StatusType } from '../types';
 import { parseThinkContent, generateMessageKey, hasCancelMark, splitCancelContent } from '../utils';
 import { useThinkTiming } from '../hooks/useThinkTiming';
 
-import Markdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import MarkdownRenderer from '@/components/base/MarkdownRenderer';
 
 // ThoughtChain 组件类型兜底
 const ThoughtChain: any = AntThoughtChain as any;
@@ -83,15 +82,15 @@ const BaseChatList: React.FC<BaseChatListComponentProps> = ({
 
     const renderCancelContent = (content: string) => {
         if (!hasCancelMark(content)) {
-            return <Markdown remarkPlugins={[remarkGfm]}>{content}</Markdown>;
+            return <MarkdownRenderer>{content}</MarkdownRenderer>;
         }
 
         const parts = splitCancelContent(content);
         return (
             <>
-                <Markdown remarkPlugins={[remarkGfm]}>{parts[0]}</Markdown>
+                <MarkdownRenderer>{parts[0]}</MarkdownRenderer>
                 <div className={cancelledLabelClassName}>--- [请求已取消] ---</div>
-                <Markdown remarkPlugins={[remarkGfm]}>{parts.slice(1).join('--- [请求已取消] ---')}</Markdown>
+                <MarkdownRenderer>{parts.slice(1).join('--- [请求已取消] ---')}</MarkdownRenderer>
             </>
         );
     };

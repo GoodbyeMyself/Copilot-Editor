@@ -57,6 +57,11 @@
     word-wrap: break-word;
 }
 
+/* 让助手角色的内容容器占满宽度 */
+.ant-bubble[role="assistant"] .ant-bubble-content-filled {
+    width: 100%;
+}
+
 /* --- code block enhancements --- */
 .code-block {
     position: relative;
@@ -194,6 +199,8 @@
         .ant-thought-chain-item-content-box {
             margin-bottom: 12px;
             white-space: pre-line;
+            max-height: 240px;
+            overflow-y: auto;
         }
     }
 }

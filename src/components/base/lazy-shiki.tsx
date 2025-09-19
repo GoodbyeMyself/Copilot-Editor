@@ -19,11 +19,49 @@ const createHighlighter = async (
     try {
         if (!shiki) shiki = await getHighlighter();
 
-        const html = shiki.codeToHtml(props.text, {
+        let html = shiki.codeToHtml(props.text, {
             lang: props.lang,
-            theme: props.isDark ? "vitesse-dark" : "github-light",
+            theme: props.isDark ? "monokai" : "github-light",
         });
         if (!html) throw new Error("Failed to create highlighter");
+
+        // 为 <pre> / <code> 补充 language-xxx class，便于样式和选择器使用
+        const language = String(props.lang || "txt");
+        const languageClass = `language-${language}`;
+
+        const ensureLanguageClass = (input: string): string => {
+            let output = input;
+            // <pre> 已有 class 的情况，追加 language-xxx
+            output = output.replace(
+                /<pre([^>]*)class="([^"]*)"/,
+                (m, attrs, classes) => `<pre${attrs} class="${
+                    classes.includes(languageClass) ? classes : `${classes} ${languageClass}`
+                }"`
+            );
+            // <pre> 没有 class 的情况
+            output = output.replace(
+                /<pre(?![^>]*class=)([^>]*)>/,
+                `<pre class="${languageClass}"$1>`
+            );
+
+            // <code> 已有 class 的情况，追加 language-xxx
+            output = output.replace(
+                /<code([^>]*)class="([^"]*)"/,
+                (m, attrs, classes) => `<code${attrs} class="${
+                    classes.includes(languageClass) ? classes : `${classes} ${languageClass}`
+                }"`
+            );
+            // <code> 没有 class 的情况
+            output = output.replace(
+                /<code(?![^>]*class=)([^>]*)>/,
+                `<code class="${languageClass}"$1>`
+            );
+
+            return output;
+        };
+
+        html = ensureLanguageClass(html);
+
         return DOMPurify.sanitize(html);
     } catch (e) {
         console.error("Failed to create highlighter: ", e);
@@ -85,7 +123,7 @@ function HighlightContent(
 
 export default function Highlighter(props: CreateHighlighterProps) {
     // 主题 默认浅色
-    const isDark = false;
+    const isDark = true;
 
     return (
         <Suspense>

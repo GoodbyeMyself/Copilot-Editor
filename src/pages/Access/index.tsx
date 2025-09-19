@@ -2,6 +2,25 @@ import { Access, useAccess } from '@umijs/max';
 
 import { Button } from 'antd';
 
+import MarkdownRenderer from '@/components/base/MarkdownRenderer';
+
+const demoMarkdown = `
+# Hello World
+
+[百度](https://www.baidu.com)
+
+\`\`\`python
+import json
+
+
+def greet(name: str) -> str:
+    return f"Hello, {name}!"
+
+if __name__ == "__main__":
+    print(greet("SQL Copilot"))
+\`\`\`
+`;
+
 const AccessPage: React.FC = () => {
     const access = useAccess();
     return (
@@ -10,6 +29,9 @@ const AccessPage: React.FC = () => {
                 <Access accessible={access.canSeeAdmin}>
                     <Button>只有 Admin 可以看到这个按钮</Button>
                 </Access>
+                <MarkdownRenderer>
+{demoMarkdown}
+                </MarkdownRenderer>
             </div>
         </div>
     );
