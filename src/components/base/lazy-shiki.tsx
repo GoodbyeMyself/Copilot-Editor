@@ -5,6 +5,7 @@ import { Suspense, useState, useEffect } from "react";
 import { type CodeToHastOptionsCommon, type HighlighterCore } from "shiki/core";
 
 import { getHighlighter } from "@/components/base/code-highlighter";
+import CopyToClipboard from "@/components/base/copy-to-clipboard";
 
 let shiki: HighlighterCore | undefined;
 
@@ -34,9 +35,8 @@ const createHighlighter = async (
             // <pre> 已有 class 的情况，追加 language-xxx
             output = output.replace(
                 /<pre([^>]*)class="([^"]*)"/,
-                (m, attrs, classes) => `<pre${attrs} class="${
-                    classes.includes(languageClass) ? classes : `${classes} ${languageClass}`
-                }"`
+                (m, attrs, classes) => `<pre${attrs} class="${classes.includes(languageClass) ? classes : `${classes} ${languageClass}`
+                    }"`
             );
             // <pre> 没有 class 的情况
             output = output.replace(
@@ -47,9 +47,8 @@ const createHighlighter = async (
             // <code> 已有 class 的情况，追加 language-xxx
             output = output.replace(
                 /<code([^>]*)class="([^"]*)"/,
-                (m, attrs, classes) => `<code${attrs} class="${
-                    classes.includes(languageClass) ? classes : `${classes} ${languageClass}`
-                }"`
+                (m, attrs, classes) => `<code${attrs} class="${classes.includes(languageClass) ? classes : `${classes} ${languageClass}`
+                    }"`
             );
             // <code> 没有 class 的情况
             output = output.replace(
@@ -77,7 +76,7 @@ function HighlightContent(
 
     useEffect(() => {
         let isCancelled = false;
-        
+
         const loadHighlighter = async () => {
             setIsLoading(true);
             try {
@@ -113,11 +112,18 @@ function HighlightContent(
     }
 
     return (
-        <div
-            // wrapping is applied in global styles (otherwise it doesn't work)
-            className="overflow-x-auto font-mono text-sm"
-            dangerouslySetInnerHTML={{ __html: html }}
-        />
+        <div className="code-block">
+            <div className="code-block__header">
+                <span className="lang">
+                    {String(props.lang || "txt")}
+                </span>
+                <CopyToClipboard value={props.text} />
+            </div>
+            <div
+                className="code-block__body overflow-x-auto font-mono text-sm p-2"
+                dangerouslySetInnerHTML={{ __html: html }}
+            />
+        </div>
     );
 }
 

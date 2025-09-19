@@ -22,7 +22,7 @@ const HelperPage: React.FC = () => {
         <PageContainer
             ghost
         >
-            <div className="helper-copilot-wrapper">
+            <div className="helper-copilot-wrapper helper-copilot-demo-wrapper">
                 <PanelGroup direction="horizontal" className="helper-panel-group rounded-none">
                     <Panel minSize={15} className="h-full max-h-full">
                         {/** 左侧工作区 */}
