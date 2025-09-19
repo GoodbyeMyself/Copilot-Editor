@@ -9,6 +9,7 @@ export const getHighlighter = async () => {
 
     shiki = await createHighlighterCore({
         langs: [
+            import("shiki/langs/bash.mjs"),
             import("shiki/langs/sql.mjs"),
             import("shiki/langs/json.mjs"),
             import("shiki/langs/python.mjs"),

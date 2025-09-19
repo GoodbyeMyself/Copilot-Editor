@@ -111,8 +111,7 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
     // 当前编程语言，默认为 SQL
     const language = props.language ?? "sql";
     
-    // 主题设置，默认使用浅色主题
-    const isDark = false;
+    // 主题设置（已统一为 monokai，此变量不再需要）
     
     /**
      * 根据语言类型获取对应的配置
@@ -145,11 +144,43 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
         const container = editorContainerRef.current;
         if (!container) return;
 
+        // 定义并设置 Monokai 主题
+        try {
+            monaco.editor.defineTheme("monokai", {
+                base: "vs-dark",
+                inherit: true,
+                rules: [
+                    { token: "", foreground: "F8F8F2", background: "272822" },
+                    { token: "comment", foreground: "75715E" },
+                    { token: "keyword", foreground: "F92672" },
+                    { token: "number", foreground: "AE81FF" },
+                    { token: "string", foreground: "E6DB74" },
+                    { token: "variable", foreground: "A6E22E" },
+                    { token: "type", foreground: "66D9EF" },
+                    { token: "delimiter", foreground: "F8F8F2" },
+                    { token: "operator", foreground: "F8F8F2" },
+                    { token: "identifier", foreground: "A6E22E" },
+                ],
+                colors: {
+                    "editor.background": "#272822",
+                    "editor.foreground": "#F8F8F2",
+                    "editorCursor.foreground": "#F8F8F0",
+                    "editor.lineHighlightBackground": "#3E3D32",
+                    "editorLineNumber.foreground": "#8F908A",
+                    "editor.selectionBackground": "#49483E",
+                    "editor.inactiveSelectionBackground": "#3E3D32",
+                    "editorBracketMatch.background": "#3E3D32",
+                    "editorBracketMatch.border": "#A6E22E",
+                },
+            });
+            monaco.editor.setTheme("monokai");
+        } catch {}
+
         // 创建编辑器实例
         const editor = monaco.editor.create(container, {
             value: props.value,
             language: language,
-            theme: isDark ? "vs-dark" : "vs-light",
+            theme: "monokai",
             // 字体设置
             fontFamily: "'jetbrains-mono'",
             
