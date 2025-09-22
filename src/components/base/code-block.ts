@@ -1,8 +1,8 @@
 // --
-import '@/assets/styles/highlight.less';
-import 'highlight.js/styles/atom-one-dark.css';
+import 'highlight.js/styles/monokai.css';
 
 import hljs from 'highlight.js/lib/core';
+
 import javascript from 'highlight.js/lib/languages/javascript';
 import typescript from 'highlight.js/lib/languages/typescript';
 import python from 'highlight.js/lib/languages/python';
@@ -16,6 +16,7 @@ import css from 'highlight.js/lib/languages/css';
 
 // Register common languages once
 let isRegistered = false;
+
 function ensureRegisterLanguages() {
     if (isRegistered) return;
     hljs.registerLanguage('javascript', javascript);
@@ -35,8 +36,14 @@ function ensureRegisterLanguages() {
 
 export function buildCodeBlock(element: HTMLElement | null | undefined): void {
     if (!element) return;
+
+    // --
     ensureRegisterLanguages();
+
+    // --
     const nodes = element.querySelectorAll('pre code');
+
+    // --
     nodes.forEach((node) => {
         try {
             hljs.highlightElement(node as HTMLElement);

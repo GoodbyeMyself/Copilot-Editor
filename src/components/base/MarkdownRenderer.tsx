@@ -49,11 +49,9 @@ const createMarkdownIt = () => {
     .use(toc);
 
     // 自定义渐进式解析
-    md.use((innerMd) => {
+    md.use((md) => {
         // --
-        const originalParse = innerMd.parse;
-        // --
-        console.log(originalParse, '<- 自定义渐进式解析');
+        console.log(md, '<- 打印 innerMd');
     });
 
     return md;
@@ -64,6 +62,7 @@ const singletonMd = createMarkdownIt();
 // 渲染后对代码块和自定义标签进行处理
 const PostProcessWrapper: React.FC<MarkdownRendererProps> = ({ children }) => {
     const ref = useRef<HTMLDivElement>(null);
+
     const html = useMemo(() => {
         const rendered = singletonMd.render(children || '');
         return DOMPurify.sanitize(rendered);
@@ -72,6 +71,7 @@ const PostProcessWrapper: React.FC<MarkdownRendererProps> = ({ children }) => {
     useEffect(() => {
         const el = ref.current;
         if (!el) return;
+        // 自定义 代码块
         buildCodeBlock(el);
     }, [html]);
 
