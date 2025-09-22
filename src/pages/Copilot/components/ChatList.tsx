@@ -10,6 +10,7 @@ interface ChatListProps {
     hotTopics: any;
     designGuide: any;
     onSubmit: (val: string) => void;
+    conversationId?: string; // 对话ID，用于检测对话切换
 }
 
 const ChatList: React.FC<ChatListProps> = ({
@@ -17,6 +18,7 @@ const ChatList: React.FC<ChatListProps> = ({
     hotTopics,
     designGuide,
     onSubmit,
+    conversationId,
 }) => {
     return (
         <div className="copilot-chat-list">
@@ -24,6 +26,7 @@ const ChatList: React.FC<ChatListProps> = ({
                 <BaseChatList
                     messages={messages}
                     onUserSubmit={onSubmit}
+                    conversationId={conversationId}
                     containerClassName="copilot-chat-list"
                     messageClassName="copilot-message-content"
                     loadingMessageClassName="copilot-loading-message"

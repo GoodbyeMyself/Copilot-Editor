@@ -421,6 +421,7 @@ const CopilotPage: React.FC = () => {
                         hotTopics={HOT_TOPICS}
                         designGuide={DESIGN_GUIDE}
                         onSubmit={onSubmit}
+                        conversationId={curConversation}
                     />
                     <ChatSender
                         senderPrompts={SENDER_PROMPTS}

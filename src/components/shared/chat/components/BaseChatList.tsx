@@ -51,6 +51,7 @@ const BaseChatList: React.FC<BaseChatListComponentProps> = ({
     messages,
     className = '',
     onUserSubmit,
+    conversationId,
     containerClassName = '',
     messageClassName = '',
     loadingMessageClassName = '',
@@ -69,6 +70,42 @@ const BaseChatList: React.FC<BaseChatListComponentProps> = ({
 }) => {
     const { recordThinkStart, calculateAndRecordDuration } = useThinkTiming();
     const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const prevConversationIdRef = useRef<string | undefined>(conversationId);
+    const isConversationSwitchingRef = useRef<boolean>(false);
+
+    // 查找真正的滚动容器并平滑滚动到顶部
+    const scrollToTop = (smooth: boolean = true) => {
+        requestAnimationFrame(() => {
+            // 首先尝试通过containerClassName找到外层滚动容器
+            const outerContainer = document.querySelector(`.${containerClassName}`) as HTMLElement;
+            if (outerContainer && outerContainer.scrollHeight > outerContainer.clientHeight) {
+                outerContainer.scrollTo({
+                    top: 0,
+                    behavior: smooth ? 'smooth' : 'auto'
+                });
+                return;
+            }
+
+            // 降级：查找页面中的copilot-chat-list容器
+            const copilotContainer = document.querySelector('.copilot-chat-list') as HTMLElement;
+            if (copilotContainer && copilotContainer.scrollHeight > copilotContainer.clientHeight) {
+                copilotContainer.scrollTo({
+                    top: 0,
+                    behavior: smooth ? 'smooth' : 'auto'
+                });
+                return;
+            }
+
+            // 最终降级：使用ref容器
+            const container = scrollContainerRef.current;
+            if (container) {
+                container.scrollTo({
+                    top: 0,
+                    behavior: smooth ? 'smooth' : 'auto'
+                });
+            }
+        });
+    };
 
     // 查找真正的滚动容器并平滑滚动到底部
     const scrollToBottom = (smooth: boolean = true) => {
@@ -104,11 +141,34 @@ const BaseChatList: React.FC<BaseChatListComponentProps> = ({
         });
     };
 
-    // 监听消息变化，平滑滚动
+    // 监听对话切换，滚动到顶部
+    useEffect(() => {
+        const prevId = prevConversationIdRef.current;
+        const currentId = conversationId;
+        
+        // 检测对话切换：conversationId发生变化且不是初始化
+        if (prevId !== undefined && prevId !== currentId) {
+            isConversationSwitchingRef.current = true;
+            scrollToTop(true);
+            
+            // 延迟重置标志，给对话切换足够的时间完成
+            setTimeout(() => {
+                isConversationSwitchingRef.current = false;
+            }, 500);
+        }
+        
+        // 更新引用
+        prevConversationIdRef.current = currentId;
+    }, [conversationId]);
+
+    // 监听消息变化，平滑滚动（恢复原有逻辑）
     useEffect(() => {
         if (messages && messages.length > 0) {
-            // 新消息使用平滑滚动
-            scrollToBottom(true);
+            // 如果正在切换对话，不执行自动滚动到底部
+            if (!isConversationSwitchingRef.current) {
+                // 新消息使用平滑滚动
+                scrollToBottom(true);
+            }
         }
     }, [messages]);
 

@@ -38,6 +38,7 @@ export interface BaseChatListProps {
     messages: ChatMessage[];
     className?: string;
     onUserSubmit?: (val: string) => void;
+    conversationId?: string; // 用于检测对话切换
 }
 
 // 聊天发送器组件 Props
