@@ -249,7 +249,7 @@ const BaseChatList: React.FC<BaseChatListComponentProps> = ({
         const { think, rest, hasThink, thinkClosed } = parseThinkContent(content);
 
         const isAssistant = role === 'assistant';
-        const isLoading = message.status === 'loading';
+        const isLoading = (message as any)?.status === 'loading';
         const showLoadingChain = isAssistant && hasThink && (isLoading || !thinkClosed);
 
         const msgKey = generateMessageKey(message, idx);
@@ -276,32 +276,49 @@ const BaseChatList: React.FC<BaseChatListComponentProps> = ({
                 {isAssistant && hasThink ? (
                     (() => {
                         const nodeStatus: StatusType = (
-                            message?.status === 'error' ? 'error' : (showLoadingChain ? 'pending' : 'success')
+                            (message as any)?.status === 'error' ? 'error' : (showLoadingChain ? 'pending' : 'success')
                         );
                         const nodeIcon = getStatusIcon(nodeStatus);
                         return (
-                            <ThoughtChain
-                                key={`${msgKey}-${thinkClosed ? 'closed' : 'open'}`}
-                                items={[{ title: chainTitle, content: think, status: nodeStatus, icon: nodeIcon }]}
-                                loading={!!showLoadingChain}
-                                collapsible={showLoadingChain ? false : { open: false }}
-                            />
+                            <>
+                                <ThoughtChain
+                                    key={`${msgKey}-${thinkClosed ? 'closed' : 'open'}`}
+                                    items={[{ title: chainTitle, content: think, status: nodeStatus, icon: nodeIcon }]}
+                                    loading={!!showLoadingChain}
+                                    collapsible={showLoadingChain ? false : { open: false }}
+                                />
+                            </>
                         );
                     })()
                 ) : null}
-                <div className={messageClassName}>
-                    {renderCancelContent(rest, isLoading)}
-                </div>
+                {/* <div className={messageClassName}> */}
+                    {/* 移除自定义 loading，让 Bubble.List 的 loadingRender 生效 */}
+                    {!(isLoading && isAssistant && !hasThink) && renderCancelContent(rest, isLoading)}
+                {/* </div> */}
             </>
         );
 
         return {
-            ...message.message,
+            ...(message.message ? {
+                ...message.message
+            } : {
+                /**
+                 * @description: 强制 补充 信息结构 出发 loadingRender
+                 * @author: M.yunlong
+                 * @date: 2025-09-22 17:13:32
+                */
+                role: 'assistant'
+            }),
             content: contentNode,
             classNames: {
                 content: isLoading ? loadingMessageClassName : '',
             },
-            typing: isLoading ? { step: 5, interval: 20, suffix: <>💗</> } : false,
+            typing: isLoading ? {
+                step: 5,
+                interval: 20,
+                suffix: <>💗</>
+            } : false,
+            loading: isLoading
         };
     };
 
@@ -340,7 +357,7 @@ const BaseChatList: React.FC<BaseChatListComponentProps> = ({
                             loadingRender: () => (
                                 <Space>
                                     <Spin size="small" />
-                                    <span>Generating content, please wait...</span>
+                                    <span>Generating content, please wait ...</span>
                                 </Space>
                             ),
                         },
