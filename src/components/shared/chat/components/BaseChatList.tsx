@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Avatar, Button, Space, Spin } from 'antd';
 import { Bubble, Prompts, Welcome, ThoughtChain as AntThoughtChain } from '@ant-design/x';
 import {
@@ -17,7 +17,9 @@ import { BaseChatListProps, StatusType } from '../types';
 import { parseThinkContent, generateMessageKey, hasCancelMark, splitCancelContent } from '../utils';
 import { useThinkTiming } from '../hooks/useThinkTiming';
 
-import MarkdownRenderer from '@/components/base/MarkdownRenderer';
+import MarkdownRenderer, { StreamingMarkdownRenderer } from '@/components/base/MarkdownRenderer';
+import StreamingContent from '@/components/base/StreamingContent';
+import styles from './BaseChatList.module.less';
 
 // ThoughtChain 组件类型兜底
 const ThoughtChain: any = AntThoughtChain as any;
@@ -66,6 +68,7 @@ const BaseChatList: React.FC<BaseChatListComponentProps> = ({
     bubblePadding = '16px',
 }) => {
     const { recordThinkStart, calculateAndRecordDuration } = useThinkTiming();
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
 
     const getStatusIcon = (status: StatusType) => {
         switch (status) {
@@ -80,17 +83,30 @@ const BaseChatList: React.FC<BaseChatListComponentProps> = ({
         }
     };
 
-    const renderCancelContent = (content: string) => {
+    const renderCancelContent = (content: string, isStreaming: boolean = false, scrollContainer?: HTMLElement | null) => {
         if (!hasCancelMark(content)) {
+            // 如果是流式输出，使用 StreamingContent 组件
+            if (isStreaming) {
+                return (
+                    <StreamingContent
+                        content={content}
+                        isStreaming={isStreaming}
+                        scrollContainer={scrollContainer}
+                        className={messageClassName}
+                    />
+                );
+            }
             return <MarkdownRenderer>{content}</MarkdownRenderer>;
         }
 
         const parts = splitCancelContent(content);
+        const RendererComponent = isStreaming ? StreamingMarkdownRenderer : MarkdownRenderer;
+        
         return (
             <>
-                <MarkdownRenderer>{parts[0]}</MarkdownRenderer>
+                <RendererComponent>{parts[0]}</RendererComponent>
                 <div className={cancelledLabelClassName}>--- [请求已取消] ---</div>
-                <MarkdownRenderer>{parts.slice(1).join('--- [请求已取消] ---')}</MarkdownRenderer>
+                <RendererComponent>{parts.slice(1).join('--- [请求已取消] ---')}</RendererComponent>
             </>
         );
     };
@@ -136,7 +152,7 @@ const BaseChatList: React.FC<BaseChatListComponentProps> = ({
                     })()
                 ) : null}
                 <div className={messageClassName}>
-                    {renderCancelContent(rest)}
+                    {renderCancelContent(rest, isLoading, scrollContainerRef.current)}
                 </div>
             </>
         );
@@ -152,7 +168,7 @@ const BaseChatList: React.FC<BaseChatListComponentProps> = ({
     };
 
     return (
-        <div className={`base-chat-list ${containerClassName} ${className}`}>
+        <div className={`base-chat-list ${containerClassName} ${className}`} ref={scrollContainerRef}>
             {messages?.length ? (
                 <Bubble.List
                     style={{ 
@@ -176,7 +192,7 @@ const BaseChatList: React.FC<BaseChatListComponentProps> = ({
                                 </div>
                             ),
                             footer: (
-                                <div style={{ display: 'flex' }}>
+                                <div className={styles.footerButtons}>
                                     <Button type="text" size="small" icon={<ReloadOutlined />} />
                                     <Button type="text" size="small" icon={<CopyOutlined />} />
                                     <Button type="text" size="small" icon={<LikeOutlined />} />

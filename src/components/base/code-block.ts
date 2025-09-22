@@ -34,7 +34,10 @@ function ensureRegisterLanguages() {
     isRegistered = true;
 }
 
-export function buildCodeBlock(element: HTMLElement | null | undefined): void {
+// 用于跟踪已经高亮过的代码块
+const highlightedNodes = new WeakSet<HTMLElement>();
+
+export function buildCodeBlock(element: HTMLElement | null | undefined, forceRefresh = false): void {
     if (!element) return;
 
     // --
@@ -45,12 +48,62 @@ export function buildCodeBlock(element: HTMLElement | null | undefined): void {
 
     // --
     nodes.forEach((node) => {
+        const codeElement = node as HTMLElement;
+        
+        // 如果不是强制刷新，并且已经高亮过，则跳过
+        if (!forceRefresh && highlightedNodes.has(codeElement)) {
+            return;
+        }
+
         try {
-            hljs.highlightElement(node as HTMLElement);
+            // 清除之前的高亮类名，避免重复应用
+            if (highlightedNodes.has(codeElement)) {
+                codeElement.className = codeElement.className.replace(/hljs[\w-]*/g, '').trim();
+            }
+            
+            hljs.highlightElement(codeElement);
+            highlightedNodes.add(codeElement);
         } catch {
             // noop
         }
     });
+}
+
+// 新增：用于增量处理新添加的代码块
+export function buildCodeBlockIncremental(element: HTMLElement | null | undefined): void {
+    if (!element) return;
+
+    ensureRegisterLanguages();
+
+    // 只处理没有被高亮过的代码块，使用更精确的选择器
+    const nodes = element.querySelectorAll('pre code:not(.hljs):not([data-highlighted])');
+    
+    nodes.forEach((node) => {
+        const codeElement = node as HTMLElement;
+        
+        // 跳过已经处理过的节点
+        if (highlightedNodes.has(codeElement)) {
+            return;
+        }
+
+        try {
+            hljs.highlightElement(codeElement);
+            highlightedNodes.add(codeElement);
+            // 添加标记避免重复处理
+            codeElement.setAttribute('data-highlighted', 'true');
+        } catch {
+            // noop
+        }
+    });
+}
+
+// 新增：清理已删除节点的引用
+export function cleanupCodeBlockReferences(element: HTMLElement | null | undefined): void {
+    if (!element) return;
+    
+    // 从WeakSet中无法直接删除，但可以通过检查DOM中是否还存在来判断
+    // WeakSet会在节点被垃圾回收时自动清理
+    // 这里我们主要是为了清理可能的内存泄漏
 }
 
 // end
