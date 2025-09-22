@@ -153,9 +153,12 @@ const CopilotPage: React.FC = () => {
                 const cancelledContent = normalized
                     ? `${normalized} --- [请求已取消] ---`
                     : '请求已取消';
-                const durationSec = currentThinkStartAt.current
-                    ? Math.max(0, Math.round((Date.now() - currentThinkStartAt.current) / 1000))
-                    : 0;
+                // 优先使用已经固定的思考时间，避免包含响应时间
+                const durationSec = currentThinkDurationSec.current !== null
+                    ? currentThinkDurationSec.current
+                    : (currentThinkStartAt.current
+                        ? Math.max(0, Math.round((Date.now() - currentThinkStartAt.current) / 1000))
+                        : 0);
                 
                 return {
                     id: currentAssistantId.current,

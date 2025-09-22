@@ -1,6 +1,5 @@
 import { useRef } from 'react';
 import { calculateThinkDuration } from '../utils';
-import { CloudFog } from 'lucide-react';
 
 /**
  * 思考时间管理 Hook
@@ -21,19 +20,49 @@ export const useThinkTiming = () => {
     };
 
     /**
+     * 固定思考结束时间（当think标签闭合时调用）
+     * @param messageKey 消息键
+     * @param metaDuration 元数据中的用时
+     * @returns 用时（秒）
+     */
+    const finalizeThinkDuration = (messageKey: string, metaDuration?: number): number => {
+        // 优先使用元数据中的用时
+        if (typeof metaDuration === 'number') {
+            thinkDurationRef.current.set(messageKey, metaDuration);
+            // 清理开始时间，标记为已完成
+            thinkStartRef.current.delete(messageKey);
+            return metaDuration;
+        }
+
+        // 计算并固定实际用时
+        const startAt = thinkStartRef.current.get(messageKey);
+        if (startAt) {
+            const elapsedSec = calculateThinkDuration(startAt);
+            thinkDurationRef.current.set(messageKey, elapsedSec);
+            // 清理开始时间，标记为已完成
+            thinkStartRef.current.delete(messageKey);
+            return elapsedSec;
+        }
+
+        return 0;
+    };
+
+    /**
      * 计算并记录思考用时
      * @param messageKey 消息键
      * @param metaDuration 元数据中的用时
      * @returns 用时（秒）
      */
     const calculateAndRecordDuration = (messageKey: string, metaDuration?: number): number => {
-        // 如果已经有记录的用时，直接返回
+        // 如果已经有固定的用时记录，直接返回（不再更新）
         if (thinkDurationRef.current.has(messageKey)) {
-            // 优先使用元数据中的用时
-            if (typeof metaDuration === 'number') {
+            const recorded = thinkDurationRef.current.get(messageKey)!;
+            // 如果有更准确的元数据用时，更新记录
+            if (typeof metaDuration === 'number' && metaDuration !== recorded) {
                 thinkDurationRef.current.set(messageKey, metaDuration);
                 return metaDuration;
             }
+            return recorded;
         }
 
         // 优先使用元数据中的用时
@@ -42,11 +71,10 @@ export const useThinkTiming = () => {
             return metaDuration;
         }
 
-        // 计算实际用时
+        // 计算实际用时（仅用于显示当前进行中的思考时间，不固定存储）
         const startAt = thinkStartRef.current.get(messageKey);
         if (startAt) {
             const elapsedSec = calculateThinkDuration(startAt);
-            thinkDurationRef.current.set(messageKey, elapsedSec);
             return elapsedSec;
         }
 
@@ -72,6 +100,7 @@ export const useThinkTiming = () => {
 
     return {
         recordThinkStart,
+        finalizeThinkDuration,
         calculateAndRecordDuration,
         clearTiming,
         clearAllTiming,

@@ -68,7 +68,7 @@ const BaseChatList: React.FC<BaseChatListComponentProps> = ({
     bubbleStyle = {},
     bubblePadding = '16px',
 }) => {
-    const { recordThinkStart, calculateAndRecordDuration } = useThinkTiming();
+    const { recordThinkStart, finalizeThinkDuration, calculateAndRecordDuration } = useThinkTiming();
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const prevConversationIdRef = useRef<string | undefined>(conversationId);
     const isConversationSwitchingRef = useRef<boolean>(false);
@@ -254,15 +254,20 @@ const BaseChatList: React.FC<BaseChatListComponentProps> = ({
 
         const msgKey = generateMessageKey(message, idx);
 
-        // 记录思考开始时间
-        if (isAssistant && hasThink && !thinkClosed) {
-            recordThinkStart(msgKey);
+        // 记录和计算思考时间
+        let durationSec = 0;
+        if (isAssistant && hasThink) {
+            const metaDuration = (message?.message as any)?.meta?.durationSec as number | undefined;
+            
+            if (thinkClosed) {
+                // 思考已完成，固定时间（只在第一次闭合时计算）
+                durationSec = finalizeThinkDuration(msgKey, metaDuration);
+            } else {
+                // 思考进行中，记录开始时间并显示当前用时
+                recordThinkStart(msgKey);
+                durationSec = calculateAndRecordDuration(msgKey, metaDuration);
+            }
         }
-
-        // 计算思考用时
-        const metaDuration = (message?.message as any)?.meta?.durationSec as number | undefined;
-
-        const durationSec = calculateAndRecordDuration(msgKey, metaDuration);
 
         const chainTitle = showLoadingChain ? '思考中...' : `已深度思考（用时 ${durationSec} 秒）`;
 
