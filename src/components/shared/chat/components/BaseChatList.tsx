@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Avatar, Button, Space, Spin } from 'antd';
 import { Bubble, Prompts, Welcome, ThoughtChain as AntThoughtChain } from '@ant-design/x';
 import {
@@ -70,6 +70,64 @@ const BaseChatList: React.FC<BaseChatListComponentProps> = ({
     const { recordThinkStart, calculateAndRecordDuration } = useThinkTiming();
     const scrollContainerRef = useRef<HTMLDivElement>(null);
 
+    // 查找真正的滚动容器并平滑滚动到底部
+    const scrollToBottom = (smooth: boolean = true) => {
+        requestAnimationFrame(() => {
+            // 首先尝试通过containerClassName找到外层滚动容器
+            const outerContainer = document.querySelector(`.${containerClassName}`) as HTMLElement;
+            if (outerContainer && outerContainer.scrollHeight > outerContainer.clientHeight) {
+                outerContainer.scrollTo({
+                    top: outerContainer.scrollHeight,
+                    behavior: smooth ? 'smooth' : 'auto'
+                });
+                return;
+            }
+
+            // 降级：查找页面中的copilot-chat-list容器
+            const copilotContainer = document.querySelector('.copilot-chat-list') as HTMLElement;
+            if (copilotContainer && copilotContainer.scrollHeight > copilotContainer.clientHeight) {
+                copilotContainer.scrollTo({
+                    top: copilotContainer.scrollHeight,
+                    behavior: smooth ? 'smooth' : 'auto'
+                });
+                return;
+            }
+
+            // 最终降级：使用ref容器
+            const container = scrollContainerRef.current;
+            if (container) {
+                container.scrollTo({
+                    top: container.scrollHeight,
+                    behavior: smooth ? 'smooth' : 'auto'
+                });
+            }
+        });
+    };
+
+    // 监听消息变化，平滑滚动
+    useEffect(() => {
+        if (messages && messages.length > 0) {
+            // 新消息使用平滑滚动
+            scrollToBottom(true);
+        }
+    }, [messages]);
+
+    // 监听loading状态，持续但温和的滚动
+    useEffect(() => {
+        const hasLoadingMessage = messages?.some(msg => (msg?.message as any)?.status === 'loading');
+        if (hasLoadingMessage) {
+            // 首次立即滚动
+            scrollToBottom(false);
+            
+            // 然后使用较低频率的平滑滚动
+            const interval = setInterval(() => {
+                scrollToBottom(true);
+            }, 300); // 降低频率到300ms，使用平滑滚动
+            
+            return () => clearInterval(interval);
+        }
+    }, [messages]);
+
     const getStatusIcon = (status: StatusType) => {
         switch (status) {
             case 'success':
@@ -83,16 +141,31 @@ const BaseChatList: React.FC<BaseChatListComponentProps> = ({
         }
     };
 
-    const renderCancelContent = (content: string, isStreaming: boolean = false, scrollContainer?: HTMLElement | null) => {
+    const renderCancelContent = (content: string, isStreaming: boolean = false) => {
         if (!hasCancelMark(content)) {
             // 如果是流式输出，使用 StreamingContent 组件
             if (isStreaming) {
+                // 找到真正的滚动容器
+                const getScrollContainer = () => {
+                    const outerContainer = document.querySelector(`.${containerClassName}`) as HTMLElement;
+                    if (outerContainer && outerContainer.scrollHeight > outerContainer.clientHeight) {
+                        return outerContainer;
+                    }
+                    const copilotContainer = document.querySelector('.copilot-chat-list') as HTMLElement;
+                    if (copilotContainer && copilotContainer.scrollHeight > copilotContainer.clientHeight) {
+                        return copilotContainer;
+                    }
+                    return scrollContainerRef.current;
+                };
+
                 return (
                     <StreamingContent
                         content={content}
                         isStreaming={isStreaming}
-                        scrollContainer={scrollContainer}
+                        scrollContainer={getScrollContainer()}
                         className={messageClassName}
+                        autoScroll={true}
+                        onContentUpdate={() => scrollToBottom(false)} // SSE流式输出使用即时滚动
                     />
                 );
             }
@@ -152,7 +225,7 @@ const BaseChatList: React.FC<BaseChatListComponentProps> = ({
                     })()
                 ) : null}
                 <div className={messageClassName}>
-                    {renderCancelContent(rest, isLoading, scrollContainerRef.current)}
+                    {renderCancelContent(rest, isLoading)}
                 </div>
             </>
         );
@@ -216,7 +289,7 @@ const BaseChatList: React.FC<BaseChatListComponentProps> = ({
                             ),
                             header: (
                                 <div className={userHeaderClassName}>
-                                    用户
+                                    User
                                 </div>
                             ),
                         },

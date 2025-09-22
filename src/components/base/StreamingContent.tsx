@@ -29,7 +29,7 @@ const StreamingContent: React.FC<StreamingContentProps> = ({
 }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const previousContentRef = useRef<string>('');
-    const { debouncedScroll, immediateScroll } = useDebouncedScroll(16);
+    const { debouncedScroll, immediateScroll } = useDebouncedScroll(50); // 增加防抖时间，减少滚动频率
 
     // 检测内容是否为增量更新
     const isIncremental = useMemo(() => {
@@ -38,11 +38,22 @@ const StreamingContent: React.FC<StreamingContentProps> = ({
         return isIncrement;
     }, [content]);
 
-    // 滚动到底部的函数
+    // 平滑滚动到底部的函数
     const scrollToBottom = useCallback(() => {
         if (!autoScroll || !scrollContainer) return;
         
-        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+        // 使用requestAnimationFrame确保在下一帧执行
+        requestAnimationFrame(() => {
+            try {
+                scrollContainer.scrollTo({
+                    top: scrollContainer.scrollHeight,
+                    behavior: 'smooth'
+                });
+            } catch (error) {
+                // 降级到直接设置scrollTop
+                scrollContainer.scrollTop = scrollContainer.scrollHeight;
+            }
+        });
     }, [autoScroll, scrollContainer]);
 
     // 处理内容更新
