@@ -1,0 +1,120 @@
+// 代码块样式
+.code-block-container {
+  margin: 1em 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #3d4147;
+  background: #272822;
+
+  pre {
+    margin: 0 !important;
+    border-radius: 0 !important;
+    border: none !important;
+  }
+
+  code {
+    background: transparent !important;
+  }
+}
+
+.code-block-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  background: #3d4147;
+  border-bottom: 1px solid #4a4f56;
+  font-size: 12px;
+  color: #f8f8f2;
+}
+
+.code-block-language {
+  font-weight: 600;
+  color: #a6e22e;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.code-block-copy-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: transparent;
+  border: 1px solid #6d7175;
+  border-radius: 4px;
+  color: #f8f8f2;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #5d6165;
+    border-color: #8d9195;
+  }
+
+  &.copied {
+    color: #a6e22e;
+    border-color: #a6e22e;
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+  }
+}
+
+/* 适配暗色主题 */
+@media (prefers-color-scheme: dark) {
+  .code-block-container {
+    border-color: #444;
+  }
+  
+  .code-block-header {
+    background: #2d2d2d;
+    border-bottom-color: #444;
+  }
+  
+  .code-block-copy-btn {
+    border-color: #555;
+
+    &:hover {
+      background: #404040;
+      border-color: #666;
+    }
+  }
+}
+
+/* 适配亮色主题 */
+@media (prefers-color-scheme: light) {
+  .code-block-container {
+    background: #f8f8f8;
+    border-color: #e1e4e8;
+  }
+  
+  .code-block-header {
+    background: #f1f3f4;
+    border-bottom-color: #e1e4e8;
+    color: #24292e;
+  }
+  
+  .code-block-language {
+    color: #0366d6;
+  }
+  
+  .code-block-copy-btn {
+    color: #586069;
+    border-color: #d1d5da;
+
+    &:hover {
+      background: #e1e4e8;
+      border-color: #c6cbd1;
+    }
+
+    &.copied {
+      color: #28a745;
+      border-color: #28a745;
+    }
+  }
+}

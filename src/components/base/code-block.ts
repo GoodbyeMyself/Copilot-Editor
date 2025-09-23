@@ -1,5 +1,6 @@
 // --
 import 'highlight.js/styles/monokai.css';
+import './code-block.less';
 
 import hljs from 'highlight.js/lib/core';
 
@@ -31,11 +32,137 @@ function ensureRegisterLanguages() {
     hljs.registerLanguage('html', xml);
     hljs.registerLanguage('css', css);
     hljs.configure({ ignoreUnescapedHTML: true });
+    
     isRegistered = true;
 }
 
 // 用于跟踪已经高亮过的代码块
 const highlightedNodes = new WeakSet<HTMLElement>();
+
+// 获取代码块语言
+function getLanguageFromElement(codeElement: HTMLElement): string {
+    // 从class中检测语言，格式通常为 language-xxx 或 hljs-xxx
+    const classList = Array.from(codeElement.classList);
+    
+    // 优先检查 language- 前缀
+    for (const className of classList) {
+        if (className.startsWith('language-')) {
+            return className.replace('language-', '');
+        }
+    }
+    
+    // 检查父元素的class
+    const preElement = codeElement.closest('pre');
+
+    if (preElement) {
+        const preClassList = Array.from(preElement.classList);
+        for (const className of preClassList) {
+            if (className.startsWith('language-')) {
+                return className.replace('language-', '');
+            }
+        }
+    }
+    
+    // 检查hljs检测到的语言
+    for (const className of classList) {
+        if (className.startsWith('hljs-') && className !== 'hljs') {
+            return className.replace('hljs-', '');
+        }
+    }
+    
+    // 从hljs结果中获取语言
+    if (codeElement.classList.contains('hljs')) {
+        const detectedLanguage = (codeElement as any).result?.language;
+        if (detectedLanguage) {
+            return detectedLanguage;
+        }
+    }
+    
+    return 'text'; // 默认语言
+}
+
+// 创建代码块头部
+function createCodeBlockHeader(language: string, codeContent: string): HTMLElement {
+    const header = document.createElement('div');
+    header.className = 'code-block-header';
+    
+    // 语言标识
+    const languageLabel = document.createElement('span');
+
+    languageLabel.className = 'code-block-language';
+
+    languageLabel.textContent = language !== 'undefined' ? language.toUpperCase() : 'TEXT';
+    
+    // 复制按钮
+    const copyButton = document.createElement('button');
+    copyButton.className = 'code-block-copy-btn';
+    copyButton.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </svg>
+        <span>复制</span>
+    `;
+    
+    // 复制功能
+    copyButton.addEventListener('click', async () => {
+        try {
+            await navigator.clipboard.writeText(codeContent);
+            
+            // 临时显示复制成功状态
+            const originalHTML = copyButton.innerHTML;
+            copyButton.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20,6 9,17 4,12"></polyline>
+                </svg>
+                <span>已复制</span>
+            `;
+            copyButton.classList.add('copied');
+            
+            setTimeout(() => {
+                copyButton.innerHTML = originalHTML;
+                copyButton.classList.remove('copied');
+            }, 2000);
+        } catch (err) {
+            console.error('复制失败:', err);
+            // 降级到旧的复制方法
+            const textArea = document.createElement('textarea');
+            textArea.value = codeContent;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+        }
+    });
+    
+    header.appendChild(languageLabel);
+    header.appendChild(copyButton);
+    
+    return header;
+}
+
+// 为代码块添加头部容器
+function wrapCodeBlockWithHeader(preElement: HTMLElement, codeElement: HTMLElement): void {
+    // 检查是否已经有容器
+    if (preElement.parentElement?.classList.contains('code-block-container')) {
+        return;
+    }
+    
+    const language = getLanguageFromElement(codeElement);
+    const codeContent = codeElement.textContent || '';
+    
+    // 创建容器
+    const container = document.createElement('div');
+    container.className = 'code-block-container';
+    
+    // 创建头部
+    const header = createCodeBlockHeader(language, codeContent);
+    
+    // 包装原有的pre元素
+    preElement.parentNode?.insertBefore(container, preElement);
+    container.appendChild(header);
+    container.appendChild(preElement);
+}
 
 export function buildCodeBlock(element: HTMLElement | null | undefined, forceRefresh = false): void {
     if (!element) return;
@@ -49,6 +176,7 @@ export function buildCodeBlock(element: HTMLElement | null | undefined, forceRef
     // --
     nodes.forEach((node) => {
         const codeElement = node as HTMLElement;
+        const preElement = codeElement.closest('pre') as HTMLElement;
         
         // 如果不是强制刷新，并且已经高亮过，则跳过
         if (!forceRefresh && highlightedNodes.has(codeElement)) {
@@ -62,6 +190,12 @@ export function buildCodeBlock(element: HTMLElement | null | undefined, forceRef
             }
             
             hljs.highlightElement(codeElement);
+            
+            // 添加header容器
+            if (preElement) {
+                wrapCodeBlockWithHeader(preElement, codeElement);
+            }
+            
             highlightedNodes.add(codeElement);
         } catch {
             // noop
@@ -80,6 +214,7 @@ export function buildCodeBlockIncremental(element: HTMLElement | null | undefine
     
     nodes.forEach((node) => {
         const codeElement = node as HTMLElement;
+        const preElement = codeElement.closest('pre') as HTMLElement;
         
         // 跳过已经处理过的节点
         if (highlightedNodes.has(codeElement)) {
@@ -88,6 +223,12 @@ export function buildCodeBlockIncremental(element: HTMLElement | null | undefine
 
         try {
             hljs.highlightElement(codeElement);
+            
+            // 添加header容器
+            if (preElement) {
+                wrapCodeBlockWithHeader(preElement, codeElement);
+            }
+            
             highlightedNodes.add(codeElement);
             // 添加标记避免重复处理
             codeElement.setAttribute('data-highlighted', 'true');
