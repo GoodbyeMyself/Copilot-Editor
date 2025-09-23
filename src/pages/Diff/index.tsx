@@ -1,51 +1,12 @@
 
 import React, { useState, useEffect } from "react";
 import { DiffEditor } from "@monaco-editor/react";
+import { message } from "antd";
 import styles from "./styles.module.less";
 import * as monaco from "monaco-editor";
 
 const DiffPage: React.FC = () => {
-    const [renderSideBySide, setRenderSideBySide] = useState(false);
-
-    const [editorWidth, setEditorWidth] = useState('100vh');
-
-    const [theme, setTheme] = useState('vs-dark');
-
-    // 定义 Monokai 主题
-    useEffect(() => {
-        try {
-            monaco.editor.defineTheme("monokai", {
-                base: "vs-dark",
-                inherit: true,
-                rules: [
-                    { token: "", foreground: "F8F8F2", background: "272822" },
-                    { token: "comment", foreground: "75715E" },
-                    { token: "keyword", foreground: "F92672" },
-                    { token: "number", foreground: "AE81FF" },
-                    { token: "string", foreground: "E6DB74" },
-                    { token: "variable", foreground: "A6E22E" },
-                    { token: "type", foreground: "66D9EF" },
-                    { token: "delimiter", foreground: "F8F8F2" },
-                    { token: "operator", foreground: "F8F8F2" },
-                    { token: "identifier", foreground: "A6E22E" },
-                ],
-                colors: {
-                    "editor.background": "#272822",
-                    "editor.foreground": "#F8F8F2",
-                    "editorCursor.foreground": "#F8F8F0",
-                    "editor.lineHighlightBackground": "#3E3D32",
-                    "editorLineNumber.foreground": "#8F908A",
-                    "editor.selectionBackground": "#49483E",
-                    "editor.inactiveSelectionBackground": "#3E3D32",
-                    "editorBracketMatch.background": "#3E3D32",
-                    "editorBracketMatch.border": "#A6E22E",
-                },
-            });
-        } catch (error) {
-            console.error("Failed to define monokai theme:", error);
-        }
-    }, []);
-    
+    // 原始代码示例
     const originalCode = `# -*- coding: utf-8 -*-
 """
 示例：使用 pandas 读取 Excel，并进行简单的数据预览。
@@ -130,6 +91,71 @@ def main():
 if __name__ == "__main__":
     main()`;
 
+    const [renderSideBySide, setRenderSideBySide] = useState(false);
+
+
+    const [theme, setTheme] = useState('vs-dark');
+
+    // 状态管理
+    const [currentOriginal, setCurrentOriginal] = useState('');
+    const [currentModified, setCurrentModified] = useState('');
+
+    // 处理接受修改
+    const handleAcceptChanges = () => {
+        setCurrentOriginal(currentModified);
+        message.success('已接受所有修改！修改后的代码现在成为新的基准版本。');
+    };
+
+    // 处理拒绝修改
+    const handleRejectChanges = () => {
+        setCurrentModified(currentOriginal);
+        message.warning('已拒绝所有修改！代码已恢复到原始状态。');
+    };
+
+    // 检查是否有差异
+    const hasDifferences = currentOriginal !== currentModified;
+
+    // 初始化代码状态
+    useEffect(() => {
+        setCurrentOriginal(originalCode);
+        setCurrentModified(modifiedCode);
+    }, []);
+
+    // 定义 Monokai 主题
+    useEffect(() => {
+        try {
+            monaco.editor.defineTheme("monokai", {
+                base: "vs-dark",
+                inherit: true,
+                rules: [
+                    { token: "", foreground: "F8F8F2", background: "272822" },
+                    { token: "comment", foreground: "75715E" },
+                    { token: "keyword", foreground: "F92672" },
+                    { token: "number", foreground: "AE81FF" },
+                    { token: "string", foreground: "E6DB74" },
+                    { token: "variable", foreground: "A6E22E" },
+                    { token: "type", foreground: "66D9EF" },
+                    { token: "delimiter", foreground: "F8F8F2" },
+                    { token: "operator", foreground: "F8F8F2" },
+                    { token: "identifier", foreground: "A6E22E" },
+                ],
+                colors: {
+                    "editor.background": "#272822",
+                    "editor.foreground": "#F8F8F2",
+                    "editorCursor.foreground": "#F8F8F0",
+                    "editor.lineHighlightBackground": "#3E3D32",
+                    "editorLineNumber.foreground": "#8F908A",
+                    "editor.selectionBackground": "#49483E",
+                    "editor.inactiveSelectionBackground": "#3E3D32",
+                    "editorBracketMatch.background": "#3E3D32",
+                    "editorBracketMatch.border": "#A6E22E",
+                },
+            });
+        } catch (error) {
+            console.error("Failed to define monokai theme:", error);
+        }
+    }, []);
+
     return (
         <div className={styles.container}>
             <h2 className={styles.title}>Monaco DiffEditor 配置演示</h2>
@@ -143,31 +169,11 @@ if __name__ == "__main__":
                             type="checkbox"
                             checked={renderSideBySide}
                             onChange={(e) => setRenderSideBySide(e.target.checked)}
-                            style={{marginRight: '10px'}}
+                            className={styles.checkbox}
                         />
                         {' '} 并排显示模式 (renderSideBySide)
                     </label>
-                    <p className={styles.helpText}>
-                        勾选: 固定并排显示 | 不勾选: 内联显示模式
-                    </p>
                 </div>
-                
-                <div className={styles.configOption}>
-                    <label>
-                        编辑器宽度: 
-                        <select 
-                            value={editorWidth} 
-                            onChange={(e) => setEditorWidth(e.target.value)}
-                            className={styles.widthSelector}
-                        >
-                            <option value="50vh">50vh (窄)</option>
-                            <option value="80vh">80vh (中等)</option>
-                            <option value="100vh">100vh (宽)</option>
-                            <option value="100%">100% (全宽)</option>
-                        </select>
-                    </label>
-                </div>
-                
                 <div className={styles.configOption}>
                     <label>
                         编辑器主题: 
@@ -181,20 +187,17 @@ if __name__ == "__main__":
                             <option value="monokai">Monokai (经典深色)</option>
                         </select>
                     </label>
-                    <p className={styles.helpText}>
-                        选择编辑器主题风格
-                    </p>
                 </div>
             </div>
 
             {/* DiffEditor */}
             <DiffEditor
                 // === DiffEditor 组件属性 (6个) ===
-                width={editorWidth}              // 1. 编辑器宽度 - 可设置为像素值、百分比或vh单位
+                width='100%'                     // 1. 编辑器宽度 - 固定为100%全宽
                 height='55vh'                    // 2. 编辑器高度 - 固定为40vh (视口高度的40%)
                 language='python'               // 3. 语言模式 - 设置语法高亮和智能提示语言
-                original={originalCode}          // 4. 原始代码 - 左侧显示的原始版本代码
-                modified={modifiedCode}          // 5. 修改后代码 - 右侧显示的修改版本代码
+                original={currentOriginal}       // 4. 原始代码 - 使用动态状态
+                modified={currentModified}       // 5. 修改后代码 - 使用动态状态
                 theme={theme}                        // 6. 编辑器主题 - 动态切换主题 (vs/vs-dark/monokai)
                 
                 // === options 配置对象 (11个配置项) ===
@@ -215,6 +218,24 @@ if __name__ == "__main__":
                     wordWrap: 'on',                          // 17. 自动换行 - 'on'|'off'|'wordWrapColumn'|'bounded'
                 }}
             />
+
+            {/* 状态显示区域 */}
+            <div className={styles.statusBar}>
+                <div 
+                    className={`${styles.rejectButton} ${!hasDifferences ? styles.disabled : ''}`}
+                    onClick={handleRejectChanges}
+                >
+                    <span className={styles.buttonIcon}>✕</span>
+                    Reject all
+                </div>
+                <div
+                    className={`${styles.acceptButton} ${!hasDifferences ? styles.disabled : ''}`}
+                    onClick={handleAcceptChanges}
+                >
+                    <span className={styles.buttonIcon}>✓</span>
+                    Keep all
+                </div>
+            </div>
         </div>
     );
 };
