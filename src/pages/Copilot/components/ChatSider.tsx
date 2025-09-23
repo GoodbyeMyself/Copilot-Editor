@@ -160,17 +160,9 @@ const ChatSider: React.FC<ChatSiderProps> = ({
             {conversations.length === 0 ? (
                 <div className="copilot-empty-state">
                     <div className="copilot-empty-content">
-                        <div className="copilot-empty-icon">
-                            <img
-                                src="https://mdn.alipayobjects.com/huamei_iwk9zp/afts/img/A*eco6RrQhxbMAAAAAAAAAAAAADgCCAQ/original"
-                                alt="logo"
-                                width={48}
-                                height={48}
-                            />
-                        </div>
                         <div className="copilot-empty-text">
-                            <h3>欢迎使用 Copilot Editor</h3>
-                            <p>点击上方&ldquo;新建会话&rdquo;开始您的第一次对话</p>
+                            <h3>欢迎使用</h3>
+                            <p>点击上方 &ldquo; 新建会话 &rdquo; 开始您的第一次对话</p>
                         </div>
                     </div>
                 </div>
