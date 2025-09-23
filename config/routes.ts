@@ -54,5 +54,11 @@ export default [
         path: "/access",
         icon: "Calendar",
         component: "./Access",
+    },
+    {
+        name: "Diff",
+        path: "/Diff",
+        icon: "CodepenOutlined",
+        component: "./Diff",
     }
 ];

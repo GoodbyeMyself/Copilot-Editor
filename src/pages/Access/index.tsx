@@ -30,7 +30,7 @@ const AccessPage: React.FC = () => {
                     <Button>只有 Admin 可以看到这个按钮</Button>
                 </Access>
                 <MarkdownRenderer>
-{demoMarkdown}
+                    {demoMarkdown}
                 </MarkdownRenderer>
             </div>
         </div>
