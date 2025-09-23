@@ -50,15 +50,15 @@ export default [
         component: "./Python",
     },
     {
+        name: "Diff 代码",
+        path: "/Diff",
+        icon: "CodepenOutlined",
+        component: "./Diff",
+    },
+    {
         name: "权限演示",
         path: "/access",
         icon: "Calendar",
         component: "./Access",
-    },
-    {
-        name: "Diff",
-        path: "/Diff",
-        icon: "CodepenOutlined",
-        component: "./Diff",
     }
 ];
