@@ -124,128 +124,157 @@
             });
 
             let activeDecorations = [];
+            let buttonContainers = new Map(); // 使用Map存储按钮容器
 
             function createAcceptButtons() {
-                // 清除之前的装饰
-                if (activeDecorations.length > 0) {
-                    activeDecorations = diffEditor.getModifiedEditor().deltaDecorations(activeDecorations, []);
+                const lineChanges = diffEditor.getLineChanges();
+                if (!lineChanges) {
+                    // 如果没有差异，清除所有按钮
+                    clearAllButtons();
+                    return;
                 }
 
-                // 清除之前的悬浮按钮
-                const existingButtons = document.querySelectorAll('[id^="floating-button-"]');
-                existingButtons.forEach(button => button.remove());
+                // 获取当前差异块的唯一标识
+                const currentChanges = lineChanges.map(change => getChangeKey(change));
+                
+                // 移除不再存在的差异块对应的按钮
+                for (let [key, container] of buttonContainers) {
+                    if (!currentChanges.includes(key)) {
+                        removeButtonContainer(key);
+                    }
+                }
 
-                const lineChanges = diffEditor.getLineChanges();
-                if (!lineChanges) return;
-
-                const decorations = [];
-
+                // 为新的差异块创建按钮
                 lineChanges.forEach((change, index) => {
                     if (change.modifiedEndLineNumber === 0 && change.originalEndLineNumber === 0) {
                         return;
                     }
 
-                    // 计算差异块的结束行
-                    let targetLine;
-                    if (change.modifiedEndLineNumber > 0) {
-                        targetLine = change.modifiedEndLineNumber;
-                    } else {
-                        targetLine = change.originalStartLineNumber;
-                    }
+                    const changeKey = getChangeKey(change);
                     
-                    if (targetLine === 0) return;
-
-                    // 标记差异块的范围用于定位
-                    decorations.push({
-                        range: new monaco.Range(targetLine, 1, targetLine, 1),
-                        options: {
-                            className: `diff-block-marker-${index}`,
-                            stickiness: monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges
-                        }
-                    });
-
-                    // 创建对应的CSS和按钮
-                    setTimeout(() => {
-                        createInlineButton(index, change);
-                    }, 50);
+                    // 如果这个差异块还没有按钮，创建新的
+                    if (!buttonContainers.has(changeKey)) {
+                        setTimeout(() => {
+                            createButtonForChange(changeKey, change, index);
+                        }, 50);
+                    } else {
+                        // 如果按钮已存在，更新位置
+                        setTimeout(() => {
+                            updateButtonPosition(changeKey, change);
+                        }, 50);
+                    }
                 });
-
-                // 应用装饰
-                activeDecorations = diffEditor.getModifiedEditor().deltaDecorations([], decorations);
             }
 
-            function createInlineButton(index, change) {
-                const markerClassName = `diff-block-marker-${index}`;
+            function getChangeKey(change) {
+                // 为每个差异块生成唯一标识
+                return `${change.originalStartLineNumber}-${change.originalEndLineNumber}-${change.modifiedStartLineNumber}-${change.modifiedEndLineNumber}`;
+            }
+
+            function clearAllButtons() {
+                buttonContainers.forEach((container, key) => {
+                    removeButtonContainer(key);
+                });
+            }
+
+            function removeButtonContainer(key) {
+                const container = buttonContainers.get(key);
+                if (container && container.parentNode) {
+                    container.parentNode.removeChild(container);
+                }
+                buttonContainers.delete(key);
+            }
+
+            function createButtonForChange(changeKey, change, index) {
+                // 计算差异块的结束行
+                let targetLine;
+                if (change.modifiedEndLineNumber > 0) {
+                    targetLine = change.modifiedEndLineNumber;
+                } else {
+                    targetLine = change.originalStartLineNumber;
+                }
                 
-                // 使用延时等待Monaco Editor完成DOM更新
-                const checkAndCreateButton = () => {
-                    const markerElements = document.querySelectorAll(`.${markerClassName}`);
-                    
-                    markerElements.forEach(markerElement => {
-                        // 检查是否已经有悬浮按钮，避免重复创建
-                        const existingButton = document.getElementById(`floating-button-${index}`);
-                        if (existingButton) {
-                            existingButton.remove();
-                        }
+                if (targetLine === 0) return;
 
-                        // 获取标记元素的位置
-                        const rect = markerElement.getBoundingClientRect();
-                        const editorContainer = diffEditor.getModifiedEditor().getDomNode();
-                        const editorRect = editorContainer.getBoundingClientRect();
-                        
-                        // 创建悬浮按钮容器
-                        const buttonContainer = document.createElement('div');
-                        buttonContainer.id = `floating-button-${index}`;
-                        buttonContainer.style.position = 'absolute';
-                        buttonContainer.style.zIndex = '1000';
-                        buttonContainer.style.pointerEvents = 'auto';
-                        
-                        // 定位在行的下方右侧
-                        const lineHeight = diffEditor.getModifiedEditor().getOption(monaco.editor.EditorOption.lineHeight);
-                        buttonContainer.style.right = `${14}px`;
-                        buttonContainer.style.top = `${rect.bottom - editorRect.top}px`;
+                const editor = diffEditor.getModifiedEditor();
+                const editorContainer = editor.getDomNode();
+                
+                if (!editorContainer) return;
 
-                        // 创建拒绝按钮
-                        const rejectButton = document.createElement('button');
-                        rejectButton.className = 'reject-button floating-reject-button';
-                        rejectButton.innerHTML = '✗ Reject';
-                        
-                        rejectButton.onclick = (e) => {
-                            e.stopPropagation();
-                            // 立即隐藏当前按钮组
-                            buttonContainer.style.display = 'none';
-                            rejectChange(change);
-                            // 延时重新创建按钮，确保差异更新完成
-                            setTimeout(() => createAcceptButtons(), 100);
-                        };
+                // 创建悬浮按钮容器
+                const buttonContainer = document.createElement('div');
+                buttonContainer.style.position = 'absolute';
+                buttonContainer.style.zIndex = '1000';
+                buttonContainer.style.pointerEvents = 'auto';
+                buttonContainer.style.right = '14px';
 
-                        // 创建接受按钮
-                        const acceptButton = document.createElement('button');
-                        acceptButton.className = 'accept-button floating-accept-button';
-                        acceptButton.innerHTML = '✓ Accept';
-                        
-                        acceptButton.onclick = (e) => {
-                            e.stopPropagation();
-                            // 立即隐藏当前按钮组
-                            buttonContainer.style.display = 'none';
-                            applyChange(change);
-                            // 延时重新创建按钮，确保差异更新完成
-                            setTimeout(() => createAcceptButtons(), 100);
-                        };
-
-                        buttonContainer.appendChild(rejectButton);
-                        buttonContainer.appendChild(acceptButton);
-                        
-                        // 将悬浮按钮添加到编辑器容器中
-                        editorContainer.style.position = 'relative';
-                        editorContainer.appendChild(buttonContainer);
-                    });
+                // 创建拒绝按钮
+                const rejectButton = document.createElement('button');
+                rejectButton.className = 'reject-button floating-reject-button';
+                rejectButton.innerHTML = '✗ Reject';
+                
+                rejectButton.onclick = (e) => {
+                    e.stopPropagation();
+                    // 立即移除当前按钮
+                    removeButtonContainer(changeKey);
+                    rejectChange(change);
+                    // 短暂延时后更新剩余按钮位置
+                    setTimeout(() => createAcceptButtons(), 100);
                 };
 
-                // 多次检查确保按钮被创建
-                setTimeout(checkAndCreateButton, 50);
-                setTimeout(checkAndCreateButton, 150);
-                setTimeout(checkAndCreateButton, 300);
+                // 创建接受按钮
+                const acceptButton = document.createElement('button');
+                acceptButton.className = 'accept-button floating-accept-button';
+                acceptButton.innerHTML = '✓ Accept';
+                
+                acceptButton.onclick = (e) => {
+                    e.stopPropagation();
+                    // 立即移除当前按钮
+                    removeButtonContainer(changeKey);
+                    applyChange(change);
+                    // 短暂延时后更新剩余按钮位置
+                    setTimeout(() => createAcceptButtons(), 100);
+                };
+
+                buttonContainer.appendChild(rejectButton);
+                buttonContainer.appendChild(acceptButton);
+                
+                // 将悬浮按钮添加到编辑器容器中
+                editorContainer.style.position = 'relative';
+                editorContainer.appendChild(buttonContainer);
+                
+                // 存储按钮容器
+                buttonContainers.set(changeKey, buttonContainer);
+                
+                // 更新按钮位置
+                updateButtonPosition(changeKey, change);
+            }
+
+            function updateButtonPosition(changeKey, change) {
+                const buttonContainer = buttonContainers.get(changeKey);
+                if (!buttonContainer) return;
+
+                // 计算差异块的结束行
+                let targetLine;
+                if (change.modifiedEndLineNumber > 0) {
+                    targetLine = change.modifiedEndLineNumber;
+                } else {
+                    targetLine = change.originalStartLineNumber;
+                }
+
+                const editor = diffEditor.getModifiedEditor();
+                
+                // 获取行的屏幕位置
+                const position = editor.getScrolledVisiblePosition({
+                    lineNumber: targetLine,
+                    column: 1
+                });
+
+                if (position) {
+                    const editorContainer = editor.getDomNode();
+                    const editorRect = editorContainer.getBoundingClientRect();
+                    buttonContainer.style.top = `${position.top + 20}px`; // 行下方20px
+                }
             }
 
             function applyChange(change) {
@@ -284,14 +313,18 @@
                 const modifiedEditor = diffEditor.getModifiedEditor();
                 const originalEditor = diffEditor.getOriginalEditor();
 
-                // 获取原始文本
+                // 拒绝操作：参考接受按钮的逻辑，做反向操作
+                // 从原始编辑器获取文本，应用到修改后的编辑器中
+                
                 let originalText = "";
                 if (change.originalEndLineNumber > 0) {
                     const originalRange = new monaco.Range(change.originalStartLineNumber, 1, change.originalEndLineNumber, originalEditor.getModel().getLineMaxColumn(change.originalEndLineNumber));
                     originalText = originalEditor.getModel().getValueInRange(originalRange);
                 }
 
-                // 将修改后的文本恢复为原始文本
+                // 如果原始文本不是以换行符结尾，并且它不是文件的最后一部分，则可能需要添加一个
+                // （这是一个高级用例，这里我们保持简单）
+
                 const modifiedRange = change.modifiedEndLineNumber > 0
                     ? new monaco.Range(change.modifiedStartLineNumber, 1, change.modifiedEndLineNumber, modifiedEditor.getModel().getLineMaxColumn(change.modifiedEndLineNumber))
                     : new monaco.Range(change.modifiedStartLineNumber, 1, change.modifiedStartLineNumber, 1);
