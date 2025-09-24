@@ -139,7 +139,7 @@ const sampleData = [
         // AI建议的新代码片段 - 适配保留原代码模式
         const suggestionExamples = [
             {
-                range: { startLineNumber: 1, startColumn: 1, endLineNumber: 7, endColumn: 1 },
+                range: { startLineNumber: 1, startColumn: 1, endLineNumber: 8, endColumn: 1 },
                 oldCode: `function calculateTotal(items) {
     let total = 0;
     for (let i = 0; i < items.length; i++) {
@@ -154,33 +154,6 @@ function calculateTotal(items) {
                 description: "Modernize with functional approach",
                 confidence: 0.95,
                 tags: ["refactor", "es6", "performance"]
-            },
-            {
-                range: { startLineNumber: 9, startColumn: 1, endLineNumber: 13, endColumn: 1 },
-                oldCode: `function processOrder(order) {
-    const total = calculateTotal(order.items);
-    console.log("Order total: " + total);
-    return total;
-}`,
-                newCode: `// ✨ AI建议：增强错误处理和验证
-async function processOrder(order) {
-    if (!order?.items?.length) {
-        throw new Error('Order must have items');
-    }
-    
-    const total = calculateTotal(order.items);
-    console.log(\`Order total: $\{total.toFixed(2)\}\`);
-    
-    // Validate total
-    if (total <= 0) {
-        throw new Error('Invalid order total');
-    }
-    
-    return total;
-}`,
-                description: "Add validation and error handling",
-                confidence: 0.92,
-                tags: ["async", "validation", "error-handling"]
             }
         ];
 
