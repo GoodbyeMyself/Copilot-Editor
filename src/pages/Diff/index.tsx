@@ -190,50 +190,51 @@ if __name__ == "__main__":
                 </div>
             </div>
 
-            {/* DiffEditor */}
-            <DiffEditor
-                // === DiffEditor 组件属性 (6个) ===
-                width='100%'                     // 1. 编辑器宽度 - 固定为100%全宽
-                height='55vh'                    // 2. 编辑器高度 - 固定为40vh (视口高度的40%)
-                language='python'               // 3. 语言模式 - 设置语法高亮和智能提示语言
-                original={currentOriginal}       // 4. 原始代码 - 使用动态状态
-                modified={currentModified}       // 5. 修改后代码 - 使用动态状态
-                theme={theme}                        // 6. 编辑器主题 - 动态切换主题 (vs/vs-dark/monokai)
-                
-                // === options 配置对象 (11个配置项) ===
-                options={{
-                    // --- Diff 专有配置 (5个) ---
-                    renderSideBySide: renderSideBySide,        // 7. 渲染模式 - true:并排显示, false:内联显示
-                    enableSplitViewResizing: true,             // 8. 分割视图调整 - 允许拖拽调整左右面板宽度
-                    diffCodeLens: true,                        // 9. Diff代码透镜 - 显示差异统计信息
-                    diffAlgorithm: 'advanced',                 // 10. Diff算法 - 'legacy'|'advanced', 高级算法更精确
-                    readOnly: false,                           // 11. 只读模式 - false:可编辑, true:只读
+            {/* 编辑器和按钮区域的父容器 */}
+            <div className={styles.editorContainer}>
+                {/* DiffEditor */}
+                <DiffEditor
+                    // === DiffEditor 组件属性 (6个) ===
+                    width='100%'                     // 1. 编辑器宽度 - 固定为100%全宽
+                    height='600px'                    // 2. 编辑器高度 - 固定为40vh (视口高度的40%)
+                    language='python'               // 3. 语言模式 - 设置语法高亮和智能提示语言
+                    original={currentOriginal}       // 4. 原始代码 - 使用动态状态
+                    modified={currentModified}       // 5. 修改后代码 - 使用动态状态
+                    theme={theme}                        // 6. 编辑器主题 - 动态切换主题 (vs/vs-dark/monokai)
                     
-                    // --- 编辑器通用配置 (6个) ---
-                    automaticLayout: true,                     // 12. 自动布局 - 容器尺寸变化时自动调整编辑器
-                    fontSize: 14,                             // 13. 字体大小 - 编辑器文本字体大小(像素)
-                    lineNumbers: 'on',                        // 14. 行号显示 - 'on'|'off'|'relative'|'interval'
-                    minimap: { enabled: true },               // 15. 小地图 - 代码缩略图导航器
-                    scrollBeyondLastLine: false,              // 16. 末行滚动 - 是否允许滚动到最后一行之后
-                    wordWrap: 'on',                          // 17. 自动换行 - 'on'|'off'|'wordWrapColumn'|'bounded'
-                }}
-            />
+                    // === options 配置对象 (11个配置项) ===
+                    options={{
+                        // --- Diff 专有配置 (5个) ---
+                        renderSideBySide: renderSideBySide,        // 7. 渲染模式 - true:并排显示, false:内联显示
+                        enableSplitViewResizing: true,             // 8. 分割视图调整 - 允许拖拽调整左右面板宽度
+                        diffCodeLens: true,                        // 9. Diff代码透镜 - 显示差异统计信息
+                        diffAlgorithm: 'advanced',                 // 10. Diff算法 - 'legacy'|'advanced', 高级算法更精确
+                        readOnly: false,                           // 11. 只读模式 - false:可编辑, true:只读
+                        
+                        // --- 编辑器通用配置 (6个) ---
+                        automaticLayout: true,                     // 12. 自动布局 - 容器尺寸变化时自动调整编辑器
+                        fontSize: 14,                             // 13. 字体大小 - 编辑器文本字体大小(像素)
+                        lineNumbers: 'on',                        // 14. 行号显示 - 'on'|'off'|'relative'|'interval'
+                        minimap: { enabled: true },               // 15. 小地图 - 代码缩略图导航器
+                        scrollBeyondLastLine: false,              // 16. 末行滚动 - 是否允许滚动到最后一行之后
+                        wordWrap: 'on',                          // 17. 自动换行 - 'on'|'off'|'wordWrapColumn'|'bounded'
+                    }}
+                />
 
-            {/* 状态显示区域 */}
-            <div className={styles.statusBar}>
-                <div 
-                    className={`${styles.rejectButton} ${!hasDifferences ? styles.disabled : ''}`}
-                    onClick={handleRejectChanges}
-                >
-                    <span className={styles.buttonIcon}>✕</span>
-                    Reject all
-                </div>
-                <div
-                    className={`${styles.acceptButton} ${!hasDifferences ? styles.disabled : ''}`}
-                    onClick={handleAcceptChanges}
-                >
-                    <span className={styles.buttonIcon}>✓</span>
-                    Keep all
+                {/* 按钮区域 */}
+                <div className={`${styles.controlBar}`}>
+                    <div 
+                        className={`${styles.rejectButton} ${!hasDifferences ? styles.disabled : ''}`}
+                        onClick={handleRejectChanges}
+                    >
+                        Undo all
+                    </div>
+                    <div
+                        className={`${styles.acceptButton} ${!hasDifferences ? styles.disabled : ''}`}
+                        onClick={handleAcceptChanges}
+                    >
+                        Keep all
+                    </div>
                 </div>
             </div>
         </div>
