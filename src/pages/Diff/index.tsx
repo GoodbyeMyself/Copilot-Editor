@@ -230,13 +230,13 @@ if __name__ == "__main__":
                             className={`${styles.rejectButton}`}
                             onClick={handleRejectChanges}
                         >
-                            Undo all
+                            Reject all
                         </div>
                         <div
                             className={`${styles.acceptButton}`}
                             onClick={handleAcceptChanges}
                         >
-                            Keep all
+                            Accept all
                         </div>
                     </div>
                 )}
