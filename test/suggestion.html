@@ -96,13 +96,13 @@
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <div class="controls">
                 <button onclick="addSuggestion()" title="Apply AI suggestion directly">
-                    🤖 Apply AI Suggestion
+                    🤖 生成 AI 建议
                 </button>
-                <button onclick="clearAllSuggestions()" title="Clear all highlights">
-                    🗑️ Clear Highlights
+                <button onclick="acceptSuggestions()" title="Accept AI suggestions - delete red code, keep green code">
+                    🗑️ 接受建议
                 </button>
                 <button onclick="resetCode()" title="Reset to initial code">
-                    🔄 Reset Code
+                    🔄 拒绝建议
                 </button>
             </div>
         </div>
@@ -210,11 +210,6 @@ async function processOrder(order) {
                     showSnippets: true
                 }
             });
-
-
-
-            // 初始化状态显示
-            updateStatus();
         });
 
         // 添加 AI 建议 - 简化版本，直接应用修改
@@ -231,9 +226,6 @@ async function processOrder(order) {
 
             // 直接应用建议，显示差异
             applySuggestionWithDiff(suggestion);
-            
-            // 更新状态显示
-            updateStatus();
         }
 
         // 应用建议并显示差异 - 保留删除代码版本
@@ -281,97 +273,69 @@ async function processOrder(order) {
                 }
             }]);
 
-            // 4. 保存装饰ID以便后续管理
+            // 4. 保存装饰ID和建议数据以便后续管理
             decorationIds.push(...deletedDecoration, ...addedDecoration);
+            suggestions.push(suggestion);
 
             console.log(`Applied suggestion: ${suggestion.description} - Old code marked as deleted, new code added below`);
         }
 
-        // 清理所有建议 - 简化版本
-        function clearAllSuggestions() {
-            // 清理所有装饰
-            const allDecorations = editor.getAllDecorations();
-            const decorationsToRemove = allDecorations.filter(decoration => 
-                decoration.options.className && 
-                (decoration.options.className.includes('deleted-code-decoration') || 
-                 decoration.options.className.includes('added-code-decoration'))
-            ).map(decoration => decoration.id);
+        // 接受 AI 建议方案 - 删除标红代码，保留绿色代码
+        function acceptSuggestions() {
+            // 我们需要重新构建逻辑，因为需要找到每个建议的删除和添加范围
+            // 使用一个更简单的方法：遍历我们保存的建议数据
             
-            if (decorationsToRemove.length > 0) {
-                editor.deltaDecorations(decorationsToRemove, []);
+            if (suggestions.length === 0) {
+                console.log('No suggestions to accept');
+                return;
+            }
+            
+            // 1. 从后往前处理建议，避免行号变化影响
+            const sortedSuggestions = [...suggestions].sort((a, b) => 
+                b.range.startLineNumber - a.range.startLineNumber
+            );
+            
+            // 2. 执行删除操作（删除标红的原始代码）
+            const edits = sortedSuggestions.map(suggestion => ({
+                range: new monaco.Range(
+                    suggestion.range.startLineNumber,
+                    suggestion.range.startColumn,
+                    suggestion.range.endLineNumber,
+                    suggestion.range.endColumn
+                ),
+                text: ''
+            }));
+            
+            if (edits.length > 0) {
+                editor.executeEdits('accept-suggestions', edits);
+            }
+            
+            // 3. 清理所有装饰（使用已跟踪的装饰ID）
+            if (decorationIds.length > 0) {
+                editor.deltaDecorations(decorationIds, []);
+            }
+            
+            // 4. 清理变量状态
+            suggestions = [];
+            decorationIds = [];
+            viewZoneIds = [];
+            
+            console.log('Accepted AI suggestions: deleted red code, kept green code');
+        }
+        
+        // 拒绝建议
+        function resetCode() {
+            // 直接使用已跟踪的装饰ID来清理
+            if (decorationIds.length > 0) {
+                editor.deltaDecorations(decorationIds, []);
             }
             
             suggestions = [];
             decorationIds = [];
             viewZoneIds = [];
-            
-            // 更新状态显示
-            updateStatus();
-            
-            console.log('Cleared all suggestion highlights');
-        }
 
-        // 重置代码
-        function resetCode() {
-            clearAllSuggestions();
             editor.setValue(initialCode);
-
-            // 重新填充建议示例
-            suggestionExamples.length = 0;
-            suggestionExamples.push(
-                {
-                    range: { startLineNumber: 1, startColumn: 1, endLineNumber: 7, endColumn: 1 },
-                    oldCode: `function calculateTotal(items) {
-    let total = 0;
-    for (let i = 0; i < items.length; i++) {
-        total += items[i].price;
-    }
-    return total;
-}`,
-                    newCode: `// AI建议：使用现代函数式编程方法
-function calculateTotal(items) {
-    return items.reduce((total, item) => total + (item.price || 0), 0);
-}`,
-                    description: "Modernize with functional approach",
-                    confidence: 0.95,
-                    tags: ["refactor", "es6", "performance"]
-                },
-                {
-                    range: { startLineNumber: 9, startColumn: 1, endLineNumber: 13, endColumn: 1 },
-                    oldCode: `function processOrder(order) {
-    const total = calculateTotal(order.items);
-    console.log("Order total: " + total);
-    return total;
-}`,
-                    newCode: `// AI建议：增强错误处理和验证
-async function processOrder(order) {
-    if (!order?.items?.length) {
-        throw new Error('Order must have items');
-    }
-    
-    const total = calculateTotal(order.items);
-    console.log(\`Order total: $\{total.toFixed(2)\}\`);
-    
-    // Validate total
-    if (total <= 0) {
-        throw new Error('Invalid order total');
-    }
-    
-    return total;
-}`,
-                    description: "Add validation and error handling",
-                    confidence: 0.92,
-                    tags: ["async", "validation", "error-handling"]
-                }
-            );
         }
-
-        // 更新状态显示
-        function updateStatus() {
-            document.getElementById('suggestionsCount').textContent = `💡 Available: ${suggestionExamples.length}`;
-        }
-
-
 
         // 确保函数在全局作用域中可访问
         window.addSuggestion = addSuggestion;
