@@ -1,11 +1,13 @@
 
 import React, { useState, useEffect } from "react";
 import { DiffEditor } from "@monaco-editor/react";
-import { message } from "antd";
+import { App } from "antd";
 import styles from "./styles.module.less";
 import * as monaco from "monaco-editor";
 
 const DiffPage: React.FC = () => {
+    const { message } = App.useApp();
+    
     // 原始代码示例
     const originalCode = `# -*- coding: utf-8 -*-
 """
@@ -221,21 +223,23 @@ if __name__ == "__main__":
                     }}
                 />
 
-                {/* 按钮区域 */}
-                <div className={`${styles.controlBar}`}>
-                    <div 
-                        className={`${styles.rejectButton} ${!hasDifferences ? styles.disabled : ''}`}
-                        onClick={handleRejectChanges}
-                    >
-                        Undo all
+                {/* 按钮区域 - 只有存在差异时才显示 */}
+                {hasDifferences && (
+                    <div className={`${styles.controlBar}`}>
+                        <div 
+                            className={`${styles.rejectButton}`}
+                            onClick={handleRejectChanges}
+                        >
+                            Undo all
+                        </div>
+                        <div
+                            className={`${styles.acceptButton}`}
+                            onClick={handleAcceptChanges}
+                        >
+                            Keep all
+                        </div>
                     </div>
-                    <div
-                        className={`${styles.acceptButton} ${!hasDifferences ? styles.disabled : ''}`}
-                        onClick={handleAcceptChanges}
-                    >
-                        Keep all
-                    </div>
-                </div>
+                )}
             </div>
         </div>
     );
