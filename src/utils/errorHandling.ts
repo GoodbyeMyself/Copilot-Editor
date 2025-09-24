@@ -22,7 +22,7 @@ interface ErrorHandlingConfig {
 // 扩展全局 Error 构造函数的类型定义
 declare global {
     interface ErrorConstructor {
-        captureStackTrace?(targetObject: object, constructorOpt?: (...args: any[]) => any): void;
+        captureStackTrace(targetObject: object, constructorOpt?: new (...args: any[]) => any): void;
     }
 }
 
@@ -52,6 +52,9 @@ const IGNORED_WARNING_MESSAGES = [
     // 忽略 ResizeObserver 相关的错误消息
     "ResizeObserver loop completed with undelivered notifications",
     "ResizeObserver loop limit exceeded",
+    // 忽略跨域脚本错误
+    "Script error.",
+    "Script error",
 ] as const;
 
 // 默认配置
@@ -175,6 +178,11 @@ export const setupGlobalErrorHandling = (
 
     // 设置 window.onerror 处理器
     window.onerror = (message, source, lineno, colno, error) => {
+        // 忽略跨域脚本错误
+        if (typeof message === 'string' && message === 'Script error.' && !source && lineno === 0 && colno === 0) {
+            return true; // 忽略跨域脚本错误
+        }
+        
         errorHandler.handle(
             error || new Error(message as string),
             `window.onerror: ${source}:${lineno}:${colno}`
