@@ -21,6 +21,12 @@ export default [
         icon: "icon-htmlbianjiqi",
         component: "./Home", 
     },
+    {
+        name: "Python Editor",
+        path: "/Python",
+        icon: "Python",
+        component: "./Python",
+    },
     // 数据源管理
     {
         name: "数据源管理",
@@ -42,21 +48,8 @@ export default [
         icon: "Slack",
         component: "./Helper",
     },
-    // 助手式 Copilot
     {
-        name: "Python",
-        path: "/Python",
-        icon: "Python",
-        component: "./Python",
-    },
-    {
-        name: "Diff 代码",
-        path: "/Diff",
-        icon: "CodepenOutlined",
-        component: "./Diff",
-    },
-    {
-        name: "权限演示",
+        name: "测试页",
         path: "/access",
         icon: "Calendar",
         component: "./Access",
