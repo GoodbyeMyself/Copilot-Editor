@@ -294,7 +294,19 @@ const Copilot = (props: CopilotProps) => {
 
         onRequest({
             stream: true,
-            message: { content: val, role: 'user' },
+            message: {
+                content: val,
+                role: 'user'
+            },
+            // 🆕 添加自定义参数
+            testParams: 'custom-params',
+            // 🆕 添加元数据
+            metadata: {
+                userId: 'user-123',
+                sessionId: curSession,
+                timestamp: Date.now(),
+                source: 'copilot-chat',
+            }
         });
 
         // session title mock
