@@ -2,7 +2,7 @@ import React from 'react';
 import { type GetProp } from 'antd';
 import { Attachments } from '@ant-design/x';
 
-import { BaseSenderHeader } from '../../../components/shared/chat';
+import { BaseSenderHeader } from '@/components/shared/chat';
 
 interface SenderHeaderProps {
     attachmentsOpen: boolean;

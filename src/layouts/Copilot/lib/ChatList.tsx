@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { BaseChatList } from '../../../components/shared/chat';
-import { MOCK_QUESTIONS } from '../constants';
+import { MOCK_QUESTIONS } from '@/layouts/Copilot/constants';
 
 interface ChatListProps {
     messages: any[];

@@ -12,7 +12,7 @@ import { GetProp, GetRef } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
 
 import { ChatHeader, ChatList, ChatSender } from './index';
-import { MOCK_SESSION_LIST } from '../constants';
+import { MOCK_SESSION_LIST } from '@/layouts/Copilot/constants';
 import { 
     saveSessionList, 
     loadSessionList, 

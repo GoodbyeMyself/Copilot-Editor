@@ -9,7 +9,7 @@ import { Button } from 'antd';
 import React from 'react';
 
 import { BaseChatSender } from '../../../components/shared/chat';
-import { MOCK_SUGGESTIONS } from '../constants';
+import { MOCK_SUGGESTIONS } from '@/layouts/Copilot/constants';
 import SendHeader from './SendHeader';
 
 interface ChatSenderProps {

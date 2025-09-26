@@ -1,7 +1,7 @@
 import React from 'react';
 import { Prompts } from '@ant-design/x';
 
-import { BaseChatSender, BaseChatSenderProps } from '../../../components/shared/chat';
+import { BaseChatSender } from '../../../components/shared/chat';
 
 interface ChatSenderProps {
     senderPrompts: any[];
