@@ -32,7 +32,7 @@ function ensureRegisterLanguages() {
     hljs.registerLanguage('html', xml);
     hljs.registerLanguage('css', css);
     hljs.configure({ ignoreUnescapedHTML: true });
-    
+
     isRegistered = true;
 }
 
@@ -43,14 +43,14 @@ const highlightedNodes = new WeakSet<HTMLElement>();
 function getLanguageFromElement(codeElement: HTMLElement): string {
     // 从class中检测语言，格式通常为 language-xxx 或 hljs-xxx
     const classList = Array.from(codeElement.classList);
-    
+
     // 优先检查 language- 前缀
     for (const className of classList) {
         if (className.startsWith('language-')) {
             return className.replace('language-', '');
         }
     }
-    
+
     // 检查父元素的class
     const preElement = codeElement.closest('pre');
 
@@ -62,14 +62,14 @@ function getLanguageFromElement(codeElement: HTMLElement): string {
             }
         }
     }
-    
+
     // 检查hljs检测到的语言
     for (const className of classList) {
         if (className.startsWith('hljs-') && className !== 'hljs') {
             return className.replace('hljs-', '');
         }
     }
-    
+
     // 从hljs结果中获取语言
     if (codeElement.classList.contains('hljs')) {
         const detectedLanguage = (codeElement as any).result?.language;
@@ -77,7 +77,7 @@ function getLanguageFromElement(codeElement: HTMLElement): string {
             return detectedLanguage;
         }
     }
-    
+
     return 'text'; // 默认语言
 }
 
@@ -85,14 +85,30 @@ function getLanguageFromElement(codeElement: HTMLElement): string {
 function createCodeBlockHeader(language: string, codeContent: string): HTMLElement {
     const header = document.createElement('div');
     header.className = 'code-block-header';
-    
-    // 语言标识
+
+    // 左侧容器：语言标识
+    const leftSection = document.createElement('div');
+    leftSection.className = 'code-block-header-left';
+
     const languageLabel = document.createElement('span');
-
     languageLabel.className = 'code-block-language';
-
     languageLabel.textContent = language !== 'undefined' ? language.toUpperCase() : 'TEXT';
-    
+    leftSection.appendChild(languageLabel);
+
+    // 右侧容器：按钮组
+    const rightSection = document.createElement('div');
+    rightSection.className = 'code-block-header-right';
+
+    // 折叠/展开按钮
+    const collapseButton = document.createElement('button');
+    collapseButton.className = 'code-block-collapse-btn';
+    collapseButton.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6,9 12,15 18,9"></polyline>
+        </svg>
+        <span>收起</span>
+    `;
+
     // 复制按钮
     const copyButton = document.createElement('button');
     copyButton.className = 'code-block-copy-btn';
@@ -103,12 +119,42 @@ function createCodeBlockHeader(language: string, codeContent: string): HTMLEleme
         </svg>
         <span>复制</span>
     `;
-    
+
+    // 折叠/展开功能
+    collapseButton.addEventListener('click', () => {
+        const container = header.closest('.code-block-container') as HTMLElement;
+        const preElement = container?.querySelector('pre') as HTMLElement;
+        
+        if (!container || !preElement) return;
+
+        const isCollapsed = container.classList.contains('collapsed');
+        
+        if (isCollapsed) {
+            // 展开
+            container.classList.remove('collapsed');
+            collapseButton.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6,9 12,15 18,9"></polyline>
+                </svg>
+                <span>收起</span>
+            `;
+        } else {
+            // 收起
+            container.classList.add('collapsed');
+            collapseButton.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="9,18 15,12 9,6"></polyline>
+                </svg>
+                <span>展开</span>
+            `;
+        }
+    });
+
     // 复制功能
     copyButton.addEventListener('click', async () => {
         try {
             await navigator.clipboard.writeText(codeContent);
-            
+
             // 临时显示复制成功状态
             const originalHTML = copyButton.innerHTML;
             copyButton.innerHTML = `
@@ -118,7 +164,7 @@ function createCodeBlockHeader(language: string, codeContent: string): HTMLEleme
                 <span>已复制</span>
             `;
             copyButton.classList.add('copied');
-            
+
             setTimeout(() => {
                 copyButton.innerHTML = originalHTML;
                 copyButton.classList.remove('copied');
@@ -134,10 +180,15 @@ function createCodeBlockHeader(language: string, codeContent: string): HTMLEleme
             document.body.removeChild(textArea);
         }
     });
-    
-    header.appendChild(languageLabel);
-    header.appendChild(copyButton);
-    
+
+    // 组装按钮到右侧容器
+    rightSection.appendChild(copyButton);
+    rightSection.appendChild(collapseButton);
+
+    // 组装头部
+    header.appendChild(leftSection);
+    header.appendChild(rightSection);
+
     return header;
 }
 
@@ -147,17 +198,17 @@ function wrapCodeBlockWithHeader(preElement: HTMLElement, codeElement: HTMLEleme
     if (preElement.parentElement?.classList.contains('code-block-container')) {
         return;
     }
-    
+
     const language = getLanguageFromElement(codeElement);
     const codeContent = codeElement.textContent || '';
-    
+
     // 创建容器
     const container = document.createElement('div');
     container.className = 'code-block-container';
-    
+
     // 创建头部
     const header = createCodeBlockHeader(language, codeContent);
-    
+
     // 包装原有的pre元素
     preElement.parentNode?.insertBefore(container, preElement);
     container.appendChild(header);
@@ -177,7 +228,7 @@ export function buildCodeBlock(element: HTMLElement | null | undefined, forceRef
     nodes.forEach((node) => {
         const codeElement = node as HTMLElement;
         const preElement = codeElement.closest('pre') as HTMLElement;
-        
+
         // 如果不是强制刷新，并且已经高亮过，则跳过
         if (!forceRefresh && highlightedNodes.has(codeElement)) {
             return;
@@ -188,14 +239,14 @@ export function buildCodeBlock(element: HTMLElement | null | undefined, forceRef
             if (highlightedNodes.has(codeElement)) {
                 codeElement.className = codeElement.className.replace(/hljs[\w-]*/g, '').trim();
             }
-            
+
             hljs.highlightElement(codeElement);
-            
+
             // 添加header容器
             if (preElement) {
                 wrapCodeBlockWithHeader(preElement, codeElement);
             }
-            
+
             highlightedNodes.add(codeElement);
         } catch {
             // noop
@@ -211,11 +262,11 @@ export function buildCodeBlockIncremental(element: HTMLElement | null | undefine
 
     // 只处理没有被高亮过的代码块，使用更精确的选择器
     const nodes = element.querySelectorAll('pre code:not(.hljs):not([data-highlighted])');
-    
+
     nodes.forEach((node) => {
         const codeElement = node as HTMLElement;
         const preElement = codeElement.closest('pre') as HTMLElement;
-        
+
         // 跳过已经处理过的节点
         if (highlightedNodes.has(codeElement)) {
             return;
@@ -223,12 +274,12 @@ export function buildCodeBlockIncremental(element: HTMLElement | null | undefine
 
         try {
             hljs.highlightElement(codeElement);
-            
+
             // 添加header容器
             if (preElement) {
                 wrapCodeBlockWithHeader(preElement, codeElement);
             }
-            
+
             highlightedNodes.add(codeElement);
             // 添加标记避免重复处理
             codeElement.setAttribute('data-highlighted', 'true');
@@ -241,7 +292,7 @@ export function buildCodeBlockIncremental(element: HTMLElement | null | undefine
 // 新增：清理已删除节点的引用
 export function cleanupCodeBlockReferences(element: HTMLElement | null | undefined): void {
     if (!element) return;
-    
+
     // 从WeakSet中无法直接删除，但可以通过检查DOM中是否还存在来判断
     // WeakSet会在节点被垃圾回收时自动清理
     // 这里我们主要是为了清理可能的内存泄漏
