@@ -1,0 +1,113 @@
+.ant-pro-layout .ant-pro-layout-content {
+    padding: 0;
+}
+
+.ant-pro-sider-collapsed-button {
+    inset-block-start: 50%;
+}
+
+.ant-typography-ellipsis {
+    max-width: 60%!important;
+}
+
+.ant-card .ant-card-actions>li {
+    margin: 4px 0 6px 0;
+}
+
+.ant-thought-chain {
+    .ant-thought-chain-item {
+        .ant-thought-chain-item-header {
+            margin-bottom: 12px;
+        }
+        .ant-thought-chain-item-content-box {
+            margin-bottom: 12px;
+            white-space: pre-line;
+        }
+    }
+}
+
+.ant-card .ant-card-body {
+    padding: 12px 16px;
+}
+
+.ant-dropdown-menu-title-content {
+    svg {
+        float: left;
+        margin-top: 3px;
+        margin-right: 6px;
+    }
+}
+
+.antd-tree-button-wamper {
+    float: right;
+}
+
+.ant-bubble .ant-bubble-content-wrapper {
+    max-width: calc(100% - 88px);
+}
+
+/* 确保 markdown 内容能正确显示换行符 */
+.ant-bubble-content p {
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+.ant-bubble-content pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/* 修复代码块中的换行符显示 */
+.ant-bubble-content code {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/* 让助手角色的内容容器占满宽度 */
+.ant-bubble[role="assistant"] .ant-bubble-content-filled {
+    width: 100%;
+}
+
+.dataSourcesTree {
+    .ant-tree {
+        .ant-tree-switcher {
+            margin-inline-end: 0px;
+            
+            .ant-tree-switcher-icon {
+                display: inline-flex;
+            }
+
+            &::before {
+                height: 32px;
+            }
+        }
+        .ant-tree-node-content-wrapper {
+            padding-inline: 0;
+            padding-right: 8px;
+            height: 32px;
+            .ant-tree-iconEle {
+                padding: 1px 6px 0 4px;
+                width: 28px;
+                svg {
+                    display: inline-block;
+                    vertical-align: baseline;
+                }
+            }
+        }
+        .ant-tree-treenode {
+            width: 100%;
+            line-height: 32px;
+            margin-bottom: 4px;
+            .ant-tree-node-content-wrapper {
+                width: 100%;
+            }
+            .ant-tree-title {
+                display: inline-block;
+                width: calc(100% - 28px);
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+        }
+    }
+}

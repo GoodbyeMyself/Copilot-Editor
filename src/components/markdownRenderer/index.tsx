@@ -16,7 +16,7 @@ import toc from 'markdown-it-toc-done-right';
 import DOMPurify from 'dompurify';
 
 // --
-import { buildCodeBlock, buildCodeBlockIncremental } from './code-block';
+import { buildCodeBlock, buildCodeBlockIncremental } from './code-block/index';
 
 interface MarkdownRendererProps {
     children: string;

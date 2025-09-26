@@ -381,7 +381,7 @@ export default function DataSources() {
     const { sources } = useSession();
 
     return (
-        <div className="flex h-full w-full flex-col dataSourcesTree">
+        <div className={`flex h-full w-full flex-col dataSourcesTree`}>
             <div className="sticky top-0 z-10 flex w-full items-center justify-between bg-background">
                 <div className="flex grow">
                     <span className="text-sm font-semibold px-4 py-2">数据源</span>

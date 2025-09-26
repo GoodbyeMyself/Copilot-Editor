@@ -4,6 +4,8 @@ import Playground from './playground';
 
 import { cn } from "@/utils/utils";
 
+import './styles.less';
+
 const HomePage: React.FC = () => {
     const { name } = useModel('global');
 
