@@ -103,15 +103,14 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
                     };
 
                     onSetSessionList([defaultSession]);
-
                     onSetCurSession(timeNow);
-
                     onSetMessages([]);
                 } else {
                     onSetSessionList(newSessionList);
-                    // 如果删除的是当前会话，切换到第一个会话
+                    // 如果删除的是当前会话，清空消息显示欢迎页面，不切换到其他会话
                     if (sessionId === curSession) {
-                        onSetCurSession(newSessionList[0].key);
+                        onSetMessages([]);
+                        // 保持当前会话ID不变，通过清空消息来显示欢迎页面
                     }
                 }
                 
