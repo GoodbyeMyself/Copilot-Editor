@@ -12,7 +12,7 @@ import { type ImperativePanelHandle } from "react-resizable-panels";
 
 import { useSpinDelay } from "spin-delay";
 
-import Editor from "@/components/base/monaco";
+import Editor from "@/components/monaco";
 
 import { useEditorSettings } from "@/context/editor-settings/useEditor";
 import { useEditor } from "@/context/editor/useEditor";

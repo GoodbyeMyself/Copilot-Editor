@@ -19,7 +19,6 @@ import { errorConfig } from './server/requestErrorConfig';
 
 // 导入必要的 Provider
 import { SessionProvider } from '@/context/session/provider';
-// 移除查询提供者
 import { EditorProvider } from '@/context/editor/provider';
 import { EditorSettingsProvider } from '@/context/editor-settings/provider';
 

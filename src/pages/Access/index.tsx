@@ -2,7 +2,7 @@ import { Access, useAccess } from '@umijs/max';
 
 import { Button } from 'antd';
 
-import MarkdownRenderer from '@/components/base/MarkdownRenderer';
+import MarkdownRenderer from '@/components/markdown/MarkdownRenderer';
 
 const demoMarkdown = `
 # Hello World

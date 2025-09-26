@@ -27,7 +27,7 @@ import {
     ExclamationCircleOutlined,
     EditOutlined,
 } from '@ant-design/icons';
-import SvgIcon from '@/components/common/SvgIcon';
+import SvgIcon from '@/components/base/SvgIcon';
 
 import { useSession } from "@/context/session/useSession";
 import { TreeDataSource } from "@/types/files/dataset";

@@ -30,7 +30,7 @@ import type { CodeEditor } from "@/context/session/types";
 
 import { useSession } from "@/context/session/useSession";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/utils";
 
 const { Text } = Typography;
 

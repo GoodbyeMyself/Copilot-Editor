@@ -7,7 +7,7 @@ import {
 
 import { Button } from "antd";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/utils";
 
 // icon
 import {

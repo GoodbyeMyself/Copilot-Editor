@@ -1,5 +1,5 @@
 import { Panel, type PanelProps } from "react-resizable-panels";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/utils";
 import { WrapperProvider } from "./context/provider";
 import type { WrapperState } from "./context/types";
 import { useWrapper } from "./context/useWrapper";

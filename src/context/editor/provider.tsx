@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from "react";
 
-import type { EditorForwardedRef } from "@/components/base/monaco";
+import type { EditorForwardedRef } from "@/components/monaco";
 
 import { EditorContext } from "./context";
 

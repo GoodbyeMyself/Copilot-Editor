@@ -17,8 +17,8 @@ import { BaseChatListProps, StatusType } from '../types';
 import { parseThinkContent, generateMessageKey, hasCancelMark, splitCancelContent } from '../utils';
 import { useThinkTiming } from '../hooks/useThinkTiming';
 
-import MarkdownRenderer, { StreamingMarkdownRenderer } from '@/components/base/MarkdownRenderer';
-import StreamingContent from '@/components/base/StreamingContent';
+import MarkdownRenderer, { StreamingMarkdownRenderer } from '@/components/markdown/MarkdownRenderer';
+import StreamingContent from '@/components/markdown/StreamingContent';
 import styles from './BaseChatList.module.less';
 
 // ThoughtChain 组件类型兜底

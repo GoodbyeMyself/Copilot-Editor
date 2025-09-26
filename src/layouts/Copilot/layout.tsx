@@ -7,7 +7,7 @@ import {
 
 import PanelHandle from '@/components/base/panel-handle';
 import { Copilot } from '@/layouts/Copilot/lib';
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/utils";
 
 // 样式表
 import './styles.less';

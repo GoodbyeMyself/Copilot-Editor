@@ -1,6 +1,6 @@
 import { DragHandleDots2Icon } from "@radix-ui/react-icons";
 import { PanelResizeHandle } from "react-resizable-panels";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/utils";
 
 /**
  * Panel resize handle component.

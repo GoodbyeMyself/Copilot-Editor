@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import './styles.less';
 
 // 编辑器
-import Editor from '@/components/base/monaco';
+import Editor from '@/components/monaco';
 
 // 助手式 公共布局
 import CopilotLayout from '@/layouts/Copilot/layout';

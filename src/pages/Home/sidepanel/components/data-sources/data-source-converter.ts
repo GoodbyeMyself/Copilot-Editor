@@ -1,7 +1,7 @@
 import { TreeDataNode } from "antd";
 import { TreeDataSource, DataSourceTable, DataSourceField } from "@/types/files/dataset";
 import React from "react";
-import SvgIcon from "@/components/common/SvgIcon";
+import SvgIcon from "@/components/base/SvgIcon";
 
 // 数据源类型到图标的映射
 const dataSourceTypeIconMap: Record<string, string> = {

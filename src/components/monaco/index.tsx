@@ -20,9 +20,7 @@ import {
 
 import * as monaco from "monaco-editor";
 import { type editor, type IDisposable, languages, Range } from "monaco-editor";
-import { setupContextMenuFeature } from '@/components/base/editor/utils/setupContextMenuFeature';
-
-// 右键菜单功能已集成到 setupContextMenuFeature 中
+import { setupContextMenuFeature } from './editor/utils/setupContextMenuFeature';
 
 // 配置 Monaco Editor 的 web worker 环境
 // 使用 getWorkerUrl 方式配置 worker 文件路径
@@ -53,7 +51,7 @@ import "monaco-editor/esm/vs/basic-languages/sql/sql.contribution";
 import "monaco-editor/esm/vs/basic-languages/python/python.contribution";
 import "monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/utils";
 
 import { Panel, PanelGroup, type ImperativePanelHandle } from "react-resizable-panels";
 import PanelHandle from "@/components/base/panel-handle";
@@ -64,6 +62,7 @@ import { formatJavaScript } from "@/utils/javascript_fmt";
 
 // 导入代码补全相关模块
 import { SuggestionMaker } from "./suggestions";
+
 import { PythonSuggestionMaker } from "./suggestions/python";
 import { JavaScriptSuggestionMaker } from "./suggestions/javascript";
 import { sqlConf, sqlDef, pythonConf, pythonDef, javascriptConf, javascriptDef } from "./syntax";
@@ -113,8 +112,6 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
     
     // 当前编程语言，默认为 SQL
     const language = props.language ?? "sql";
-    
-    // 主题设置（已统一为 monokai，此变量不再需要）
     
     /**
      * 根据语言类型获取对应的配置

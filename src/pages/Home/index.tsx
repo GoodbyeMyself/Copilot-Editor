@@ -2,7 +2,7 @@ import { useModel } from '@umijs/max';
 
 import Playground from './playground';
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/utils";
 
 const HomePage: React.FC = () => {
     const { name } = useModel('global');
