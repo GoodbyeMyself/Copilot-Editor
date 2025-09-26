@@ -21,6 +21,7 @@ import {
     saveCurrentSession, 
     loadCurrentSession 
 } from '../utils/storage';
+import type { SessionEndReason, SessionEndEventData, SessionEndHandler } from '@/types/session';
 
 type BubbleDataType = {
     role: string;
@@ -30,10 +31,11 @@ type BubbleDataType = {
 interface CopilotProps {
     setCopilotOpen: (open: boolean) => void;
     onCollapsePanel?: () => void;
+    onSessionEnd?: SessionEndHandler;
 }
 
 const Copilot = (props: CopilotProps) => {
-    const { setCopilotOpen, onCollapsePanel } = props;
+    const { setCopilotOpen, onCollapsePanel, onSessionEnd } = props;
     const attachmentsRef = useRef<GetRef<typeof Attachments>>(null);
     const abortController = useRef<AbortController | null>(null);
 
@@ -86,6 +88,25 @@ const Copilot = (props: CopilotProps) => {
         return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     };
 
+    // 触发会话结束事件
+    const triggerSessionEnd = (reason: SessionEndReason, sessionId?: string, sessionMessages?: any[]) => {
+        if (onSessionEnd) {
+            const currentSessionId = sessionId || curSession;
+            const currentMessages = sessionMessages || [];
+            const lastMessage = currentMessages.length > 0 ? currentMessages[currentMessages.length - 1] : undefined;
+            
+            const eventData: SessionEndEventData = {
+                sessionId: currentSessionId,
+                reason,
+                messageCount: currentMessages.length,
+                lastMessage,
+                timestamp: Date.now(),
+            };
+            
+            onSessionEnd(eventData);
+        }
+    };
+
     /**
      * 🔔 Please replace the BASE_URL, PATH, MODEL, API_KEY with your own values.
      */
@@ -104,6 +125,10 @@ const Copilot = (props: CopilotProps) => {
         agent,
         requestFallback: (_, { error }) => {
             if (error?.name === 'AbortError') {
+                // 触发会话结束事件 - 手动终止
+                // 注意：这里还无法获取到最新的 messages，所以暂时传空数组
+                triggerSessionEnd('aborted', undefined, []);
+                
                 // 获取AI已经输出的内容（originMessage的content）
                 const existingContent = currentAIContent.current || '';
                 // 如果存在未闭合的 <think>，在取消时补齐闭合以触发用时结算
@@ -198,6 +223,20 @@ const Copilot = (props: CopilotProps) => {
         },
     });
 
+    // 追踪请求状态变化，用于检测正常完成
+    const prevLoadingRef = useRef(loading);
+    
+    useEffect(() => {
+        // 当从 loading 状态变为非 loading 状态时，表示请求正常完成
+        if (prevLoadingRef.current && !loading) {
+            // 延迟一点时间确保消息已经更新
+            setTimeout(() => {
+                triggerSessionEnd('completed', undefined, messages);
+            }, 100);
+        }
+        prevLoadingRef.current = loading;
+    }, [loading, messages]);
+
     // ==================== 页面刷新清理逻辑 ====================
     useEffect(() => {
         // 页面刷新或关闭时的清理函数
@@ -231,6 +270,9 @@ const Copilot = (props: CopilotProps) => {
         return () => {
             window.removeEventListener('beforeunload', handleBeforeUnload);
             window.removeEventListener('unload', handleUnload);
+            
+            // 组件卸载时触发会话结束事件
+            triggerSessionEnd('unmounted', curSession, messages);
             
             // 组件卸载时也要中止请求
             if (abortController.current) {
@@ -286,6 +328,11 @@ const Copilot = (props: CopilotProps) => {
             saveSessionList(newSessionList);
         },
         onSetCurSession: (newSession: string) => {
+            // 如果切换到不同会话，触发当前会话结束事件
+            if (curSession && newSession !== curSession) {
+                triggerSessionEnd('switched', curSession, messages);
+            }
+            
             setCurSession(newSession);
             // 保存到localStorage
             saveCurrentSession(newSession);
@@ -296,6 +343,12 @@ const Copilot = (props: CopilotProps) => {
         onSetMessages: setMessages,
         onAbort: () => abortController.current?.abort(),
         onDeleteSession: (sessionId: string) => {
+            // 获取要删除会话的消息历史
+            const sessionMessages = messageHistory[sessionId] || [];
+            
+            // 触发会话删除结束事件
+            triggerSessionEnd('deleted', sessionId, sessionMessages);
+            
             // 从消息历史中删除对应的会话记录
             const updatedHistory = { ...messageHistory };
             delete updatedHistory[sessionId];

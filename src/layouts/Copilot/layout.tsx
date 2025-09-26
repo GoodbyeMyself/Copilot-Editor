@@ -8,6 +8,7 @@ import {
 import PanelHandle from '@/components/base/panel-handle';
 import { Copilot } from '@/layouts/Copilot/lib';
 import { cn } from "@/utils/utils";
+import type { SessionEndHandler } from '@/types/session';
 
 // 样式表
 import './styles.less';
@@ -18,6 +19,7 @@ interface CopilotLayoutProps {
     containerClassName?: string;
     onCopilotRefReady?: (ref: React.RefObject<ImperativePanelHandle>) => void;
     onClose?: () => void;
+    onSessionEnd?: SessionEndHandler;
 }
 
 const CopilotLayout: React.FC<CopilotLayoutProps> = ({ 
@@ -25,7 +27,8 @@ const CopilotLayout: React.FC<CopilotLayoutProps> = ({
     className,
     containerClassName,
     onCopilotRefReady,
-    onClose
+    onClose,
+    onSessionEnd
 }) => {
     // ==================== State =================
     const [copilotOpen, setCopilotOpen] = useState(false);
@@ -76,6 +79,7 @@ const CopilotLayout: React.FC<CopilotLayoutProps> = ({
                         <Copilot
                             setCopilotOpen={setCopilotOpen}
                             onCollapsePanel={() => copilotRef.current?.collapse()}
+                            onSessionEnd={onSessionEnd}
                         />
                     </div>
                 </Panel>
