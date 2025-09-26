@@ -12,6 +12,8 @@ import taskLists from 'markdown-it-task-lists';
 import container from 'markdown-it-container';
 import toc from 'markdown-it-toc-done-right';
 
+import styles from './styles.less';
+
 // --
 import DOMPurify from 'dompurify';
 
@@ -166,7 +168,7 @@ const PostProcessWrapper: React.FC<MarkdownRendererProps> = ({
 
     return (
         <div
-            className="markdown-body"
+            className={styles.markdownBody}
             ref={ref}
         />
     );
