@@ -1,6 +1,6 @@
 // --
 import 'highlight.js/styles/monokai.css';
-import './code-block.less';
+import './styles.less';
 
 import hljs from 'highlight.js/lib/core';
 

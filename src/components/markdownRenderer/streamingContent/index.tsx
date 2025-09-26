@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useCallback, useMemo } from 'react';
-import { StreamingMarkdownRenderer } from './MarkdownRenderer';
-import { useDebouncedScroll } from '../../hooks/use-debounced-scroll';
-import styles from './StreamingContent.module.less';
+import { StreamingMarkdownRenderer } from '../index';
+import { useDebouncedScroll } from '@/hooks/use-debounced-scroll';
+import styles from './styles.less';
 
 interface StreamingContentProps {
     content: string;

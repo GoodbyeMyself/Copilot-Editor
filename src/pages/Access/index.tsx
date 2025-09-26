@@ -2,7 +2,7 @@ import { Access, useAccess } from '@umijs/max';
 
 import { Button } from 'antd';
 
-import MarkdownRenderer from '@/components/markdown/MarkdownRenderer';
+import MarkdownRenderer from '@/components/markdownRenderer';
 
 const demoMarkdown = `
 # Hello World
@@ -25,14 +25,14 @@ const AccessPage: React.FC = () => {
     const access = useAccess();
     return (
         <div style={{ padding: 24 }}>
-            <div style={{ backgroundColor: 'white', padding: 24, borderRadius: 8, height: 'calc(100vh - 104px)' }}>
+            <div style={{ backgroundColor: 'white', padding: 24, marginBottom: 24, borderRadius: 8, height: '100px' }}>
                 <Access accessible={access.canSeeAdmin}>
                     <Button>只有 Admin 可以看到这个按钮</Button>
                 </Access>
-                <MarkdownRenderer>
-                    {demoMarkdown}
-                </MarkdownRenderer>
             </div>
+            <MarkdownRenderer>
+                {demoMarkdown}
+            </MarkdownRenderer>
         </div>
     );
 };
