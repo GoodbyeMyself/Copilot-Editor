@@ -51,6 +51,7 @@ if (typeof window !== 'undefined') {
 // 导入 Monaco Editor 的语言支持
 import "monaco-editor/esm/vs/basic-languages/sql/sql.contribution";
 import "monaco-editor/esm/vs/basic-languages/python/python.contribution";
+import "monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution";
 
 import { cn } from "@/lib/utils";
 
@@ -59,11 +60,13 @@ import PanelHandle from "@/components/base/panel-handle";
 import DebugConsole from "./parts/debug-console";
 import { formatSQL } from "@/utils/sql_fmt";
 import { formatPython } from "@/utils/python_fmt";
+import { formatJavaScript } from "@/utils/javascript_fmt";
 
 // 导入代码补全相关模块
 import { SuggestionMaker } from "./suggestions";
 import { PythonSuggestionMaker } from "./suggestions/python";
-import { sqlConf, sqlDef, pythonConf, pythonDef } from "./syntax";
+import { JavaScriptSuggestionMaker } from "./suggestions/javascript";
+import { sqlConf, sqlDef, pythonConf, pythonDef, javascriptConf, javascriptDef } from "./syntax";
 
 /**
  * 编辑器组件的属性类型定义
@@ -124,6 +127,11 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
                 return {
                     conf: pythonConf,
                     def: pythonDef
+                };
+            case "javascript":
+                return {
+                    conf: javascriptConf,
+                    def: javascriptDef
                 };
             case "sql":
             default:
@@ -385,6 +393,61 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
     }, [isReady, language]);
 
     /**
+     * JavaScript 代码格式化功能
+     * 提供全文档格式化和选中区域格式化
+     */
+    useEffect(() => {
+        const disposables: IDisposable[] = [];
+
+        // 前置条件检查
+        if (!editorRef.current) return;
+        if (!isReady) return;
+        if (language !== "javascript") return;
+
+        // 注册全文档格式化提供者
+        disposables.push(
+            monaco.languages.registerDocumentFormattingEditProvider(
+                "javascript",
+                {
+                    async provideDocumentFormattingEdits(model) {
+                        const formatted = await formatJavaScript(model.getValue());
+                        return [
+                            {
+                                range: model.getFullModelRange(),
+                                text: formatted,
+                            },
+                        ];
+                    },
+                },
+            ),
+        );
+
+        // 注册选中区域格式化提供者
+        disposables.push(
+            monaco.languages.registerDocumentRangeFormattingEditProvider(
+                "javascript",
+                {
+                    async provideDocumentRangeFormattingEdits(model, range) {
+                        const formatted = await formatJavaScript(
+                            model.getValueInRange(range),
+                        );
+                        return [
+                            {
+                                range,
+                                text: formatted,
+                            },
+                        ];
+                    },
+                },
+            ),
+        );
+
+        return () => {
+            disposables.forEach((d) => d.dispose());
+        };
+    }, [isReady, language]);
+
+    /**
      * 语言配置和语法高亮设置
      * 为当前语言注册语法配置、词法分析器和语言模型
      */
@@ -533,6 +596,48 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
                         return {
                             suggestions,
                             incomplete: false, // Python 补全通常是一次性完成的
+                        };
+                    },
+                },
+            ),
+        );
+
+        // 清理函数：组件卸载时释放所有注册的补全提供者
+        return () => {
+            // biome-ignore lint/complexity/noForEach: <explanation>
+            disposables.forEach((disposable) => disposable.dispose());
+        };
+    }, [isReady, language]);
+
+    /**
+     * JavaScript 代码补全功能
+     * 仅对 JavaScript 语言启用，提供 JavaScript 语法相关的代码补全
+     */
+    useEffect(() => {
+        const disposables: IDisposable[] = [];
+
+        // 前置条件检查
+        if (!isReady) return;
+        if (language !== "javascript") return;
+
+        // 创建 JavaScript 建议生成器
+        const javascriptSuggestor = new JavaScriptSuggestionMaker();
+
+        // 注册 JavaScript 代码补全提供者
+        disposables.push(
+            monaco.languages.registerCompletionItemProvider(
+                "javascript",
+                {
+                    provideCompletionItems(model, position) {
+                        // 获取当前位置的单词
+                        const { word } = model.getWordUntilPosition(position);
+                        
+                        // 获取 JavaScript 补全建议
+                        const suggestions = javascriptSuggestor.getSuggestions(word, position);
+                        
+                        return {
+                            suggestions,
+                            incomplete: false, // JavaScript 补全通常是一次性完成的
                         };
                     },
                 },

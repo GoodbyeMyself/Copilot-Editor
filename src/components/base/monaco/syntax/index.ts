@@ -28,6 +28,7 @@ export const sqlConf: languages.LanguageConfiguration = {
 };
 
 export { pythonConf, pythonDef } from "./python";
+export { javascriptConf, javascriptDef } from "./javascript";
 
 // 通用 SQL 语法定义
 export const sqlDef = <languages.IMonarchLanguage>{
