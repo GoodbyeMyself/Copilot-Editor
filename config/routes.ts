@@ -18,14 +18,14 @@ export default [
     {
         name: "SQL Editor",
         path: "/home",
-        icon: "icon-htmlbianjiqi",
+        icon: "ConsoleSqlOutlined",
         component: "./Home", 
     },
     {
-        name: "Python Editor",
-        path: "/Python",
-        icon: "Python",
-        component: "./Python",
+        name: "Editor",
+        path: "/Editor",
+        icon: "icon-htmlbianjiqi",
+        component: "./Editor",
     },
     // 数据源管理
     {

@@ -8,8 +8,7 @@ import Editor from '@/components/base/monaco';
 // 助手式 公共布局
 import CopilotLayout from '@/layouts/Copilot/layout';
 
-// --------- 样例代码 ---------
-import PYTHON_EXCEL_SAMPLE from './sample-code';
+// --------- 样例代码通过异步加载 ---------
 
 const HelperPage: React.FC = () => {
 
@@ -29,12 +28,23 @@ const HelperPage: React.FC = () => {
         console.log('保存编辑器内容:', editor.getValue());
     };
 
+    // 异步加载初始代码
+    async function loadInitialCode() {
+        try {
+            const response = await fetch('./suggestions/initial-code.js');
+            const initialCode = await response.text();
+            setEditorValue(initialCode);
+        } catch (error) {
+            console.error('Failed to load initial code:', error);
+        }
+    }
+
     useEffect(() => {
-        setEditorValue(PYTHON_EXCEL_SAMPLE);
+        loadInitialCode();
     }, []);
 
     return (
-        <div className="python-container">
+        <div className="editor-container">
             <CopilotLayout 
                 onCopilotRefReady={(ref) => { copilotRef.current = ref.current; }}
             >
@@ -42,7 +52,7 @@ const HelperPage: React.FC = () => {
                     value={editorValue}
                     onChange={handleEditorChange}
                     onSave={handleEditorSave}
-                    language="python"
+                    language="javascript"
                     ref={editorRef}
                     copolitRef={copilotRef}
                     className="h-full"

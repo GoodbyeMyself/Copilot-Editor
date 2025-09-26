@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monaco Editor - AI Code Suggestions Demo</title>
+    <script src="https://unpkg.com/monaco-editor@latest/min/vs/loader.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 12px 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1e1e1e;
+            color: #ffffff;
+        }
+
+        .container {
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #ffffff;
+            margin: 0;
+            margin-bottom: 12px;
+        }
+
+        #editor-container {
+            height: 700px;
+            border: 1px solid #3e3e3e;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative; /* 为批处理装饰器提供相对定位基准 */
+        }
+
+        .controls {
+            margin-bottom: 12px;
+        }
+
+        button {
+            background-color: #0e639c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin-right: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background-color: #1177bb;
+        }
+
+        button:disabled {
+            background-color: #666;
+            cursor: not-allowed;
+        }
+
+
+        .deleted-code-decoration {
+            background-color: rgba(244, 67, 54, 0.25);
+            position: relative;
+            opacity: 0.8;
+            border-right: 2px solid #f44336;
+        }
+
+        .added-code-decoration {
+            background-color: rgba(76, 175, 80, 0.25);
+            border-right: 2px solid #4caf50;
+            animation: slideInGreen 0s ease-out;
+        }
+
+        @keyframes slideInGreen {
+            from {
+                background-color: rgba(76, 175, 80, 0.5);
+                border-right: 3px solid #4caf50;
+            }
+            to {
+                background-color: rgba(76, 175, 80, 0.25);
+                border-right: 2px solid #4caf50;
+            }
+        }
+
+        /* 建议按钮样式 */
+        .suggestion-buttons {
+            position: absolute;
+            bottom: -2px;
+            right: var(--button-offset-right, 4px); /* 可自定义的右偏移量 */
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            transform: translateY(100%);
+            /* width will be set dynamically via JavaScript */
+        }
+
+        .suggestion-buttons.visible {
+            opacity: 1;
+        }
+
+        .suggestion-btn {
+            background: rgba(30, 30, 30, 0.95);
+            border: 1px solid #666;
+            border-radius: 4px;
+            padding: 2px 4px;
+            font-size: 12px;
+            cursor: pointer;
+            color: #fff;
+            float: right;
+            line-height: 16px;
+        }
+
+        .suggestion-btn.accept {
+            background: rgba(76, 175, 80, 0.8);
+            border-color: #4caf50;
+        }
+
+        .suggestion-btn.accept:hover {
+            background: rgba(76, 175, 80, 1);
+        }
+
+        .suggestion-btn.reject {
+            background: rgba(120, 120, 120, 0.8);
+            border-color: #888;
+        }
+
+        .suggestion-btn.reject:hover {
+            background: rgba(140, 140, 140, 1);
+        }
+
+        /* 批处理装饰器样式 */
+        .batch-decorator {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(30, 30, 30, 0.95);
+            padding: 6px 0px;
+            display: flex;
+            gap: 12px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: auto; /* 确保按钮可以点击 */
+            border-radius: 8px;
+            width: 280px;
+            justify-content: center;
+        }
+
+        .batch-decorator.visible {
+            opacity: 1;
+        }
+
+        .batch-btn {
+            background: rgba(60, 60, 60, 0.9);
+            border: 1px solid #888;
+            border-radius: 4px;
+            padding: 2px 4px;
+            font-size: 12px;
+            cursor: pointer;
+            color: #fff;
+            line-height: 16px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            margin-right: 0;
+        }
+
+        .batch-btn:hover {
+            background: rgba(80, 80, 80, 0.9);
+            border-color: #aaa;
+        }
+
+        .batch-btn.accept-all {
+            background: rgba(76, 175, 80, 0.8);
+            border-color: #4caf50;
+        }
+
+        .batch-btn.accept-all:hover {
+            background: rgba(76, 175, 80, 1);
+        }
+
+        .batch-btn.reject-all {
+            background: rgba(120, 120, 120, 0.8);
+            border-color: #888;
+        }
+
+        .batch-btn.reject-all:hover {
+            background: rgba(140, 140, 140, 1);
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Monaco Editor - AI Code Suggestions Demo</h1>
+        
+        <div>
+            <div class="controls">
+                <button onclick="addSuggestion()">
+                    🤖 AI 建议
+                </button>
+                <button onclick="rejectAllSuggestions()">
+                    🔄 重置代码
+                </button>
+            </div>
+        </div>
+
+        <div id="editor-container"></div>
+    </div>
+
+    <script>
+        let editor;
+        let suggestions = [];
+        let decorationIds = [];
+        let viewZoneIds = [];
+        let suggestionWidgets = []; // 存储建议的控件
+        let batchDecorator = null; // 批处理装饰器控件
+        let initialCode = ''; // 将从外部文件加载
+
+        // 异步加载初始代码
+        async function loadInitialCode() {
+            try {
+                const response = await fetch('../../../../public/suggestions/initial-code.js');
+                initialCode = await response.text();
+                if (editor) {
+                    editor.setValue(initialCode);
+                }
+            } catch (error) {
+                console.error('Failed to load initial code:', error);
+            }
+        }
+
+        // 异步加载建议配置
+        async function loadSuggestionConfig() {
+            try {
+                const response = await fetch('../../../../public/suggestions/suggestions-config.js');
+                const configText = await response.text();
+                
+                // 使用eval执行配置文件代码（在实际项目中建议使用更安全的方法）
+                eval(configText);
+                
+                // 检查是否成功加载
+                if (window.suggestionExamples && Array.isArray(window.suggestionExamples)) {
+                    console.log(`Loaded ${window.suggestionExamples.length} suggestion examples`);
+                } else {
+                    console.error('Failed to load suggestion examples from config file');
+                }
+            } catch (error) {
+                console.error('Failed to load suggestion config:', error);
+            }
+        }
+
+        // 获取编辑器宽度的辅助函数
+        function getEditorWidth() {
+            if (!editor) return 900; // 默认宽度作为后备
+            
+            const editorContainer = document.getElementById('editor-container');
+            if (editorContainer) {
+                return editorContainer.offsetWidth;
+            }
+            
+            // 如果无法获取容器宽度，尝试从编辑器本身获取
+            const editorDomNode = editor.getDomNode();
+            if (editorDomNode) {
+                return editorDomNode.offsetWidth;
+            }
+            
+            return 900; // 默认后备宽度
+        }
+
+        // 统一设置建议按钮宽度的方法
+        function setSuggestionButtonWidth(buttonElement) {
+            if (buttonElement) {
+                buttonElement.style.width = (getEditorWidth() - 200) + 'px';
+            }
+        }
+
+        // 更新所有现有建议按钮宽度的方法
+        function updateAllSuggestionButtonsWidth() {
+            // --
+            const suggestionButtons = document.querySelectorAll('.suggestion-buttons');
+            // --
+            suggestionButtons.forEach(button => {
+                setSuggestionButtonWidth(button);
+            });
+        }
+
+        // 初始化 Monaco Editor
+        require.config({
+            paths: {
+                vs: 'https://unpkg.com/monaco-editor@latest/min/vs'
+            }
+        });
+
+        require(['vs/editor/editor.main'], function () {
+            editor = monaco.editor.create(document.getElementById('editor-container'), {
+                value: '// 正在加载代码...',
+                language: 'javascript',
+                theme: 'vs-dark',
+                fontSize: 14,
+                lineNumbers: 'on',
+                minimap: {
+                    enabled: true
+                },
+                scrollBeyondLastLine: false,
+                automaticLayout: true,
+                suggest: {
+                    snippetsPreventQuickSuggestions: false,
+                    showKeywords: true,
+                    showSnippets: true
+                }
+            });
+            
+            // 编辑器创建完成后加载初始代码和建议配置
+            Promise.all([
+                loadInitialCode(),
+                loadSuggestionConfig()
+            ]).then(() => {
+                console.log('All configurations loaded successfully');
+            }).catch(error => {
+                console.error('Failed to load configurations:', error);
+            });
+            
+            // 添加编辑器布局变化监听器，动态更新建议按钮宽度
+            editor.onDidLayoutChange(function() {
+                // 更新所有现有的建议按钮宽度
+                updateAllSuggestionButtonsWidth();
+            });
+        });
+
+        // 添加 AI 建议 - 固定建议版本，应用三个固定的建议
+        function addSuggestion() {
+            // 获取所有配置的建议
+            const availableSuggestions = [...window.suggestionExamples || []];
+            if (availableSuggestions.length === 0) {
+                alert('No suggestions configured');
+                return;
+            }
+
+            // 固定应用所有配置的建议（createUser、processOrder、删除filterActiveItems）
+            const selectedSuggestions = [];
+            
+            availableSuggestions.forEach((suggestion, index) => {
+                const suggestionId = Date.now() + index; // 确保每个建议都有唯一ID
+                suggestion.id = suggestionId;
+                selectedSuggestions.push(suggestion);
+            });
+
+            // 按照行号排序，确保从上到下应用（避免行号偏移问题）
+            selectedSuggestions.sort((a, b) => a.range.startLineNumber - b.range.startLineNumber);
+
+            // 逐个应用建议，但需要调整后续建议的行号
+            let lineOffset = 0;
+            let firstSuggestionRange = null;
+            
+            selectedSuggestions.forEach((suggestion, index) => {
+                // 调整建议的行号以补偿之前的修改
+                const adjustedSuggestion = {
+                    ...suggestion,
+                    range: {
+                        ...suggestion.range,
+                        startLineNumber: suggestion.range.startLineNumber + lineOffset,
+                        endLineNumber: suggestion.range.endLineNumber + lineOffset
+                    },
+                    // 除了第一个建议，其他建议都不滚动
+                    shouldScroll: false
+                };
+
+                // 记录第一个建议的位置（调整后的位置）
+                if (index === 0) {
+                    firstSuggestionRange = {
+                        startLineNumber: adjustedSuggestion.range.startLineNumber,
+                        endLineNumber: adjustedSuggestion.range.endLineNumber
+                    };
+                }
+
+                // 应用建议并计算行数变化
+                const linesBefore = suggestion.oldCode.split('\n').length;
+                const linesAfter = suggestion.newCode.split('\n').length;
+                const lineDelta = linesAfter - linesBefore;
+                
+                // 应用建议
+                applySuggestionWithDiff(adjustedSuggestion);
+                
+                // 更新偏移量，影响后续建议的行号
+                lineOffset += lineDelta;
+            });
+            
+            // 应用完所有建议后，滚动到第一个建议位置
+            if (firstSuggestionRange) {
+                const model = editor.getModel();
+                const firstSuggestionNewRange = new monaco.Range(
+                    firstSuggestionRange.startLineNumber,
+                    1,
+                    firstSuggestionRange.startLineNumber,
+                    model.getLineMaxColumn(firstSuggestionRange.startLineNumber)
+                );
+                editor.revealRangeInCenter(firstSuggestionNewRange, monaco.editor.ScrollType.Smooth);
+            }
+            
+            // 显示批处理装饰器
+            showBatchDecorator();
+        }
+
+        // 应用建议并显示差异 - 新版本，标红代码不占行号
+        function applySuggestionWithDiff(suggestion) {
+            const model = editor.getModel();
+            
+            // 1. 保存原始代码用于回滚
+            const originalCode = model.getValueInRange(new monaco.Range(
+                suggestion.range.startLineNumber,
+                suggestion.range.startColumn,
+                suggestion.range.endLineNumber,
+                suggestion.range.endColumn
+            ));
+            suggestion.originalCode = originalCode;
+            
+            // 2. 只有当原代码不为空时，才添加视觉区域显示被删除的代码（在原代码位置上方，不占用实际行号）
+            let currentViewZoneId;
+            if (originalCode.trim() !== '') {
+                const deletedViewZone = {
+                    afterLineNumber: suggestion.range.startLineNumber - 1,
+                    heightInLines: originalCode.split('\n').length,
+                    domNode: createDeletedCodeNode(originalCode),
+                    suppressMouseDown: true
+                };
+
+                editor.changeViewZones(function(changeAccessor) {
+                    currentViewZoneId = changeAccessor.addZone(deletedViewZone);
+                    viewZoneIds.push(currentViewZoneId);
+                });
+                suggestion.viewZoneId = currentViewZoneId;
+            }
+
+            // 3. 直接替换原代码为新代码
+            const edits = [{
+                range: new monaco.Range(
+                    suggestion.range.startLineNumber,
+                    suggestion.range.startColumn,
+                    suggestion.range.endLineNumber,
+                    suggestion.range.endColumn
+                ),
+                text: suggestion.newCode
+            }];
+
+            editor.executeEdits('ai-suggestion', edits);
+
+            // 4. 计算新代码的行范围
+            const newCodeLines = suggestion.newCode.split('\n').length;
+            const newRange = new monaco.Range(
+                suggestion.range.startLineNumber,
+                1,
+                suggestion.range.startLineNumber + newCodeLines - 1,
+                model.getLineMaxColumn(suggestion.range.startLineNumber + newCodeLines - 1)
+            );
+
+            // 5. 立即滚动到变更位置确保可见 (如果需要滚动)
+            if (suggestion.shouldScroll !== false) {
+                editor.revealRangeInCenter(newRange, monaco.editor.ScrollType.Smooth);
+            }
+
+            // 6. 高亮新添加的代码
+            const addedDecoration = editor.deltaDecorations([], [{
+                range: newRange,
+                options: {
+                    className: 'added-code-decoration',
+                    isWholeLine: true,
+                    stickiness: monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges
+                }
+            }]);
+
+            // 7. 创建建议控制按钮
+            const buttonsWidget = createSuggestionButtonsWidget(suggestion, newRange);
+            editor.addContentWidget(buttonsWidget);
+
+            // 8. 强制立即重绘编辑器以确保装饰立即显示
+            setTimeout(() => {
+                editor.render(true);
+            }, 0);
+
+            // 9. 更新建议的范围信息以适应新代码
+            suggestion.newRange = newRange;
+            suggestion.decorationIds = addedDecoration;
+            suggestion.widgetId = buttonsWidget.getId();
+
+            // 10. 保存装饰ID、建议数据和控件
+            decorationIds.push(...addedDecoration);
+            suggestions.push(suggestion);
+            suggestionWidgets.push(buttonsWidget);
+        }
+
+        // 创建建议按钮控件
+        function createSuggestionButtonsWidget(suggestion, range) {
+            const widgetId = `suggestion-buttons-${suggestion.id}`;
+            
+            return {
+                getId: function() {
+                    return widgetId;
+                },
+                getDomNode: function() {
+                    const buttonsContainer = document.createElement('div');
+                    buttonsContainer.className = 'suggestion-buttons visible';
+                    
+                    // 动态设置宽度为编辑器宽度
+                    setSuggestionButtonWidth(buttonsContainer);
+                    
+                    // 接受按钮
+                    const acceptBtn = document.createElement('button');
+                    acceptBtn.className = 'suggestion-btn accept';
+                    acceptBtn.innerHTML = '✓ 接受此建议';
+                    acceptBtn.onclick = () => acceptIndividualSuggestion(suggestion.id);
+                    
+                    // 拒绝按钮
+                    const rejectBtn = document.createElement('button');
+                    rejectBtn.className = 'suggestion-btn reject';
+                    rejectBtn.innerHTML = '✕ 拒绝此建议';
+                    rejectBtn.onclick = () => rejectIndividualSuggestion(suggestion.id);
+                    
+                    buttonsContainer.appendChild(acceptBtn);
+                    buttonsContainer.appendChild(rejectBtn);
+                    
+                    return buttonsContainer;
+                },
+                getPosition: function() {
+                    return {
+                        position: {
+                            lineNumber: range.endLineNumber,
+                            // column: range.endColumn
+                        },
+                        preference: [monaco.editor.ContentWidgetPositionPreference.BELOW]
+                    };
+                }
+            };
+        }
+
+        // 创建批处理装饰器DOM元素
+        function createBatchDecoratorDOM() {
+            const decoratorContainer = document.createElement('div');
+            decoratorContainer.className = 'batch-decorator';
+            decoratorContainer.id = 'batch-decorator-element';
+            
+            // 接受全部建议按钮
+            const acceptAllBtn = document.createElement('button');
+            acceptAllBtn.className = 'batch-btn accept-all';
+            acceptAllBtn.innerHTML = '✓ 接受全部建议';
+            acceptAllBtn.onclick = () => {
+                acceptSuggestions();
+                hideBatchDecorator();
+            };
+            
+            // 拒绝全部建议按钮
+            const rejectAllBtn = document.createElement('button');
+            rejectAllBtn.className = 'batch-btn reject-all';
+            rejectAllBtn.innerHTML = '✕ 拒绝全部建议';
+            rejectAllBtn.onclick = () => {
+                rejectAllSuggestions();
+                hideBatchDecorator();
+            };
+            
+            decoratorContainer.appendChild(rejectAllBtn);
+            decoratorContainer.appendChild(acceptAllBtn);
+            
+            return decoratorContainer;
+        }
+
+        // 显示批处理装饰器
+        function showBatchDecorator() {
+            if (!batchDecorator && suggestions.length > 0) {
+                // 创建装饰器DOM元素
+                batchDecorator = createBatchDecoratorDOM();
+                
+                // 将装饰器添加到编辑器容器中
+                const editorContainer = document.getElementById('editor-container');
+                if (editorContainer) {
+                    editorContainer.appendChild(batchDecorator);
+                    
+                    // 延迟显示动画
+                    setTimeout(() => {
+                        batchDecorator.classList.add('visible');
+                    }, 10);
+                }
+            }
+        }
+
+        // 隐藏批处理装饰器
+        function hideBatchDecorator() {
+            if (batchDecorator) {
+                batchDecorator.classList.remove('visible');
+                
+                // 延迟移除DOM元素以完成动画
+                setTimeout(() => {
+                    if (batchDecorator && batchDecorator.parentNode) {
+                        batchDecorator.parentNode.removeChild(batchDecorator);
+                        batchDecorator = null;
+                    }
+                }, 300);
+            }
+        }
+
+        // 创建显示被删除代码的DOM节点
+        function createDeletedCodeNode(deletedCode) {
+            const node = document.createElement('div');
+            
+            // 获取编辑器的字体配置
+            const editorOptions = editor.getOptions();
+            const fontSize = editorOptions.get(monaco.editor.EditorOption.fontSize);
+            const lineHeight = editorOptions.get(monaco.editor.EditorOption.lineHeight);
+            const fontFamily = editorOptions.get(monaco.editor.EditorOption.fontFamily);
+            
+            node.style.cssText = `
+                background-color: rgba(82, 32, 27, 0.9);
+                font-size: ${fontSize}px;
+                line-height: ${lineHeight}px;
+                font-family: ${fontFamily};
+                color: #fff;
+                opacity: 0.7;
+                white-space: pre;
+                overflow: hidden;
+                padding: 0;
+                margin: 0;
+                padding-left: 4px;
+            `;
+            
+            // 创建代码容器，使用Monaco的语法高亮样式
+            const codeContainer = document.createElement('pre');
+            codeContainer.style.cssText = `
+                margin: 0;
+                padding: 0;
+                font-family: inherit;
+                font-size: inherit;
+                line-height: inherit;
+                color: inherit;
+                background: transparent;
+                white-space: pre;
+                overflow: hidden;
+            `;
+            
+            // 直接显示被删除的代码
+            codeContainer.textContent = deletedCode;
+            node.appendChild(codeContainer);
+            
+            return node;
+        }
+
+        // 接受单个建议
+        function acceptIndividualSuggestion(suggestionId) {
+            const suggestionIndex = suggestions.findIndex(s => s.id === suggestionId);
+            if (suggestionIndex === -1) {
+                console.log('Suggestion not found:', suggestionId);
+                return;
+            }
+            
+            const suggestion = suggestions[suggestionIndex];
+            
+            // 1. 移除该建议的高亮装饰
+            if (suggestion.decorationIds) {
+                editor.deltaDecorations(suggestion.decorationIds, []);
+                // 从全局decorationIds中移除
+                suggestion.decorationIds.forEach(id => {
+                    const index = decorationIds.indexOf(id);
+                    if (index > -1) decorationIds.splice(index, 1);
+                });
+            }
+            
+            // 2. 移除对应的视觉区域（被删除的代码显示）
+            if (suggestion.viewZoneId) {
+                editor.changeViewZones(function(changeAccessor) {
+                    changeAccessor.removeZone(suggestion.viewZoneId);
+                });
+                const index = viewZoneIds.indexOf(suggestion.viewZoneId);
+                if (index > -1) viewZoneIds.splice(index, 1);
+            }
+            
+            // 3. 移除按钮控件
+            if (suggestion.widgetId) {
+                editor.removeContentWidget({getId: () => suggestion.widgetId});
+                const widgetIndex = suggestionWidgets.findIndex(w => w.getId() === suggestion.widgetId);
+                if (widgetIndex > -1) suggestionWidgets.splice(widgetIndex, 1);
+            }
+            
+            // 4. 从建议列表中移除
+            suggestions.splice(suggestionIndex, 1);
+            
+            // 5. 如果没有更多建议，隐藏批处理装饰器
+            if (suggestions.length === 0) {
+                hideBatchDecorator();
+            }
+        }
+
+        // 拒绝单个建议
+        function rejectIndividualSuggestion(suggestionId) {
+            const suggestionIndex = suggestions.findIndex(s => s.id === suggestionId);
+            if (suggestionIndex === -1) {
+                console.log('Suggestion not found:', suggestionId);
+                return;
+            }
+            
+            const suggestion = suggestions[suggestionIndex];
+            
+            // 1. 移除高亮装饰
+            if (suggestion.decorationIds) {
+                editor.deltaDecorations(suggestion.decorationIds, []);
+                // 从全局decorationIds中移除
+                suggestion.decorationIds.forEach(id => {
+                    const index = decorationIds.indexOf(id);
+                    if (index > -1) decorationIds.splice(index, 1);
+                });
+            }
+            
+            // 2. 移除视觉区域
+            if (suggestion.viewZoneId) {
+                editor.changeViewZones(function(changeAccessor) {
+                    changeAccessor.removeZone(suggestion.viewZoneId);
+                });
+                const index = viewZoneIds.indexOf(suggestion.viewZoneId);
+                if (index > -1) viewZoneIds.splice(index, 1);
+            }
+            
+            // 3. 移除按钮控件
+            if (suggestion.widgetId) {
+                editor.removeContentWidget({getId: () => suggestion.widgetId});
+                const widgetIndex = suggestionWidgets.findIndex(w => w.getId() === suggestion.widgetId);
+                if (widgetIndex > -1) suggestionWidgets.splice(widgetIndex, 1);
+            }
+            
+            // 4. 恢复原始代码
+            if (suggestion.originalCode && suggestion.newRange) {
+                const edits = [{
+                    range: suggestion.newRange,
+                    text: suggestion.originalCode
+                }];
+                editor.executeEdits('reject-suggestion', edits);
+            }
+            
+            // 5. 从建议列表中移除
+            suggestions.splice(suggestionIndex, 1);
+            
+            // 6. 如果没有更多建议，隐藏批处理装饰器
+            if (suggestions.length === 0) {
+                hideBatchDecorator();
+            }
+        }
+
+        // 接受所有 AI 建议 - 清理装饰和视觉区域，保留已替换的代码
+        function acceptSuggestions() {
+            if (suggestions.length === 0) {
+                console.log('No suggestions to accept');
+                return;
+            }
+            
+            // 逐个接受所有建议
+            const suggestionIds = suggestions.map(s => s.id);
+            suggestionIds.forEach(id => acceptIndividualSuggestion(id));
+        }
+        
+        // 拒绝所有建议 - 恢复到初始代码
+        function rejectAllSuggestions() {
+            // 1. 清理所有装饰
+            if (decorationIds.length > 0) {
+                editor.deltaDecorations(decorationIds, []);
+            }
+            
+            // 2. 清理所有视觉区域
+            if (viewZoneIds.length > 0) {
+                editor.changeViewZones(function(changeAccessor) {
+                    viewZoneIds.forEach(id => {
+                        changeAccessor.removeZone(id);
+                    });
+                });
+            }
+            
+            // 3. 清理所有控件
+            suggestionWidgets.forEach(widget => {
+                editor.removeContentWidget(widget);
+            });
+            
+            // 4. 隐藏批处理装饰器
+            hideBatchDecorator();
+            
+            // 5. 恢复到初始代码
+            editor.setValue(initialCode);
+            
+            // 6. 清理变量状态
+            suggestions = [];
+            decorationIds = [];
+            viewZoneIds = [];
+            suggestionWidgets = [];
+        }
+
+        // 确保函数在全局作用域中可访问
+        window.addSuggestion = addSuggestion;
+    </script>
+</body>
+
+</html>
