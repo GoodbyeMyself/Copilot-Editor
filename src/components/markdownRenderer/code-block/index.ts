@@ -83,6 +83,24 @@ function getLanguageFromElement(codeElement: HTMLElement): string {
     return 'text'; // 默认语言
 }
 
+// 统计 diff 代码的新增和删除行数
+function analyzeDiffStats(codeContent: string): { additions: number; deletions: number } {
+    const lines = codeContent.split('\n');
+    let additions = 0;
+    let deletions = 0;
+    
+    for (const line of lines) {
+        const trimmedLine = line.trim();
+        if (trimmedLine.startsWith('+') && !trimmedLine.startsWith('+++')) {
+            additions++;
+        } else if (trimmedLine.startsWith('-') && !trimmedLine.startsWith('---')) {
+            deletions++;
+        }
+    }
+    
+    return { additions, deletions };
+}
+
 // 创建代码块头部
 function createCodeBlockHeader(language: string, codeContent: string): HTMLElement {
     const header = document.createElement('div');
@@ -103,6 +121,32 @@ function createCodeBlockHeader(language: string, codeContent: string): HTMLEleme
     
     languageLabel.textContent = displayLanguage;
     leftSection.appendChild(languageLabel);
+
+    // 如果是 diff 语言，添加统计信息
+    if (language === 'diff') {
+        const stats = analyzeDiffStats(codeContent);
+        
+        if (stats.additions > 0 || stats.deletions > 0) {
+            const statsContainer = document.createElement('div');
+            statsContainer.className = 'code-block-diff-stats';
+            
+            if (stats.additions > 0) {
+                const additionsSpan = document.createElement('span');
+                additionsSpan.className = 'diff-additions';
+                additionsSpan.textContent = `+${stats.additions}`;
+                statsContainer.appendChild(additionsSpan);
+            }
+            
+            if (stats.deletions > 0) {
+                const deletionsSpan = document.createElement('span');
+                deletionsSpan.className = 'diff-deletions';
+                deletionsSpan.textContent = `-${stats.deletions}`;
+                statsContainer.appendChild(deletionsSpan);
+            }
+            
+            leftSection.appendChild(statsContainer);
+        }
+    }
 
     // 右侧容器：按钮组
     const rightSection = document.createElement('div');
