@@ -19,6 +19,40 @@ def greet(name: str) -> str:
 if __name__ == "__main__":
     print(greet("SQL Copilot"))
 \`\`\`
+
+## Diff 代码块示例
+
+下面是一个 Git diff 示例，展示了文件的修改：
+
+\`\`\`diff
+diff --git a/src/utils/helper.js b/src/utils/helper.js
+index 1234567..abcdefg 100644
+--- a/src/utils/helper.js
++++ b/src/utils/helper.js
+@@ -1,10 +1,12 @@
+ function calculateTotal(items) {
+-    let total = 0;
+-    for (let i = 0; i < items.length; i++) {
+-        total += items[i].price;
+-    }
+-    return total;
++    return items.reduce((sum, item) => {
++        // 添加折扣计算
++        const discountedPrice = item.price * (1 - (item.discount || 0));
++        return sum + discountedPrice;
++    }, 0);
+ }
+ 
++// 新增：格式化价格显示
++const formatPrice = (price) => \`¥\${price.toFixed(2)}\`;
++
+ export { calculateTotal };
+\`\`\`
+
+这个 diff 显示了：
+- **红色行**：被删除的代码
+- **绿色行**：新添加的代码  
+- **蓝色行**：上下文信息和文件头部
 `;
 
 const TestPage: React.FC = () => {

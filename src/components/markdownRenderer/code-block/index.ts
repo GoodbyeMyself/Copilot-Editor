@@ -14,6 +14,7 @@ import shell from 'highlight.js/lib/languages/shell';
 import markdown from 'highlight.js/lib/languages/markdown';
 import xml from 'highlight.js/lib/languages/xml';
 import css from 'highlight.js/lib/languages/css';
+import diff from 'highlight.js/lib/languages/diff';
 
 // Register common languages once
 let isRegistered = false;
@@ -31,6 +32,7 @@ function ensureRegisterLanguages() {
     hljs.registerLanguage('xml', xml);
     hljs.registerLanguage('html', xml);
     hljs.registerLanguage('css', css);
+    hljs.registerLanguage('diff', diff);
     hljs.configure({ ignoreUnescapedHTML: true });
 
     isRegistered = true;
@@ -92,7 +94,14 @@ function createCodeBlockHeader(language: string, codeContent: string): HTMLEleme
 
     const languageLabel = document.createElement('span');
     languageLabel.className = 'code-block-language';
-    languageLabel.textContent = language !== 'undefined' ? language.toUpperCase() : 'TEXT';
+    
+    // 为 diff 语言提供特殊显示
+    let displayLanguage = language !== 'undefined' ? language.toUpperCase() : 'TEXT';
+    if (language === 'diff') {
+        displayLanguage = 'DIFF';
+    }
+    
+    languageLabel.textContent = displayLanguage;
     leftSection.appendChild(languageLabel);
 
     // 右侧容器：按钮组
@@ -205,6 +214,11 @@ function wrapCodeBlockWithHeader(preElement: HTMLElement, codeElement: HTMLEleme
     // 创建容器
     const container = document.createElement('div');
     container.className = 'code-block-container';
+    
+    // 为 diff 代码块添加特殊标识
+    if (language === 'diff') {
+        container.setAttribute('data-language', 'diff');
+    }
 
     // 创建头部
     const header = createCodeBlockHeader(language, codeContent);

@@ -119,11 +119,69 @@
     }
 }
 
+/* Diff 代码块特殊样式 */
+.code-block-container {
+    // diff 语言的特殊样式
+    &[data-language="diff"] {
+        .hljs-addition {
+            background-color: rgba(46, 160, 67, 0.15);
+            color: #7ee787;
+            display: inline-block;
+            width: 100%;
+            line-height: inherit;
+        }
+
+        .hljs-deletion {
+            background-color: rgba(248, 81, 73, 0.15);
+            color: #f85149;
+            display: inline-block;
+            width: 100%;
+            line-height: inherit;
+        }
+
+        .hljs-chunk {
+            background-color: rgba(121, 192, 255, 0.15);
+            color: #79c0ff;
+            display: block;
+            width: 100%;
+            font-weight: bold;
+        }
+
+        // 行号样式（如果有的话）
+        .hljs-meta {
+            color: #8b949e;
+            font-style: italic;
+        }
+    }
+}
+
 /* 适配亮色主题 */
 @media (prefers-color-scheme: light) {
     .code-block-container {
         background: #f8f8f8;
         border-color: #e1e4e8;
+
+        // diff 语言在亮色主题下的样式
+        &[data-language="diff"] {
+            .hljs-addition {
+                background-color: rgba(40, 167, 69, 0.15);
+                color: #22863a;
+            }
+
+            .hljs-deletion {
+                background-color: rgba(203, 36, 49, 0.15);
+                color: #cb2431;
+            }
+
+            .hljs-chunk {
+                background-color: rgba(3, 102, 214, 0.15);
+                color: #0366d6;
+            }
+
+            .hljs-meta {
+                color: #6a737d;
+            }
+        }
     }
 
     .code-block-header {
