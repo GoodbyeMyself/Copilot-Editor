@@ -20,6 +20,11 @@ interface CopilotLayoutProps {
     onCopilotRefReady?: (ref: React.RefObject<ImperativePanelHandle>) => void;
     onClose?: () => void;
     onSessionEnd?: SessionEndHandler;
+    copilotWidth?: {
+        defaultSize?: number;
+        minSize?: number;
+        maxSize?: number;
+    };
 }
 
 const CopilotLayout: React.FC<CopilotLayoutProps> = ({ 
@@ -28,7 +33,8 @@ const CopilotLayout: React.FC<CopilotLayoutProps> = ({
     containerClassName,
     onCopilotRefReady,
     onClose,
-    onSessionEnd
+    onSessionEnd,
+    copilotWidth
 }) => {
     // ==================== State =================
     const [copilotOpen, setCopilotOpen] = useState(false);
@@ -40,6 +46,13 @@ const CopilotLayout: React.FC<CopilotLayoutProps> = ({
             onCopilotRefReady(copilotRef);
         }
     }, [onCopilotRefReady]);
+
+    // 宽度配置，支持外部传入，默认值作为兜底
+    const widthConfig = {
+        defaultSize: copilotWidth?.defaultSize ?? 40,
+        minSize: copilotWidth?.minSize ?? 30,
+        maxSize: copilotWidth?.maxSize ?? 70
+    };
 
     return (
         <div className={cn(
@@ -64,8 +77,9 @@ const CopilotLayout: React.FC<CopilotLayoutProps> = ({
                 <Panel
                     collapsedSize={0}
                     collapsible
-                    defaultSize={0}
-                    minSize={30}
+                    defaultSize={copilotOpen ? widthConfig.defaultSize : 0}
+                    minSize={widthConfig.minSize}
+                    maxSize={widthConfig.maxSize}
                     className="h-full max-h-full"
                     onCollapse={() => {
                         setCopilotOpen(false);
