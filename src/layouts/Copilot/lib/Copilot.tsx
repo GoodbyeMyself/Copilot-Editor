@@ -113,6 +113,29 @@ const Copilot = (props: CopilotProps) => {
 
     // ==================== Runtime ====================
 
+    useEffect(() => {
+        const originalFetch = window.fetch;
+        
+        // 创建一个拦截器来添加自定义请求头
+        window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+            const customInit = {
+                ...init,
+                headers: {
+                    ...init?.headers,
+                    // 🔥 在这里添加你的自定义请求头
+                    'X-Custom-Header': 'your-custom-value'
+                }
+            };
+            return originalFetch(input, customInit);
+        };
+        
+        // 组件卸载时恢复原始 fetch
+        return () => {
+            window.fetch = originalFetch;
+        };
+    }, [curSession]); // 依赖 curSession，当会话变化时重新设置
+
+
     const [agent] = useXAgent<BubbleDataType>({
         baseURL: 'https://api.deepseek.com/chat/completions',
         model: 'deepseek-reasoner',
