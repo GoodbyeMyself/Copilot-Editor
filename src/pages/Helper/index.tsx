@@ -73,6 +73,11 @@ const HelperPage: React.FC = () => {
                 onCopilotRefReady={(ref) => { copilotRef.current = ref.current; }}
                 onClose={() => setCopilotOpen(false)}
                 onSessionEnd={handleSessionEnd}
+                copilotWidth={{
+                    defaultSize: 45,
+                    minSize: 45,
+                    maxSize: 80
+                }}
             >
                 {!copilotOpen && (
                     <div
