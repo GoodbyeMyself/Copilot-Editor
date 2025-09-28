@@ -50,8 +50,8 @@ export default [
     },
     {
         name: "测试页",
-        path: "/access",
+        path: "/Test",
         icon: "Calendar",
-        component: "./Access",
+        component: "./Test",
     }
 ];

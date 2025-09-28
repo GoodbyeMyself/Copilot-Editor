@@ -21,7 +21,7 @@ if __name__ == "__main__":
 \`\`\`
 `;
 
-const AccessPage: React.FC = () => {
+const TestPage: React.FC = () => {
     const access = useAccess();
     return (
         <div style={{ padding: 24 }}>
@@ -37,4 +37,4 @@ const AccessPage: React.FC = () => {
     );
 };
 
-export default AccessPage;
+export default TestPage;
